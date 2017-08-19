@@ -1,0 +1,18 @@
+{
+  "name": "appraisalconfidence",
+  "version": "1.0.0",
+  "description": "Web application for experiments related to research on confidence in performance appraisal judgments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "bourji",
+  "license": "ISC",
+  "dependencies": {
+    "@uirouter/angularjs": "1.0.3",
+    "angular": "1.6.5",
+    "angular-auth0": "2.0.0",
+    "auth0-js": "^8.9.2",
+    "bootstrap": "3.3.7"
+  }
+}
