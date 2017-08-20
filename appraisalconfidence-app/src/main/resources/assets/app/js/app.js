@@ -2,8 +2,6 @@
 
     var angular = require('angular');
     var auth_vars = require('./auth0-vars.js');
-    require('auth0-js');
-    require('@uirouter/angularjs');
     require('angular-auth0');
 
     var appraisal_app = angular.module('appraisal_app', ['auth0.auth0', 'ui.router']);
