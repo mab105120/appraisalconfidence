@@ -18,11 +18,16 @@
     function app_config($stateProvider, $locationProvider, $urlRouterProvider, angularAuth0Provider) {
         // Configure state provider for UI routes
         $stateProvider
-          .state('home', {
-            url: '/home',
-            controller: 'homeController',
-            templateUrl: 'app/template/home.html'
+          .state('welcome', {
+             url: '/',
+             controller: 'welcomeController',
+             templateUrl: 'app/template/welcome.html'
           })
+          .state('home', {
+             url: '/home',
+             controller: 'homeController',
+             templateUrl: 'app/template/home.html'
+           })
           .state('callback', {
             url: '/callback',
             controller: 'callbackController',
@@ -32,7 +37,7 @@
             url: '/about',
             controller: 'aboutController',
             templateUrl: 'app/template/about.html'
-          })
+          });
 
 //           Configure auth provider
           angularAuth0Provider.init({
@@ -53,6 +58,7 @@
     appraisal_app.controller('homeController', require('./controller/home.controller.js'));
     appraisal_app.controller('callbackController', require('./controller/callback.controller.js'));
     appraisal_app.controller('aboutController', require('./controller/about.controller.js'));
+    appraisal_app.controller('welcomeController', require('./controller/welcome.controller.js'));
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
     // Register app directives
