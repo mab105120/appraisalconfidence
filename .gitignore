@@ -2,3 +2,4 @@
 **/*.iml
 **/node_modules
 **/target
+appraisalconfidence-app/dependency-reduced-pom.xml

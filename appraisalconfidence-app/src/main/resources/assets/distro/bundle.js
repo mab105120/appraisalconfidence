@@ -157,11 +157,19 @@
         };
     }
 
-    navbar_controller.$inject = ['authService'];
+    navbar_controller.$inject = ['$scope', 'authService'];
 
-    function navbar_controller(authService) {
+    function navbar_controller($scope, authService) {
         var vm = this; // why do this ?
         vm.auth = authService;
+
+        $scope.login = function() {
+            authService.login();
+        }
+
+        $scope.logout = function() {
+            authService.logout();
+        }
     };
 
     module.exports = navbar_directive;
@@ -208,6 +216,7 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
+            $state.go('welcome');
         }
 
 
