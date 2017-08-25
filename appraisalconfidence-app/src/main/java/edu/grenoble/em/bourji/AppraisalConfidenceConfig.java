@@ -2,6 +2,7 @@ package edu.grenoble.em.bourji;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import io.dropwizard.db.DataSourceFactory;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
@@ -20,6 +21,17 @@ public class AppraisalConfidenceConfig extends Configuration {
     @NotEmpty
     @JsonProperty("kid")
     private String kid;
+
+    @JsonProperty("database")
+    private DataSourceFactory dataSourceFactory;
+
+    public DataSourceFactory getDataSourceFactory() {
+        return dataSourceFactory;
+    }
+
+    public void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
+        this.dataSourceFactory = dataSourceFactory;
+    }
 
     public String getKid() {
         return this.kid;

@@ -20,8 +20,7 @@ public class AppraisalConfidenceResourceTest {
                     ResourceHelpers.resourceFilePath("test.yml"));
 
     @Test
-    public void testGetPublicKeys() {
-//        String pk = new AppraisalConfidenceResource(RULE.getConfiguration().getAuth0Domain()).getPublicKey();
-//        System.out.println(pk);
+    public void createTable() {
+        System.out.println("Test passed!");
     }
 }
