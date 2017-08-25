@@ -17,7 +17,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
 
     @Override
     public void run(AppraisalConfidenceConfig appraisalConfidenceConfig, Environment environment) throws Exception {
-        environment.jersey().register(new AppraisalConfidenceResource());
+        environment.jersey().register(new AppraisalConfidenceResource(appraisalConfidenceConfig.getAuth0Domain(),
+                appraisalConfidenceConfig.getKid()));
     }
 
     @Override

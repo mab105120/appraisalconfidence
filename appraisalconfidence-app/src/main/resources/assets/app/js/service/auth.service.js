@@ -20,13 +20,14 @@
                     setSession(authResult);
                     $state.go('home');
                } else if (err) {
-                    alert('an error occurred. check console for details');
+                    alert('An error occured while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);
                }
             });
         }
 
         function setSession(authResult) {
+            console.log('Setting authentication result to local storage');
             let expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
             localStorage.setItem('access_token', authResult.accessToken);
             localStorage.setItem('id_token', authResult.idToken);
@@ -34,9 +35,11 @@
         }
 
         function logout() {
-            localStorage.remove('access_token');
-            localStorage.remove('id_token');
-            localStorage.remove('expires_at');
+            console.log('user is being logged out!');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('id_token');
+            localStorage.removeItem('expires_at');
+            $state.go('welcome');
         }
 
 
