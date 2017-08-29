@@ -4,7 +4,9 @@
   "description": "Web application for experiments related to research on confidence in performance appraisal judgments",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm run watch-js & npm run serve",
+    "watch-js": "watchify -d -p [ browserify-livereload --host 192.168.0.15 --port 5000 ] ./app/js/app.js -o ./distro/bundle.js -v",
+    "serve": "http-server -o"
   },
   "author": "bourji",
   "license": "ISC",
@@ -13,6 +15,12 @@
     "angular": "1.6.5",
     "angular-auth0": "2.0.0",
     "auth0-js": "^8.9.2",
-    "bootstrap": "3.3.7"
+    "bootstrap": "3.3.7",
+    "jquery": "3.2.1",
+    "bootstrap-slider": "9.8.1"
+  },
+  "devDependencies": {
+    "beefy": "^2.1.8",
+    "browserify-livereload": "^1.0.10"
   }
 }

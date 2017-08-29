@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <!-- Basic style -->
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="node_modules/bootstrap-slider/dist/css/bootstrap-slider.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="app/css/style.css">
     <!--auth0 dependencies-->
     <script src="node_modules/auth0-js/build/auth0.min.js"></script>
     <!--<script src="node_modules/angular-auth0/dist/angular-auth0.min.js"></script>-->
+    <!--<script src="node_modules/jquery/dist/jquery.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
     <script type="text/javascript" src="distro/bundle.js"></script>
 </head>
 <body>
@@ -16,7 +19,7 @@
 
     <navbar></navbar>
 
-    <div class="container">
+    <div class="container" style="margin-bottom:100px;">
         <ui-view></ui-view>
     </div>
 </div>
