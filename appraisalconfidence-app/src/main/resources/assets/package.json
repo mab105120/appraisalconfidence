@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "description": "Web application for experiments related to research on confidence in performance appraisal judgments",
   "main": "index.js",
-  "scripts": {
-    "dev": "npm run watch-js & npm run serve",
-    "watch-js": "watchify -d -p [ browserify-livereload --host 192.168.0.15 --port 5000 ] ./app/js/app.js -o ./distro/bundle.js -v",
-    "serve": "http-server -o"
-  },
   "author": "bourji",
   "license": "ISC",
   "dependencies": {
