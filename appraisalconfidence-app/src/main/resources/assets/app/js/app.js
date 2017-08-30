@@ -41,7 +41,7 @@
             templateUrl: 'app/template/procedure.html'
           })
           .state('evaluation', {
-            url: '/evaluation',
+            url: '/evaluation/:id',
             controller: 'evaluationController',
             templateUrl: 'app/template/evaluation.html'
           });

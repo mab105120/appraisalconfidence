@@ -17,7 +17,7 @@
         }
 
         $scope.next = function() {
-            $state.go('evaluation');
+            $state.go('evaluation', { id: 1 });
         }
     };
 

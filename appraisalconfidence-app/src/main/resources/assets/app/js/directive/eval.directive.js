@@ -6,15 +6,14 @@
         return {
             restrict: 'EAC',
             scope: {
-                jobFunction: '@',
-                evaluations: '='
+                jobFunction: '@'
             },
             templateUrl: 'app/template/eval.html',
-            link: function(scope, element, attributes) {
-                scope.setModalBody = function(teacher, jobFunction, supervisor) {
-                    console.log('Evaluation report requested for: ' + teacher + ' ' + jobFunction + ' ' + supervisor);
-                    scope.modalBody = scope.evaluations[teacher][jobFunction][supervisor];
-                };
+            link: function(scope) {
+                scope.displayEvaluation = function(teacher, supervisor) {
+                    console.log(scope);
+                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunction][supervisor];
+                }
             }
         };
     }

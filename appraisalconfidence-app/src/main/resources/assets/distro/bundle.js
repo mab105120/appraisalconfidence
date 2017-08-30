@@ -42,7 +42,7 @@
             templateUrl: 'app/template/procedure.html'
           })
           .state('evaluation', {
-            url: '/evaluation',
+            url: '/evaluation/:id',
             controller: 'evaluationController',
             templateUrl: 'app/template/evaluation.html'
           });
@@ -131,12 +131,11 @@
 },{}],5:[function(require,module,exports){
 (function() {
 
-    evaluation_controller.$inject = ['$scope'];
+    evaluation_controller.$inject = ['$scope', '$stateParams', '$http'];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope) {
-        console.log('registering the slider');
+    function evaluation_controller($scope, $stateParams, $http) {
         $('#slider1').slider();
         $('#slider1').on('slide', function(slideEvt) {
             $('#slider1Val').text(slideEvt.value);
@@ -147,49 +146,19 @@
             $('#slider2Val').text(slideEvt.value);
         });
 
-        // When this controller init it should create this object
-        $scope.teacherReviews = {
-            "teacher1": {
-                "teachingSkills": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 1 teaching skills",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 1 teaching skills",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 1 teaching skills"
-                },
-                "communication": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 1 communication skills",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 1 communication skills",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 1 communication skills"
-                },
-                "professionalism": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 1 professionalism",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 1 professionalism",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 1 professionalism"
-                }
-            },
-            "teacher2": {
-                "teachingSkills": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 2 teaching skills",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 2 teaching skills",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 2 teaching skills"
-                },
-                "communication": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 2 communication skills",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 2 communication skills",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 2 communication skills"
-                },
-                "professionalism": {
-                    "supervisor1": "This is what supervisor 1 thinks about teacher 2 professionalism",
-                    'supervisor2': "This is what supervisor 2 thinks about teacher 2 professionalism",
-                    'supervisor3': "This is what supervisor 3 thinks about teacher 2 professionalism"
-                }
-            }
-        };
+        $scope.selectedEvaluation = '';
 
-        $scope.jobFunctions = [
-            'teachingSkills',
-            'communication',
-            'professionalism'
-        ];
+        $http.get('http://localhost:5000/api/appraisal/evaluations/' + $stateParams.id)
+        .then(
+            function(response) {
+                console.log('GET /api/appraisal/evaluations/ ' + response.status);
+                $scope.evaluations = response.data;
+            },
+            function(response) {
+                console.log('GET /api/appraisal/evaluations/ ' + response.status);
+                console.log(response);
+            }
+        );
     };
 
 
@@ -238,7 +207,7 @@
         }
 
         $scope.next = function() {
-            $state.go('evaluation');
+            $state.go('evaluation', { id: 1 });
         }
     };
 
@@ -271,16 +240,14 @@
         return {
             restrict: 'EAC',
             scope: {
-                jobFunction: '@',
-                evaluations: '='
+                jobFunction: '@'
             },
-            transclude: true,
             templateUrl: 'app/template/eval.html',
-            link: function(scope, element, attributes) {
-                scope.setModalBody = function(teacher, jobFunction, supervisor) {
-                    console.log('Evaluation report requested for: ' + teacher + ' ' + jobFunction + ' ' + supervisor);
-                    scope.modalBody = scope.evaluations[teacher][jobFunction][supervisor];
-                };
+            link: function(scope) {
+                scope.displayEvaluation = function(teacher, supervisor) {
+                    console.log(scope);
+                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunction][supervisor];
+                }
             }
         };
     }

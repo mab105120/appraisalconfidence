@@ -20,8 +20,25 @@
     </div>
 </div>
 <!--Teachers Dossiers: Begin-->
-<eval job-function="{{function}}" evaluations="teacherReviews"
-      ng-repeat="function in jobFunctions"></eval>
+<eval job-function="studentLearning"></eval>
+<eval job-function="instructionalPractice"></eval>
+<eval job-function="professionalism"></eval>
+<!-- Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ selectedEvaluation }}
+            </div>
+        </div>
+    </div>
+</div>
 <!--Teachers Dossiers: End-->
 <div class="row" style="margin-top:50px;">
     <div class="col-sm-12">
