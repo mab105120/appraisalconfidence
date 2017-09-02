@@ -15,7 +15,6 @@
     function navbar_controller($scope, authService) {
         var vm = this; // why do this ?
         vm.auth = authService;
-
         $scope.login = function() {
             authService.login();
         }

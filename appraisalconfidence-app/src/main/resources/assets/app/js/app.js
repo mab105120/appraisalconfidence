@@ -1,5 +1,7 @@
 (function() {
 
+    $ = jQuery = require('jquery');
+    require('bootstrap');
     var angular = require('angular');
     var auth_vars = require('./auth0-vars.js');
     require('@uirouter/angularjs');
@@ -33,10 +35,15 @@
             controller: 'callbackController',
             templateUrl: 'app/template/callback.html'
           })
-          .state('about', {
-            url: '/about',
-            controller: 'aboutController',
-            templateUrl: 'app/template/about.html'
+          .state('procedure', {
+            url: '/procedure',
+            controller: 'procedureController',
+            templateUrl: 'app/template/procedure.html'
+          })
+          .state('evaluation', {
+            url: '/evaluation/:id',
+            controller: 'evaluationController',
+            templateUrl: 'app/template/evaluation.html'
           });
 
 //           Configure auth provider
@@ -54,15 +61,18 @@
           $locationProvider.hashPrefix('');
     }
 
-    // Register app controllers
+    // Register app controller
     appraisal_app.controller('homeController', require('./controller/home.controller.js'));
     appraisal_app.controller('callbackController', require('./controller/callback.controller.js'));
     appraisal_app.controller('aboutController', require('./controller/about.controller.js'));
     appraisal_app.controller('welcomeController', require('./controller/welcome.controller.js'));
+    appraisal_app.controller('procedureController', require('./controller/procedure.controller.js'));
+    appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
     // Register app directives
     appraisal_app.directive('navbar', require('./directive/navbar.directive.js'));
+    appraisal_app.directive('eval', require('./directive/eval.directive.js'));
     // Handle authentication when application runs
     appraisal_app.run(run);
 

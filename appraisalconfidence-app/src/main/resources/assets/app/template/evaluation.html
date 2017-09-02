@@ -1,0 +1,92 @@
+<div class="row" style="margin-top:30px">
+    <!--row separator-->
+</div>
+<div class="row">
+    <div class="col-sm-12" style="margin-bottom:30px;">
+        <h4>Teacher evaluation [1 of 10]</h4>
+        <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion. To review
+        each teacher on a specific job function (Teaching skills, communication, or professionalism) click on the button labeled supervisor
+        next to each job function to review the supervisor's review of that teacher on the job function. You are free to reach as many
+        reviews as you think is necessary to reach a fair evaluation. When done please choose which teacher you recommend for promotion and
+        fill out the preceding form.</p>
+    </div>
+</div>
+<div class="row" style="margin-bottom:40px;">
+    <div class="col-sm-5 col-sm-offset-2 text-center">
+        <h5><span class="glyphicon glyphicon-user"></span> Teacher 1</h5>
+    </div>
+    <div class="col-sm-5 text-center">
+        <h5><span class="glyphicon glyphicon-user"></span> Teacher 2</h5>
+    </div>
+</div>
+<!--Teachers Dossiers: Begin-->
+<eval job-function="studentLearning"></eval>
+<eval job-function="instructionalPractice"></eval>
+<eval job-function="professionalism"></eval>
+<!-- Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ selectedEvaluation }}
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<!--Teachers Dossiers: End-->
+<form name="evaluationForm">
+    <h4>After reviewing supervisor evaluations, please fill out the form below:</h4>
+    <!--Teacher recommendation-->
+    <div class="row" style="margin-top:50px;">
+        <div class="col-sm-12">
+            <p>After reviewing each teacher's dossier, I recommend that the board give tenure promotion to: <span style="color: red">*</span>
+                <label style="margin-left:180px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="teacher1" required>Teacher 1</label>
+                <label style="margin-left:40px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="teacher2" required>Teacher 2</label>
+            </p>
+        </div>
+    </div>
+    <!--Confidence slider 1-->
+    <div class="row" style="margin-top:20px">
+        <div class="col-sm-8">
+        <span>On the scale of 0 to 100, how confident are you that you made the right choice:
+        <span id="slider1Val">0</span> <span style="color: red">*</span></span>
+        </div>
+        <div class="col-sm-4">
+            <input ng-model="relConfidence" id="slider1" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0" required>
+        </div>
+    </div>
+    <!--Confidence Slider 2-->
+    <div class="row" style="margin-top:20px">
+        <div class="col-sm-8">
+        <span>What percentage of people do you think would agree with your choice:
+        <span id="slider2Val">0</span>% <span style="color: red">*</span></span>
+        </div>
+        <div class="col-sm-4">
+            <input ng-model="absConfidence" id="slider2" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0" required>
+        </div>
+    </div>
+    <!--comment-->
+    <div class="row" style="margin-top:50px;">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label for="comment">Please explain your choice <span style="color: red">*</span></label>
+                <span class="pull-right" style="padding-right:10px;">Remaining chars: {{ remainingChars }}</span>
+                <textarea class="form-control" rows="3" id="comment" ng-model="comment" ng-change="calculateRemainingChars()" maxlength="200" required></textarea>
+            </div>
+        </div>
+    </div>
+    <!--Submit-->
+    <div class="row" style="margin-top:50px;padding-right:30px;">
+        <div class="col-sm-2 col-sm-offset-10">
+            <button class="btn btn-lite" type="button">Back</button>
+            <button class="btn btn-primary" type="button" ng-disabled="evaluationForm.$invalid">Continue</button>
+        </div>
+    </div>
+</form>
