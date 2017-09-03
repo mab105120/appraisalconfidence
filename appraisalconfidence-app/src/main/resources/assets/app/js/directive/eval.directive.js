@@ -4,15 +4,42 @@
 
     function eval_directive() {
         return {
-            restrict: 'EAC',
+            restrict: 'E',
             scope: {
                 jobFunction: '@'
             },
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
                 scope.displayEvaluation = function(teacher, supervisor) {
-                    console.log(scope);
-                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunction][supervisor];
+
+                    function getSupervisorName(supervisor) {
+                        if(supervisor.includes('1')) return 'Supervisor 1';
+                        else if (supervisor.includes('2')) return 'Supervisor 2';
+                        else if(supervisor.includes('3')) return 'Supervisor 3';
+                        else return null;
+                    }
+
+                    function getTeacherName(teacher) {
+                        if(teacher.includes('1')) return 'Teacher 1';
+                        else if (teacher.includes('2')) return 'Teacher 2';
+                        else return null;
+                    }
+
+                    function normalizeJobFunction(jobTitle) {
+                        switch(jobTitle) {
+                            case 'Student Learning':
+                                return 'studentLearning';
+                            case 'Instructional Practice':
+                                return 'instructionalPractice';
+                            case 'Professionalism':
+                                return 'professionalism';
+                            default:
+                                return null; // TODO handle this case
+                        }
+                    }
+
+                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][normalizeJobFunction(scope.jobFunction)][supervisor];
+                    scope.$parent.selectedEvaluationTitle = "This is what " + getSupervisorName(supervisor) + " had to say about "+getTeacherName(teacher)+"'s "+scope.jobFunction+"  skills";
                 }
             }
         };

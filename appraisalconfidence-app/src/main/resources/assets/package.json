@@ -12,7 +12,9 @@
     "auth0-js": "^8.9.2",
     "bootstrap": "3.3.7",
     "jquery": "3.2.1",
-    "bootstrap-slider": "9.8.1"
+    "bootstrap-slider": "9.8.1",
+    "angular-spinner": "1.0.1",
+    "block-ui": "2.70.1"
   },
   "devDependencies": {
     "beefy": "^2.1.8",

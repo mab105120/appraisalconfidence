@@ -1,15 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
 
-    $ = jQuery = require('jquery');
-    require('bootstrap');
-    var angular = require('angular');
     var auth_vars = require('./auth0-vars.js');
-    require('@uirouter/angularjs');
-    require('angular-auth0');
-    var appraisal_app = angular.module('appraisal_app', ['auth0.auth0','ui.router']);
-    // Configure app
-    appraisal_app.config(app_config);
 
     app_config.$inject = [
         '$stateProvider',
@@ -47,7 +39,7 @@
             templateUrl: 'app/template/evaluation.html'
           });
 
-//           Configure auth provider
+          // Configure auth provider
           angularAuth0Provider.init({
               clientID: auth_vars.clientID,
               domain: auth_vars.domain,
@@ -57,23 +49,51 @@
               scope: 'openid profile'
           });
 
-//          $locationProvider.html5Mode(true);
           $urlRouterProvider.otherwise('/');
           $locationProvider.hashPrefix('');
     }
 
+    module.exports = app_config;
+})();
+},{"./auth0-vars.js":4}],2:[function(require,module,exports){
+(function() {
+
+    module.exports = [
+        'auth0.auth0',
+        'ui.router',
+        'angularSpinner'
+    ];
+})();
+},{}],3:[function(require,module,exports){
+(function() {
+
+    $ = jQuery = require('jquery');
+    require('bootstrap');
+    var angular = require('angular');
+    require('@uirouter/angularjs');
+    require('angular-auth0');
+    require('angular-spinner');
+
+    var appraisal_app = angular.module('appraisal_app', require('./app-modules.js'));
+    // Configure app
+    appraisal_app.config(require('./app-config'));
+
     // Register app controller
+    appraisal_app.controller('mainController', require('./controller/main.controller.js'));
     appraisal_app.controller('homeController', require('./controller/home.controller.js'));
     appraisal_app.controller('callbackController', require('./controller/callback.controller.js'));
-    appraisal_app.controller('aboutController', require('./controller/about.controller.js'));
     appraisal_app.controller('welcomeController', require('./controller/welcome.controller.js'));
     appraisal_app.controller('procedureController', require('./controller/procedure.controller.js'));
     appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
+
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
+
     // Register app directives
     appraisal_app.directive('navbar', require('./directive/navbar.directive.js'));
     appraisal_app.directive('eval', require('./directive/eval.directive.js'));
+    appraisal_app.directive('focusOnShow',require('./directive/focusonshow.directive.js'));
+
     // Handle authentication when application runs
     appraisal_app.run(run);
 
@@ -84,7 +104,7 @@
         authService.handleAuthentication();
     }
 })();
-},{"./auth0-vars.js":2,"./controller/about.controller.js":3,"./controller/callback.controller.js":4,"./controller/evaluation.controller.js":5,"./controller/home.controller.js":6,"./controller/procedure.controller.js":7,"./controller/welcome.controller.js":8,"./directive/eval.directive.js":9,"./directive/navbar.directive.js":10,"./service/auth.service.js":11,"@uirouter/angularjs":15,"angular":101,"angular-auth0":99,"bootstrap":103,"jquery":116}],2:[function(require,module,exports){
+},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/evaluation.controller.js":6,"./controller/home.controller.js":7,"./controller/main.controller.js":8,"./controller/procedure.controller.js":9,"./controller/welcome.controller.js":10,"./directive/eval.directive.js":11,"./directive/focusonshow.directive.js":12,"./directive/navbar.directive.js":13,"./service/auth.service.js":14,"@uirouter/angularjs":18,"angular":105,"angular-auth0":102,"angular-spinner":103,"bootstrap":108,"jquery":121}],4:[function(require,module,exports){
 (function() {
 
     var auth_vars = {
@@ -94,30 +114,7 @@
 
     module.exports = auth_vars;
 })();
-},{}],3:[function(require,module,exports){
-(function() {
-
-    about_controller.$inject = [
-        '$scope',
-        'authService',
-        '$state'
-    ];
-
-    function about_controller($scope, authService, $state) {
-
-        // check if user is authenticated
-        if(!authService.isAuthenticated()) {
-            alert('You are not logged in! please log in to access this page.');
-            $state.go('home');
-        }
-
-        $scope.aboutUs = 'here is some information about us!';
-    };
-
-    module.exports = about_controller;
-
-})();
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
 
     'use-strict';
@@ -128,14 +125,14 @@
 
     module.exports = callback_controller;
 })();
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function() {
 
-    evaluation_controller.$inject = ['$scope', '$stateParams', '$http'];
+    evaluation_controller.$inject = ['$scope', '$stateParams', '$http', '$timeout'];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $stateParams, $http) {
+    function evaluation_controller($scope, $stateParams, $http, $timeout) {
         $('#slider1').slider();
         $('#slider1').on('slide', function(slideEvt) {
             var val = slideEvt.value;
@@ -151,19 +148,31 @@
         });
 
         $scope.selectedEvaluation = '';
+        $scope.selectedEvaluationTitle = '';
 
-        $http.get('http://localhost:5000/api/appraisal/evaluations/' + $stateParams.id)
-        .then(
-            function(response) {
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                $scope.evaluations = response.data;
-            },
-            function(response) {
-//                alert('Unable to contact the server for reviews');
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                console.log(response);
-            }
-        );
+        function getTeacherEvaluation() {
+            $scope.$parent.startSpinner();
+            var config = {
+                method: 'GET',
+                url:  'http://localhost:5000/api/appraisal/evaluations/' + $stateParams.id
+            };
+            $http(config)
+                .then(
+                    function(response) {
+                        console.log('GET /api/appraisal/evaluations/ ' + response.status);
+                        $scope.evaluations = response.data;
+                        $scope.$parent.stopSpinner();
+                    },
+                    function(response) {
+                        $scope.$parent.setAlert('Error', 'Unable to retrieve teacher evaluations');
+                        console.log('GET /api/appraisal/evaluations/ ' + response.status);
+                        console.log(response);
+                        $scope.$parent.stopSpinner();
+                    }
+                );
+        }
+
+        getTeacherEvaluation();
 
         // Comment control
         var comment_max_length = 200;
@@ -173,19 +182,25 @@
             $scope.remainingChars = comment_max_length - $scope.comment.length;
         }
 
-        // Continue button
-        $scope.continueBtnDisabled = function() {
-            if($scope.comment.length === 0) return true;
-            else
-            return true;
-        };
+        $scope.saveAndContinue = function() {
+            $scope.$parent.startSpinner();
+            $timeout(function() {
+                $scope.$parent.stopSpinner();
+            }, 5000);
+        }
+
+        $scope.back = function() {
+            console.log('The back button is clicked!');
+            $scope.$parent.setAlert('Test', 'The back button us not available now!');
+        }
+
     };
 
 
     module.exports = evaluation_controller;
 
 })();
-},{"bootstrap-slider":102}],6:[function(require,module,exports){
+},{"bootstrap-slider":107}],7:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -207,7 +222,42 @@
 
     module.exports = home_controller;
 })();
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+    main_controller.$inject = ['$scope', 'usSpinnerService'];
+
+    function main_controller($scope, usSpinnerService) {
+
+        require('block-ui');
+
+        $scope.showAlert = false;
+        $scope.setAlert = function(title, body) {
+            $scope.alertTitle = title;
+            $scope.alertBody = body;
+            $scope.showAlert = true;
+        }
+
+        $scope.hideAlert = function() {
+            $scope.showAlert = false;
+        }
+
+        $scope.startSpinner = function() {
+            $.blockUI({ message: null });
+            usSpinnerService.spin('main-spinner');
+        }
+        $scope.stopSpinner = function() {
+            $.unblockUI();
+            usSpinnerService.stop('main-spinner');
+        }
+    }
+
+    module.exports = main_controller;
+
+})();
+},{"block-ui":106}],9:[function(require,module,exports){
 (function() {
 
     procedure_controller.$inject = ['$scope', '$state', 'authService'];
@@ -220,7 +270,7 @@
         }
 
         $scope.checkboxStatus = false;
-
+        // TODO replace this with angular form
         $scope.checkBox = function (status) {
             if(status === false) status = true;
             else status = false;
@@ -234,7 +284,7 @@
     module.exports = procedure_controller;
 
 })();
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
 
     welcome_controller.$inject = [
@@ -251,22 +301,49 @@
     module.exports = welcome_controller;
 
 })();
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function() {
 
     'use strict';
 
     function eval_directive() {
         return {
-            restrict: 'EAC',
+            restrict: 'E',
             scope: {
                 jobFunction: '@'
             },
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
                 scope.displayEvaluation = function(teacher, supervisor) {
-                    console.log(scope);
-                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunction][supervisor];
+
+                    function getSupervisorName(supervisor) {
+                        if(supervisor.includes('1')) return 'Supervisor 1';
+                        else if (supervisor.includes('2')) return 'Supervisor 2';
+                        else if(supervisor.includes('3')) return 'Supervisor 3';
+                        else return null;
+                    }
+
+                    function getTeacherName(teacher) {
+                        if(teacher.includes('1')) return 'Teacher 1';
+                        else if (teacher.includes('2')) return 'Teacher 2';
+                        else return null;
+                    }
+
+                    function normalizeJobFunction(jobTitle) {
+                        switch(jobTitle) {
+                            case 'Student Learning':
+                                return 'studentLearning';
+                            case 'Instructional Practice':
+                                return 'instructionalPractice';
+                            case 'Professionalism':
+                                return 'professionalism';
+                            default:
+                                return null; // TODO handle this case
+                        }
+                    }
+
+                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][normalizeJobFunction(scope.jobFunction)][supervisor];
+                    scope.$parent.selectedEvaluationTitle = "This is what " + getSupervisorName(supervisor) + " had to say about "+getTeacherName(teacher)+"'s "+scope.jobFunction+"  skills";
                 }
             }
         };
@@ -274,7 +351,29 @@
 
     module.exports = eval_directive;
 })();
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+   function focusonshow_directive() {
+           return {
+               restrict: 'A',
+               link: function($scope, $element, $attr) {
+                   if ($attr.ngShow){
+                       $scope.$watch($attr.ngShow, function(newValue){
+                           if(newValue){ // scroll up to the alert div only when the div appears
+                               $('html, body').animate({ scrollTop: $('#alert').offset().top }, 'slow');
+                           }
+                       });
+                   }
+               }
+           }
+       }
+
+    module.exports = focusonshow_directive;
+})();
+},{}],13:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -287,9 +386,9 @@
         };
     }
 
-    navbar_controller.$inject = ['$scope', 'authService'];
+    navbar_controller.$inject = ['$scope', 'authService', '$timeout'];
 
-    function navbar_controller($scope, authService) {
+    function navbar_controller($scope, authService, $timeout) {
         var vm = this; // why do this ?
         vm.auth = authService;
         $scope.login = function() {
@@ -297,13 +396,15 @@
         }
 
         $scope.logout = function() {
+            $scope.startSpinner();
             authService.logout();
+            $scope.stopSpinner();
         }
     };
 
     module.exports = navbar_directive;
 })();
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function() {
 
     'use-strict';
@@ -364,14 +465,14 @@
 
     module.exports = authService;
 })();
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ng_from_import = require("angular");
 var ng_from_global = angular;
 exports.ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
 
-},{"angular":101}],13:[function(require,module,exports){
+},{"angular":105}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -943,7 +1044,7 @@ angular_1.ng.module('ui.router.state')
     .directive('uiSrefActiveEq', uiSrefActive)
     .directive('uiState', uiState);
 
-},{"../angular":12,"@uirouter/core":46}],14:[function(require,module,exports){
+},{"../angular":15,"@uirouter/core":49}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1234,7 +1335,7 @@ function registerControllerCallbacks($q, $transitions, controllerInstance, $scop
 angular_1.ng.module('ui.router.state').directive('uiView', exports.uiView);
 angular_1.ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
 
-},{"../angular":12,"../services":18,"../statebuilders/views":22,"@uirouter/core":46,"angular":101}],15:[function(require,module,exports){
+},{"../angular":15,"../services":21,"../statebuilders/views":25,"@uirouter/core":49,"angular":105}],18:[function(require,module,exports){
 "use strict";
 /**
  * Main entry point for angular 1.x build
@@ -1258,7 +1359,7 @@ require("./directives/viewDirective");
 require("./viewScroll");
 exports.default = "ui.router";
 
-},{"./directives/stateDirectives":13,"./directives/viewDirective":14,"./injectables":16,"./services":18,"./stateFilters":19,"./stateProvider":20,"./statebuilders/views":22,"./urlRouterProvider":24,"./viewScroll":25,"@uirouter/core":46}],16:[function(require,module,exports){
+},{"./directives/stateDirectives":16,"./directives/viewDirective":17,"./injectables":19,"./services":21,"./stateFilters":22,"./stateProvider":23,"./statebuilders/views":25,"./urlRouterProvider":27,"./viewScroll":28,"@uirouter/core":49}],19:[function(require,module,exports){
 "use strict";
 /**
  * # Angular 1 injectable services
@@ -1627,7 +1728,7 @@ var $urlMatcherFactory;
  */
 var $urlMatcherFactoryProvider;
 
-},{}],17:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -1703,7 +1804,7 @@ var Ng1LocationServices = (function () {
 }());
 exports.Ng1LocationServices = Ng1LocationServices;
 
-},{"@uirouter/core":46}],18:[function(require,module,exports){
+},{"@uirouter/core":49}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1820,7 +1921,7 @@ exports.getLocals = function (ctx) {
     return tuples.reduce(core_1.applyPairs, {});
 };
 
-},{"./angular":12,"./locationServices":17,"./stateProvider":20,"./statebuilders/onEnterExitRetain":21,"./statebuilders/views":22,"./templateFactory":23,"./urlRouterProvider":24,"@uirouter/core":46}],19:[function(require,module,exports){
+},{"./angular":15,"./locationServices":20,"./stateProvider":23,"./statebuilders/onEnterExitRetain":24,"./statebuilders/views":25,"./templateFactory":26,"./urlRouterProvider":27,"@uirouter/core":49}],22:[function(require,module,exports){
 "use strict";
 /** @module ng1 */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1867,7 +1968,7 @@ angular_1.ng.module('ui.router.state')
     .filter('isState', $IsStateFilter)
     .filter('includedByState', $IncludedByStateFilter);
 
-},{"./angular":12}],20:[function(require,module,exports){
+},{"./angular":15}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** for typedoc */
@@ -2008,7 +2109,7 @@ var StateProvider = (function () {
 }());
 exports.StateProvider = StateProvider;
 
-},{"@uirouter/core":46}],21:[function(require,module,exports){
+},{"@uirouter/core":49}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2034,7 +2135,7 @@ exports.getStateHookBuilder = function (hookName) {
     };
 };
 
-},{"../services":18,"@uirouter/core":46}],22:[function(require,module,exports){
+},{"../services":21,"@uirouter/core":49}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -2144,7 +2245,7 @@ var Ng1ViewConfig = (function () {
 }());
 exports.Ng1ViewConfig = Ng1ViewConfig;
 
-},{"@uirouter/core":46}],23:[function(require,module,exports){
+},{"@uirouter/core":49}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module view */
@@ -2339,7 +2440,7 @@ var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {
     .filter(function (tuple) { return core_1.isDefined(tuple) && core_1.isArray(tuple[1]); })
     .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
 
-},{"./angular":12,"@uirouter/core":46}],24:[function(require,module,exports){
+},{"./angular":15,"@uirouter/core":49}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module url */ /** */
@@ -2546,7 +2647,7 @@ var UrlRouterProvider = (function () {
 }());
 exports.UrlRouterProvider = UrlRouterProvider;
 
-},{"@uirouter/core":46}],25:[function(require,module,exports){
+},{"@uirouter/core":49}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2570,7 +2671,7 @@ function $ViewScrollProvider() {
 }
 angular_1.ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
 
-},{"./angular":12}],26:[function(require,module,exports){
+},{"./angular":15}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3218,7 +3319,7 @@ exports.silentRejection = function (error) {
     return exports.silenceUncaughtInPromise(coreservices_1.services.$q.reject(error));
 };
 
-},{"./coreservices":27,"./hof":29,"./predicates":31}],27:[function(require,module,exports){
+},{"./coreservices":30,"./hof":32,"./predicates":34}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notImplemented = function (fnname) { return function () {
@@ -3230,7 +3331,7 @@ var services = {
 };
 exports.services = services;
 
-},{}],28:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3314,7 +3415,7 @@ var Glob = (function () {
 }());
 exports.Glob = Glob;
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 /**
  * Higher order functions
@@ -3560,7 +3661,7 @@ function pattern(struct) {
 }
 exports.pattern = pattern;
 
-},{}],30:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -3576,7 +3677,7 @@ __export(require("./queue"));
 __export(require("./strings"));
 __export(require("./trace"));
 
-},{"./common":26,"./coreservices":27,"./glob":28,"./hof":29,"./predicates":31,"./queue":32,"./strings":33,"./trace":34}],31:[function(require,module,exports){
+},{"./common":29,"./coreservices":30,"./glob":31,"./hof":32,"./predicates":34,"./queue":35,"./strings":36,"./trace":37}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** Predicates
@@ -3624,7 +3725,7 @@ exports.isInjectable = isInjectable;
  */
 exports.isPromise = hof_1.and(exports.isObject, hof_1.pipe(hof_1.prop('then'), exports.isFunction));
 
-},{"../state/stateObject":64,"./hof":29}],32:[function(require,module,exports){
+},{"../state/stateObject":67,"./hof":32}],35:[function(require,module,exports){
 "use strict";
 /**
  * @module common
@@ -3671,7 +3772,7 @@ var Queue = (function () {
 }());
 exports.Queue = Queue;
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 /**
  * Functions that manipulate strings
@@ -3824,7 +3925,7 @@ function joinNeighborsR(acc, x) {
 exports.joinNeighborsR = joinNeighborsR;
 ;
 
-},{"../resolve/resolvable":58,"../transition/rejectFactory":73,"../transition/transition":74,"./common":26,"./hof":29,"./predicates":31}],34:[function(require,module,exports){
+},{"../resolve/resolvable":61,"../transition/rejectFactory":76,"../transition/transition":77,"./common":29,"./hof":32,"./predicates":34}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4068,7 +4169,7 @@ exports.Trace = Trace;
 var trace = new Trace();
 exports.trace = trace;
 
-},{"../common/hof":29,"../common/predicates":31,"./strings":33}],35:[function(require,module,exports){
+},{"../common/hof":32,"../common/predicates":34,"./strings":36}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4107,7 +4208,7 @@ var UIRouterGlobals = (function () {
 }());
 exports.UIRouterGlobals = UIRouterGlobals;
 
-},{"./common/queue":32,"./params/stateParams":52}],36:[function(require,module,exports){
+},{"./common/queue":35,"./params/stateParams":55}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4126,7 +4227,7 @@ exports.registerAddCoreResolvables = function (transitionService) {
     return transitionService.onCreate({}, addCoreResolvables);
 };
 
-},{"../router":60,"../transition/transition":74}],37:[function(require,module,exports){
+},{"../router":63,"../transition/transition":77}],40:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4158,7 +4259,7 @@ exports.registerIgnoredTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
 };
 
-},{"../common/trace":34,"../transition/rejectFactory":73}],38:[function(require,module,exports){
+},{"../common/trace":37,"../transition/rejectFactory":76}],41:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4178,7 +4279,7 @@ exports.registerInvalidTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
 };
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var coreservices_1 = require("../common/coreservices");
@@ -4276,7 +4377,7 @@ function lazyLoadState(transition, state) {
 }
 exports.lazyLoadState = lazyLoadState;
 
-},{"../common/coreservices":27}],40:[function(require,module,exports){
+},{"../common/coreservices":30}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4334,7 +4435,7 @@ exports.registerOnEnterHook = function (transitionService) {
     return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
 };
 
-},{}],41:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4372,7 +4473,7 @@ exports.registerRedirectToHook = function (transitionService) {
     return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
 };
 
-},{"../common/coreservices":27,"../common/predicates":31,"../state/targetState":68}],42:[function(require,module,exports){
+},{"../common/coreservices":30,"../common/predicates":34,"../state/targetState":71}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
@@ -4416,7 +4517,7 @@ exports.registerLazyResolveState = function (transitionService) {
     return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
 };
 
-},{"../common/common":26,"../common/hof":29,"../resolve/resolveContext":59}],43:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../resolve/resolveContext":62}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -4452,7 +4553,7 @@ exports.registerUpdateGlobalState = function (transitionService) {
     return transitionService.onCreate({}, updateGlobalState);
 };
 
-},{"../common/common":26}],44:[function(require,module,exports){
+},{"../common/common":29}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4478,7 +4579,7 @@ exports.registerUpdateUrl = function (transitionService) {
     return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
 };
 
-},{}],45:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** for typedoc */
@@ -4526,7 +4627,7 @@ exports.registerActivateViews = function (transitionService) {
     return transitionService.onSuccess({}, activateViews);
 };
 
-},{"../common/common":26,"../common/coreservices":27}],46:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30}],49:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -4549,7 +4650,7 @@ __export(require("./router"));
 __export(require("./vanilla"));
 __export(require("./interface"));
 
-},{"./common/index":30,"./globals":35,"./interface":47,"./params/index":48,"./path/index":53,"./resolve/index":56,"./router":60,"./state/index":61,"./transition/index":71,"./url/index":78,"./vanilla":84,"./view/index":96}],47:[function(require,module,exports){
+},{"./common/index":33,"./globals":38,"./interface":50,"./params/index":51,"./path/index":56,"./resolve/index":59,"./router":63,"./state/index":64,"./transition/index":74,"./url/index":81,"./vanilla":87,"./view/index":99}],50:[function(require,module,exports){
 "use strict";
 /**
  * # Core classes and interfaces
@@ -4571,7 +4672,7 @@ var UIRouterPluginBase = (function () {
 }());
 exports.UIRouterPluginBase = UIRouterPluginBase;
 
-},{}],48:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4582,7 +4683,7 @@ __export(require("./paramTypes"));
 __export(require("./stateParams"));
 __export(require("./paramType"));
 
-},{"./param":49,"./paramType":50,"./paramTypes":51,"./stateParams":52}],49:[function(require,module,exports){
+},{"./param":52,"./paramType":53,"./paramTypes":54,"./stateParams":55}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4781,7 +4882,7 @@ var Param = (function () {
 }());
 exports.Param = Param;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"./paramType":50}],50:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"./paramType":53}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4924,7 +5025,7 @@ function ArrayType(type, mode) {
     });
 }
 
-},{"../common/common":26,"../common/predicates":31}],51:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5081,7 +5182,7 @@ function initDefaultTypes() {
 }
 initDefaultTypes();
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"./paramType":50}],52:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"./paramType":53}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5126,7 +5227,7 @@ var StateParams = (function () {
 }());
 exports.StateParams = StateParams;
 
-},{"../common/common":26}],53:[function(require,module,exports){
+},{"../common/common":29}],56:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5136,7 +5237,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./pathNode"));
 __export(require("./pathFactory"));
 
-},{"./pathFactory":54,"./pathNode":55}],54:[function(require,module,exports){
+},{"./pathFactory":57,"./pathNode":58}],57:[function(require,module,exports){
 "use strict";
 /** @module path */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -5310,7 +5411,7 @@ PathUtils.paramValues = function (path) {
 };
 exports.PathUtils = PathUtils;
 
-},{"../common/common":26,"../common/hof":29,"../state/targetState":68,"./pathNode":55}],55:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../state/targetState":71,"./pathNode":58}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
@@ -5388,7 +5489,7 @@ var PathNode = (function () {
 }());
 exports.PathNode = PathNode;
 
-},{"../common/common":26,"../common/hof":29,"../params/param":49}],56:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../params/param":52}],59:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5399,7 +5500,7 @@ __export(require("./interface"));
 __export(require("./resolvable"));
 __export(require("./resolveContext"));
 
-},{"./interface":57,"./resolvable":58,"./resolveContext":59}],57:[function(require,module,exports){
+},{"./interface":60,"./resolvable":61,"./resolveContext":62}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @internalapi */
@@ -5415,7 +5516,7 @@ exports.resolvePolicies = {
     }
 };
 
-},{}],58:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5549,7 +5650,7 @@ Resolvable.fromData = function (token, data) {
 };
 exports.Resolvable = Resolvable;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/predicates":31,"../common/strings":33,"../common/trace":34}],59:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/predicates":34,"../common/strings":36,"../common/trace":37}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */
@@ -5750,7 +5851,7 @@ var UIInjectorImpl = (function () {
     return UIInjectorImpl;
 }());
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/strings":33,"../common/trace":34,"../path/pathFactory":54,"./interface":57,"./resolvable":58}],60:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/strings":36,"../common/trace":37,"../path/pathFactory":57,"./interface":60,"./resolvable":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5935,7 +6036,7 @@ var UIRouter = (function () {
 }());
 exports.UIRouter = UIRouter;
 
-},{"./common/common":26,"./common/predicates":31,"./common/trace":34,"./globals":35,"./state/stateRegistry":66,"./state/stateService":67,"./transition/transitionService":77,"./url/urlMatcherFactory":80,"./url/urlRouter":81,"./url/urlService":83,"./view/view":97}],61:[function(require,module,exports){
+},{"./common/common":29,"./common/predicates":34,"./common/trace":37,"./globals":38,"./state/stateRegistry":69,"./state/stateService":70,"./transition/transitionService":80,"./url/urlMatcherFactory":83,"./url/urlRouter":84,"./url/urlService":86,"./view/view":100}],64:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5949,7 +6050,7 @@ __export(require("./stateRegistry"));
 __export(require("./stateService"));
 __export(require("./targetState"));
 
-},{"./stateBuilder":62,"./stateMatcher":63,"./stateObject":64,"./stateQueueManager":65,"./stateRegistry":66,"./stateService":67,"./targetState":68}],62:[function(require,module,exports){
+},{"./stateBuilder":65,"./stateMatcher":66,"./stateObject":67,"./stateQueueManager":68,"./stateRegistry":69,"./stateService":70,"./targetState":71}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6225,7 +6326,7 @@ var StateBuilder = (function () {
 }());
 exports.StateBuilder = StateBuilder;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../resolve/resolvable":58}],63:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../resolve/resolvable":61}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6289,7 +6390,7 @@ var StateMatcher = (function () {
 }());
 exports.StateMatcher = StateMatcher;
 
-},{"../common/common":26,"../common/predicates":31}],64:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -6404,7 +6505,7 @@ StateObject.isState = function (obj) {
 };
 exports.StateObject = StateObject;
 
-},{"../common/common":26,"../common/glob":28,"../common/hof":29,"../common/predicates":31}],65:[function(require,module,exports){
+},{"../common/common":29,"../common/glob":31,"../common/hof":32,"../common/predicates":34}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6497,7 +6598,7 @@ var StateQueueManager = (function () {
 }());
 exports.StateQueueManager = StateQueueManager;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"./stateObject":64}],66:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"./stateObject":67}],69:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -6654,7 +6755,7 @@ var StateRegistry = (function () {
 }());
 exports.StateRegistry = StateRegistry;
 
-},{"../common/common":26,"../common/hof":29,"./stateBuilder":62,"./stateMatcher":63,"./stateQueueManager":65}],67:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"./stateBuilder":65,"./stateMatcher":66,"./stateQueueManager":68}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7228,7 +7329,7 @@ var StateService = (function () {
 }());
 exports.StateService = StateService;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/glob":28,"../common/hof":29,"../common/predicates":31,"../common/queue":32,"../hooks/lazyLoad":39,"../params/param":49,"../path/pathFactory":54,"../path/pathNode":55,"../resolve/resolveContext":59,"../transition/rejectFactory":73,"../transition/transitionService":77,"./targetState":68}],68:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/glob":31,"../common/hof":32,"../common/predicates":34,"../common/queue":35,"../hooks/lazyLoad":42,"../params/param":52,"../path/pathFactory":57,"../path/pathNode":58,"../resolve/resolveContext":62,"../transition/rejectFactory":76,"../transition/transitionService":80,"./targetState":71}],71:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7343,7 +7444,7 @@ TargetState.isDef = function (obj) {
 };
 exports.TargetState = TargetState;
 
-},{"../common/common":26,"../common/predicates":31}],69:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34}],72:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7463,7 +7564,7 @@ function tupleSort(reverseDepthSort) {
     };
 }
 
-},{"../common/common":26,"../common/predicates":31,"./interface":72,"./transitionHook":76}],70:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34,"./interface":75,"./transitionHook":79}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7620,7 +7721,7 @@ function makeEvent(registry, transitionService, eventType) {
 }
 exports.makeEvent = makeEvent;
 
-},{"../common/common":26,"../common/glob":28,"../common/predicates":31,"./interface":72}],71:[function(require,module,exports){
+},{"../common/common":29,"../common/glob":31,"../common/predicates":34,"./interface":75}],74:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -7649,7 +7750,7 @@ __export(require("./transitionHook"));
 __export(require("./transitionEventType"));
 __export(require("./transitionService"));
 
-},{"./hookBuilder":69,"./hookRegistry":70,"./interface":72,"./rejectFactory":73,"./transition":74,"./transitionEventType":75,"./transitionHook":76,"./transitionService":77}],72:[function(require,module,exports){
+},{"./hookBuilder":72,"./hookRegistry":73,"./interface":75,"./rejectFactory":76,"./transition":77,"./transitionEventType":78,"./transitionHook":79,"./transitionService":80}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TransitionHookPhase;
@@ -7666,7 +7767,7 @@ var TransitionHookScope;
     TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
 })(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
 
-},{}],73:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 /**
  * @coreapi
  * @module transition
@@ -7756,7 +7857,7 @@ var Rejection = (function () {
 }());
 exports.Rejection = Rejection;
 
-},{"../common/common":26,"../common/hof":29,"../common/strings":33}],74:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/strings":36}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8384,7 +8485,7 @@ var Transition = (function () {
 Transition.diToken = Transition;
 exports.Transition = Transition;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/trace":34,"../params/param":49,"../path/pathFactory":54,"../resolve/resolvable":58,"../resolve/resolveContext":59,"../state/targetState":68,"./hookBuilder":69,"./hookRegistry":70,"./interface":72,"./transitionHook":76}],75:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/trace":37,"../params/param":52,"../path/pathFactory":57,"../resolve/resolvable":61,"../resolve/resolveContext":62,"../state/targetState":71,"./hookBuilder":72,"./hookRegistry":73,"./interface":75,"./transitionHook":79}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var transitionHook_1 = require("./transitionHook");
@@ -8413,7 +8514,7 @@ var TransitionEventType = (function () {
 }());
 exports.TransitionEventType = TransitionEventType;
 
-},{"./transitionHook":76}],76:[function(require,module,exports){
+},{"./transitionHook":79}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8634,7 +8735,7 @@ TransitionHook.THROW_ERROR = function (hook) { return function (error) {
 }; };
 exports.TransitionHook = TransitionHook;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../common/trace":34,"../state/targetState":68,"./interface":72,"./rejectFactory":73}],77:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../common/trace":37,"../state/targetState":71,"./interface":75,"./rejectFactory":76}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8874,7 +8975,7 @@ var TransitionService = (function () {
 }());
 exports.TransitionService = TransitionService;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../hooks/coreResolvables":36,"../hooks/ignoredTransition":37,"../hooks/invalidTransition":38,"../hooks/lazyLoad":39,"../hooks/onEnterExitRetain":40,"../hooks/redirectTo":41,"../hooks/resolve":42,"../hooks/updateGlobals":43,"../hooks/url":44,"../hooks/views":45,"./hookRegistry":70,"./interface":72,"./transition":74,"./transitionEventType":75,"./transitionHook":76}],78:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../hooks/coreResolvables":39,"../hooks/ignoredTransition":40,"../hooks/invalidTransition":41,"../hooks/lazyLoad":42,"../hooks/onEnterExitRetain":43,"../hooks/redirectTo":44,"../hooks/resolve":45,"../hooks/updateGlobals":46,"../hooks/url":47,"../hooks/views":48,"./hookRegistry":73,"./interface":75,"./transition":77,"./transitionEventType":78,"./transitionHook":79}],81:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8886,7 +8987,7 @@ __export(require("./urlRouter"));
 __export(require("./urlRule"));
 __export(require("./urlService"));
 
-},{"./urlMatcher":79,"./urlMatcherFactory":80,"./urlRouter":81,"./urlRule":82,"./urlService":83}],79:[function(require,module,exports){
+},{"./urlMatcher":82,"./urlMatcherFactory":83,"./urlRouter":84,"./urlRule":85,"./urlService":86}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9390,7 +9491,7 @@ var UrlMatcher = (function () {
 UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
 exports.UrlMatcher = UrlMatcher;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../params/param":49}],80:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../params/param":52}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9518,7 +9619,7 @@ var UrlMatcherFactory = (function () {
 }());
 exports.UrlMatcherFactory = UrlMatcherFactory;
 
-},{"../common/common":26,"../common/predicates":31,"../params/param":49,"../params/paramTypes":51,"./urlMatcher":79}],81:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34,"../params/param":52,"../params/paramTypes":54,"./urlMatcher":82}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9792,7 +9893,7 @@ function getHandlerFn(handler) {
     return predicates_1.isFunction(handler) ? handler : hof_1.val(handler);
 }
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../state/targetState":68,"./urlMatcher":79,"./urlRule":82}],82:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../state/targetState":71,"./urlMatcher":82,"./urlRule":85}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10002,7 +10103,7 @@ var BaseUrlRule = (function () {
 }());
 exports.BaseUrlRule = BaseUrlRule;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"./urlMatcher":79}],83:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"./urlMatcher":82}],86:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -10083,7 +10184,7 @@ UrlService.locationServiceStub = makeStub(locationServicesFns);
 UrlService.locationConfigStub = makeStub(locationConfigFns);
 exports.UrlService = UrlService;
 
-},{"../common/common":26,"../common/coreservices":27}],84:[function(require,module,exports){
+},{"../common/common":29,"../common/coreservices":30}],87:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10096,7 +10197,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** */
 __export(require("./vanilla/index"));
 
-},{"./vanilla/index":88}],85:[function(require,module,exports){
+},{"./vanilla/index":91}],88:[function(require,module,exports){
 "use strict";
 /**
  * @internalapi
@@ -10142,7 +10243,7 @@ var BaseLocationServices = (function () {
 }());
 exports.BaseLocationServices = BaseLocationServices;
 
-},{"../common/common":26,"../common/predicates":31,"./utils":95}],86:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34,"./utils":98}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10190,7 +10291,7 @@ var BrowserLocationConfig = (function () {
 }());
 exports.BrowserLocationConfig = BrowserLocationConfig;
 
-},{"../common/predicates":31}],87:[function(require,module,exports){
+},{"../common/predicates":34}],90:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10232,7 +10333,7 @@ var HashLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.HashLocationService = HashLocationService;
 
-},{"./baseLocationService":85,"./utils":95}],88:[function(require,module,exports){
+},{"./baseLocationService":88,"./utils":98}],91:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10249,7 +10350,7 @@ __export(require("./browserLocationConfig"));
 __export(require("./utils"));
 __export(require("./plugins"));
 
-},{"./baseLocationService":85,"./browserLocationConfig":86,"./hashLocationService":87,"./injector":89,"./memoryLocationConfig":90,"./memoryLocationService":91,"./plugins":92,"./pushStateLocationService":93,"./q":94,"./utils":95}],89:[function(require,module,exports){
+},{"./baseLocationService":88,"./browserLocationConfig":89,"./hashLocationService":90,"./injector":92,"./memoryLocationConfig":93,"./memoryLocationService":94,"./plugins":95,"./pushStateLocationService":96,"./q":97,"./utils":98}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10350,7 +10451,7 @@ exports.$injector = {
     }
 };
 
-},{"../common/index":30}],90:[function(require,module,exports){
+},{"../common/index":33}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = require("../common/predicates");
@@ -10376,7 +10477,7 @@ var MemoryLocationConfig = (function () {
 }());
 exports.MemoryLocationConfig = MemoryLocationConfig;
 
-},{"../common/common":26,"../common/predicates":31}],91:[function(require,module,exports){
+},{"../common/common":29,"../common/predicates":34}],94:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10411,7 +10512,7 @@ var MemoryLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.MemoryLocationService = MemoryLocationService;
 
-},{"./baseLocationService":85}],92:[function(require,module,exports){
+},{"./baseLocationService":88}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10441,7 +10542,7 @@ exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushSta
 /** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
 exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
 
-},{"../common/coreservices":27,"./browserLocationConfig":86,"./hashLocationService":87,"./injector":89,"./memoryLocationConfig":90,"./memoryLocationService":91,"./pushStateLocationService":93,"./q":94,"./utils":95}],93:[function(require,module,exports){
+},{"../common/coreservices":30,"./browserLocationConfig":89,"./hashLocationService":90,"./injector":92,"./memoryLocationConfig":93,"./memoryLocationService":94,"./pushStateLocationService":96,"./q":97,"./utils":98}],96:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10494,7 +10595,7 @@ var PushStateLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.PushStateLocationService = PushStateLocationService;
 
-},{"./baseLocationService":85,"./utils":95}],94:[function(require,module,exports){
+},{"./baseLocationService":88,"./utils":98}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10550,7 +10651,7 @@ exports.$q = {
     }
 };
 
-},{"../common/index":30}],95:[function(require,module,exports){
+},{"../common/index":33}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10619,7 +10720,7 @@ function locationPluginFactory(name, isHtml5, serviceClass, configurationClass) 
 }
 exports.locationPluginFactory = locationPluginFactory;
 
-},{"../common/common":26,"../common/index":30}],96:[function(require,module,exports){
+},{"../common/common":29,"../common/index":33}],99:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10627,7 +10728,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./view"));
 
-},{"./view":97}],97:[function(require,module,exports){
+},{"./view":100}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10911,7 +11012,7 @@ ViewService.matches = function (uiViewsByFqn, uiView) { return function (viewCon
 }; };
 exports.ViewService = ViewService;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../common/trace":34}],98:[function(require,module,exports){
+},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../common/trace":37}],101:[function(require,module,exports){
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11067,11 +11168,633 @@ module.exports = auth0;
 
 /***/ })
 /******/ ]);
-},{}],99:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 require('./dist/angular-auth0');
 module.exports = 'auth0.auth0';
 
-},{"./dist/angular-auth0":98}],100:[function(require,module,exports){
+},{"./dist/angular-auth0":101}],103:[function(require,module,exports){
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("angular"));
+	else if(typeof define === 'function' && define.amd)
+		define(["angular"], factory);
+	else {
+		var a = typeof exports === 'object' ? factory(require("angular")) : factory(root["angular"]);
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(this, function(__WEBPACK_EXTERNAL_MODULE_5__) {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/*!********************************!*\
+  !*** ./src/angular-spinner.ts ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var SpinJSSpinner_1 = __webpack_require__(/*! ./Constants/SpinJSSpinner */ 1);
+	var UsSpinnerService_1 = __webpack_require__(/*! ./Services/UsSpinnerService */ 3);
+	var AngularSpinner_1 = __webpack_require__(/*! ./Directives/AngularSpinner */ 4);
+	var UsSpinnerConfig_1 = __webpack_require__(/*! ./Config/UsSpinnerConfig */ 6);
+	var angular = __webpack_require__(/*! angular */ 5);
+	exports.angularSpinner = angular
+	    .module('angularSpinner', [])
+	    .provider('usSpinnerConfig', UsSpinnerConfig_1.UsSpinnerConfig)
+	    .constant('SpinJSSpinner', SpinJSSpinner_1.SpinJSSpinner)
+	    .service('usSpinnerService', UsSpinnerService_1.UsSpinnerService)
+	    .directive('usSpinner', AngularSpinner_1.usSpinner);
+
+
+/***/ },
+/* 1 */
+/*!****************************************!*\
+  !*** ./src/Constants/SpinJSSpinner.ts ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var Spinner = __webpack_require__(/*! spin.js */ 2);
+	/**
+	 * Exporting the Spinner prototype from spin.js library
+	 */
+	exports.SpinJSSpinner = Spinner;
+
+
+/***/ },
+/* 2 */
+/*!***************************!*\
+  !*** ./~/spin.js/spin.js ***!
+  \***************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+	 * Copyright (c) 2011-2014 Felix Gnass
+	 * Licensed under the MIT license
+	 * http://spin.js.org/
+	 *
+	 * Example:
+	    var opts = {
+	      lines: 12             // The number of lines to draw
+	    , length: 7             // The length of each line
+	    , width: 5              // The line thickness
+	    , radius: 10            // The radius of the inner circle
+	    , scale: 1.0            // Scales overall size of the spinner
+	    , corners: 1            // Roundness (0..1)
+	    , color: '#000'         // #rgb or #rrggbb
+	    , opacity: 1/4          // Opacity of the lines
+	    , rotate: 0             // Rotation offset
+	    , direction: 1          // 1: clockwise, -1: counterclockwise
+	    , speed: 1              // Rounds per second
+	    , trail: 100            // Afterglow percentage
+	    , fps: 20               // Frames per second when using setTimeout()
+	    , zIndex: 2e9           // Use a high z-index by default
+	    , className: 'spinner'  // CSS class to assign to the element
+	    , top: '50%'            // center vertically
+	    , left: '50%'           // center horizontally
+	    , shadow: false         // Whether to render a shadow
+	    , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+	    , position: 'absolute'  // Element positioning
+	    }
+	    var target = document.getElementById('foo')
+	    var spinner = new Spinner(opts).spin(target)
+	 */
+	;(function (root, factory) {
+	
+	  /* CommonJS */
+	  if (typeof module == 'object' && module.exports) module.exports = factory()
+	
+	  /* AMD module */
+	  else if (true) !(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))
+	
+	  /* Browser global */
+	  else root.Spinner = factory()
+	}(this, function () {
+	  "use strict"
+	
+	  var prefixes = ['webkit', 'Moz', 'ms', 'O'] /* Vendor prefixes */
+	    , animations = {} /* Animation rules keyed by their name */
+	    , useCssAnimations /* Whether to use CSS animations or setTimeout */
+	    , sheet /* A stylesheet to hold the @keyframe or VML rules. */
+	
+	  /**
+	   * Utility function to create elements. If no tag name is given,
+	   * a DIV is created. Optionally properties can be passed.
+	   */
+	  function createEl (tag, prop) {
+	    var el = document.createElement(tag || 'div')
+	      , n
+	
+	    for (n in prop) el[n] = prop[n]
+	    return el
+	  }
+	
+	  /**
+	   * Appends children and returns the parent.
+	   */
+	  function ins (parent /* child1, child2, ...*/) {
+	    for (var i = 1, n = arguments.length; i < n; i++) {
+	      parent.appendChild(arguments[i])
+	    }
+	
+	    return parent
+	  }
+	
+	  /**
+	   * Creates an opacity keyframe animation rule and returns its name.
+	   * Since most mobile Webkits have timing issues with animation-delay,
+	   * we create separate rules for each line/segment.
+	   */
+	  function addAnimation (alpha, trail, i, lines) {
+	    var name = ['opacity', trail, ~~(alpha * 100), i, lines].join('-')
+	      , start = 0.01 + i/lines * 100
+	      , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
+	      , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()
+	      , pre = prefix && '-' + prefix + '-' || ''
+	
+	    if (!animations[name]) {
+	      sheet.insertRule(
+	        '@' + pre + 'keyframes ' + name + '{' +
+	        '0%{opacity:' + z + '}' +
+	        start + '%{opacity:' + alpha + '}' +
+	        (start+0.01) + '%{opacity:1}' +
+	        (start+trail) % 100 + '%{opacity:' + alpha + '}' +
+	        '100%{opacity:' + z + '}' +
+	        '}', sheet.cssRules.length)
+	
+	      animations[name] = 1
+	    }
+	
+	    return name
+	  }
+	
+	  /**
+	   * Tries various vendor prefixes and returns the first supported property.
+	   */
+	  function vendor (el, prop) {
+	    var s = el.style
+	      , pp
+	      , i
+	
+	    prop = prop.charAt(0).toUpperCase() + prop.slice(1)
+	    if (s[prop] !== undefined) return prop
+	    for (i = 0; i < prefixes.length; i++) {
+	      pp = prefixes[i]+prop
+	      if (s[pp] !== undefined) return pp
+	    }
+	  }
+	
+	  /**
+	   * Sets multiple style properties at once.
+	   */
+	  function css (el, prop) {
+	    for (var n in prop) {
+	      el.style[vendor(el, n) || n] = prop[n]
+	    }
+	
+	    return el
+	  }
+	
+	  /**
+	   * Fills in default values.
+	   */
+	  function merge (obj) {
+	    for (var i = 1; i < arguments.length; i++) {
+	      var def = arguments[i]
+	      for (var n in def) {
+	        if (obj[n] === undefined) obj[n] = def[n]
+	      }
+	    }
+	    return obj
+	  }
+	
+	  /**
+	   * Returns the line color from the given string or array.
+	   */
+	  function getColor (color, idx) {
+	    return typeof color == 'string' ? color : color[idx % color.length]
+	  }
+	
+	  // Built-in defaults
+	
+	  var defaults = {
+	    lines: 12             // The number of lines to draw
+	  , length: 7             // The length of each line
+	  , width: 5              // The line thickness
+	  , radius: 10            // The radius of the inner circle
+	  , scale: 1.0            // Scales overall size of the spinner
+	  , corners: 1            // Roundness (0..1)
+	  , color: '#000'         // #rgb or #rrggbb
+	  , opacity: 1/4          // Opacity of the lines
+	  , rotate: 0             // Rotation offset
+	  , direction: 1          // 1: clockwise, -1: counterclockwise
+	  , speed: 1              // Rounds per second
+	  , trail: 100            // Afterglow percentage
+	  , fps: 20               // Frames per second when using setTimeout()
+	  , zIndex: 2e9           // Use a high z-index by default
+	  , className: 'spinner'  // CSS class to assign to the element
+	  , top: '50%'            // center vertically
+	  , left: '50%'           // center horizontally
+	  , shadow: false         // Whether to render a shadow
+	  , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+	  , position: 'absolute'  // Element positioning
+	  }
+	
+	  /** The constructor */
+	  function Spinner (o) {
+	    this.opts = merge(o || {}, Spinner.defaults, defaults)
+	  }
+	
+	  // Global defaults that override the built-ins:
+	  Spinner.defaults = {}
+	
+	  merge(Spinner.prototype, {
+	    /**
+	     * Adds the spinner to the given target element. If this instance is already
+	     * spinning, it is automatically removed from its previous target b calling
+	     * stop() internally.
+	     */
+	    spin: function (target) {
+	      this.stop()
+	
+	      var self = this
+	        , o = self.opts
+	        , el = self.el = createEl(null, {className: o.className})
+	
+	      css(el, {
+	        position: o.position
+	      , width: 0
+	      , zIndex: o.zIndex
+	      , left: o.left
+	      , top: o.top
+	      })
+	
+	      if (target) {
+	        target.insertBefore(el, target.firstChild || null)
+	      }
+	
+	      el.setAttribute('role', 'progressbar')
+	      self.lines(el, self.opts)
+	
+	      if (!useCssAnimations) {
+	        // No CSS animation support, use setTimeout() instead
+	        var i = 0
+	          , start = (o.lines - 1) * (1 - o.direction) / 2
+	          , alpha
+	          , fps = o.fps
+	          , f = fps / o.speed
+	          , ostep = (1 - o.opacity) / (f * o.trail / 100)
+	          , astep = f / o.lines
+	
+	        ;(function anim () {
+	          i++
+	          for (var j = 0; j < o.lines; j++) {
+	            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity)
+	
+	            self.opacity(el, j * o.direction + start, alpha, o)
+	          }
+	          self.timeout = self.el && setTimeout(anim, ~~(1000 / fps))
+	        })()
+	      }
+	      return self
+	    }
+	
+	    /**
+	     * Stops and removes the Spinner.
+	     */
+	  , stop: function () {
+	      var el = this.el
+	      if (el) {
+	        clearTimeout(this.timeout)
+	        if (el.parentNode) el.parentNode.removeChild(el)
+	        this.el = undefined
+	      }
+	      return this
+	    }
+	
+	    /**
+	     * Internal method that draws the individual lines. Will be overwritten
+	     * in VML fallback mode below.
+	     */
+	  , lines: function (el, o) {
+	      var i = 0
+	        , start = (o.lines - 1) * (1 - o.direction) / 2
+	        , seg
+	
+	      function fill (color, shadow) {
+	        return css(createEl(), {
+	          position: 'absolute'
+	        , width: o.scale * (o.length + o.width) + 'px'
+	        , height: o.scale * o.width + 'px'
+	        , background: color
+	        , boxShadow: shadow
+	        , transformOrigin: 'left'
+	        , transform: 'rotate(' + ~~(360/o.lines*i + o.rotate) + 'deg) translate(' + o.scale*o.radius + 'px' + ',0)'
+	        , borderRadius: (o.corners * o.scale * o.width >> 1) + 'px'
+	        })
+	      }
+	
+	      for (; i < o.lines; i++) {
+	        seg = css(createEl(), {
+	          position: 'absolute'
+	        , top: 1 + ~(o.scale * o.width / 2) + 'px'
+	        , transform: o.hwaccel ? 'translate3d(0,0,0)' : ''
+	        , opacity: o.opacity
+	        , animation: useCssAnimations && addAnimation(o.opacity, o.trail, start + i * o.direction, o.lines) + ' ' + 1 / o.speed + 's linear infinite'
+	        })
+	
+	        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px #000'), {top: '2px'}))
+	        ins(el, ins(seg, fill(getColor(o.color, i), '0 0 1px rgba(0,0,0,.1)')))
+	      }
+	      return el
+	    }
+	
+	    /**
+	     * Internal method that adjusts the opacity of a single line.
+	     * Will be overwritten in VML fallback mode below.
+	     */
+	  , opacity: function (el, i, val) {
+	      if (i < el.childNodes.length) el.childNodes[i].style.opacity = val
+	    }
+	
+	  })
+	
+	
+	  function initVML () {
+	
+	    /* Utility function to create a VML tag */
+	    function vml (tag, attr) {
+	      return createEl('<' + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr)
+	    }
+	
+	    // No CSS transforms but VML support, add a CSS rule for VML elements:
+	    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)')
+	
+	    Spinner.prototype.lines = function (el, o) {
+	      var r = o.scale * (o.length + o.width)
+	        , s = o.scale * 2 * r
+	
+	      function grp () {
+	        return css(
+	          vml('group', {
+	            coordsize: s + ' ' + s
+	          , coordorigin: -r + ' ' + -r
+	          })
+	        , { width: s, height: s }
+	        )
+	      }
+	
+	      var margin = -(o.width + o.length) * o.scale * 2 + 'px'
+	        , g = css(grp(), {position: 'absolute', top: margin, left: margin})
+	        , i
+	
+	      function seg (i, dx, filter) {
+	        ins(
+	          g
+	        , ins(
+	            css(grp(), {rotation: 360 / o.lines * i + 'deg', left: ~~dx})
+	          , ins(
+	              css(
+	                vml('roundrect', {arcsize: o.corners})
+	              , { width: r
+	                , height: o.scale * o.width
+	                , left: o.scale * o.radius
+	                , top: -o.scale * o.width >> 1
+	                , filter: filter
+	                }
+	              )
+	            , vml('fill', {color: getColor(o.color, i), opacity: o.opacity})
+	            , vml('stroke', {opacity: 0}) // transparent stroke to fix color bleeding upon opacity change
+	            )
+	          )
+	        )
+	      }
+	
+	      if (o.shadow)
+	        for (i = 1; i <= o.lines; i++) {
+	          seg(i, -2, 'progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)')
+	        }
+	
+	      for (i = 1; i <= o.lines; i++) seg(i)
+	      return ins(el, g)
+	    }
+	
+	    Spinner.prototype.opacity = function (el, i, val, o) {
+	      var c = el.firstChild
+	      o = o.shadow && o.lines || 0
+	      if (c && i + o < c.childNodes.length) {
+	        c = c.childNodes[i + o]; c = c && c.firstChild; c = c && c.firstChild
+	        if (c) c.opacity = val
+	      }
+	    }
+	  }
+	
+	  if (typeof document !== 'undefined') {
+	    sheet = (function () {
+	      var el = createEl('style', {type : 'text/css'})
+	      ins(document.getElementsByTagName('head')[0], el)
+	      return el.sheet || el.styleSheet
+	    }())
+	
+	    var probe = css(createEl('group'), {behavior: 'url(#default#VML)'})
+	
+	    if (!vendor(probe, 'transform') && probe.adj) initVML()
+	    else useCssAnimations = vendor(probe, 'animation')
+	  }
+	
+	  return Spinner
+	
+	}));
+
+
+/***/ },
+/* 3 */
+/*!******************************************!*\
+  !*** ./src/Services/UsSpinnerService.ts ***!
+  \******************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * UsSpinnerService
+	 * This service let you control spin, start and stop
+	 */
+	var UsSpinnerService = (function () {
+	    function UsSpinnerService($rootScope) {
+	        this.$rootScope = $rootScope;
+	    }
+	    UsSpinnerService.prototype.spin = function (key) {
+	        this.$rootScope.$broadcast('us-spinner:spin', key);
+	    };
+	    UsSpinnerService.prototype.stop = function (key) {
+	        this.$rootScope.$broadcast('us-spinner:stop', key);
+	    };
+	    return UsSpinnerService;
+	}());
+	UsSpinnerService.$inject = ['$rootScope'];
+	exports.UsSpinnerService = UsSpinnerService;
+
+
+/***/ },
+/* 4 */
+/*!******************************************!*\
+  !*** ./src/Directives/AngularSpinner.ts ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var angular = __webpack_require__(/*! angular */ 5);
+	exports.usSpinner = function (SpinJSSpinner, usSpinnerConfig) {
+	    return {
+	        scope: true,
+	        link: function (scope, element, attr) {
+	            scope.spinner = null;
+	            scope.key = angular.isDefined(attr.spinnerKey) ? attr.spinnerKey : false;
+	            scope.startActive = (attr.spinnerStartActive) ?
+	                scope.$eval(attr.spinnerStartActive) : scope.key ?
+	                false : true;
+	            function stopSpinner() {
+	                if (scope.spinner) {
+	                    scope.spinner.stop();
+	                }
+	            }
+	            scope.spin = function () {
+	                if (scope.spinner) {
+	                    scope.spinner.spin(element[0]);
+	                }
+	            };
+	            scope.stop = function () {
+	                scope.startActive = false;
+	                stopSpinner();
+	            };
+	            scope.$watch(attr.usSpinner, function (options) {
+	                stopSpinner();
+	                // order of precedence: element options, theme, defaults.
+	                options = angular.extend({}, usSpinnerConfig.config, attr.spinnerTheme ? usSpinnerConfig.themes[attr.spinnerTheme] : undefined, options);
+	                scope.spinner = new SpinJSSpinner(options);
+	                if ((!scope.key || scope.startActive) && !attr.spinnerOn) {
+	                    scope.spinner.spin(element[0]);
+	                }
+	            }, true);
+	            if (attr.spinnerOn) {
+	                scope.$watch(attr.spinnerOn, function (spin) {
+	                    if (spin) {
+	                        scope.spin();
+	                    }
+	                    else {
+	                        scope.stop();
+	                    }
+	                });
+	            }
+	            scope.$on('us-spinner:spin', function (event, key) {
+	                if (!key || key === scope.key) {
+	                    scope.spin();
+	                }
+	            });
+	            scope.$on('us-spinner:stop', function (event, key) {
+	                if (!key || key === scope.key) {
+	                    scope.stop();
+	                }
+	            });
+	            scope.$on('$destroy', function () {
+	                scope.stop();
+	                scope.spinner = null;
+	            });
+	        }
+	    };
+	};
+	exports.usSpinner.$inject = ['SpinJSSpinner', 'usSpinnerConfig'];
+
+
+/***/ },
+/* 5 */
+/*!**************************!*\
+  !*** external "angular" ***!
+  \**************************/
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
+
+/***/ },
+/* 6 */
+/*!***************************************!*\
+  !*** ./src/Config/UsSpinnerConfig.ts ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * UsSpinnerConfig
+	 */
+	var UsSpinnerConfig = (function () {
+	    function UsSpinnerConfig() {
+	        this.config = {};
+	        this.themes = {};
+	    }
+	    UsSpinnerConfig.prototype.setDefaults = function (config) {
+	        this.config = config || this.config;
+	    };
+	    UsSpinnerConfig.prototype.setTheme = function (name, config) {
+	        this.themes[name] = config;
+	    };
+	    UsSpinnerConfig.prototype.$get = function () {
+	        var _a = this, config = _a.config, themes = _a.themes;
+	        return {
+	            config: config,
+	            themes: themes
+	        };
+	    };
+	    return UsSpinnerConfig;
+	}());
+	exports.UsSpinnerConfig = UsSpinnerConfig;
+
+
+/***/ }
+/******/ ])
+});
+;
+
+},{"angular":105}],104:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
@@ -44903,11 +45626,638 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],101:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":100}],102:[function(require,module,exports){
+},{"./angular":104}],106:[function(require,module,exports){
+/*!
+ * jQuery blockUI plugin
+ * Version 2.70.0-2014.11.23
+ * Requires jQuery v1.7 or later
+ *
+ * Examples at: http://malsup.com/jquery/block/
+ * Copyright (c) 2007-2013 M. Alsup
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Thanks to Amir-Hossein Sobhi for some excellent contributions!
+ */
+
+;(function() {
+/*jshint eqeqeq:false curly:false latedef:false */
+"use strict";
+
+	function setup($) {
+		$.fn._fadeIn = $.fn.fadeIn;
+
+		var noOp = $.noop || function() {};
+
+		// this bit is to ensure we don't call setExpression when we shouldn't (with extra muscle to handle
+		// confusing userAgent strings on Vista)
+		var msie = /MSIE/.test(navigator.userAgent);
+		var ie6  = /MSIE 6.0/.test(navigator.userAgent) && ! /MSIE 8.0/.test(navigator.userAgent);
+		var mode = document.documentMode || 0;
+		var setExpr = $.isFunction( document.createElement('div').style.setExpression );
+
+		// global $ methods for blocking/unblocking the entire page
+		$.blockUI   = function(opts) { install(window, opts); };
+		$.unblockUI = function(opts) { remove(window, opts); };
+
+		// convenience method for quick growl-like notifications  (http://www.google.com/search?q=growl)
+		$.growlUI = function(title, message, timeout, onClose) {
+			var $m = $('<div class="growlUI"></div>');
+			if (title) $m.append('<h1>'+title+'</h1>');
+			if (message) $m.append('<h2>'+message+'</h2>');
+			if (timeout === undefined) timeout = 3000;
+
+			// Added by konapun: Set timeout to 30 seconds if this growl is moused over, like normal toast notifications
+			var callBlock = function(opts) {
+				opts = opts || {};
+
+				$.blockUI({
+					message: $m,
+					fadeIn : typeof opts.fadeIn  !== 'undefined' ? opts.fadeIn  : 700,
+					fadeOut: typeof opts.fadeOut !== 'undefined' ? opts.fadeOut : 1000,
+					timeout: typeof opts.timeout !== 'undefined' ? opts.timeout : timeout,
+					centerY: false,
+					showOverlay: false,
+					onUnblock: onClose,
+					css: $.blockUI.defaults.growlCSS
+				});
+			};
+
+			callBlock();
+			var nonmousedOpacity = $m.css('opacity');
+			$m.mouseover(function() {
+				callBlock({
+					fadeIn: 0,
+					timeout: 30000
+				});
+
+				var displayBlock = $('.blockMsg');
+				displayBlock.stop(); // cancel fadeout if it has started
+				displayBlock.fadeTo(300, 1); // make it easier to read the message by removing transparency
+			}).mouseout(function() {
+				$('.blockMsg').fadeOut(1000);
+			});
+			// End konapun additions
+		};
+
+		// plugin method for blocking element content
+		$.fn.block = function(opts) {
+			if ( this[0] === window ) {
+				$.blockUI( opts );
+				return this;
+			}
+			var fullOpts = $.extend({}, $.blockUI.defaults, opts || {});
+			this.each(function() {
+				var $el = $(this);
+				if (fullOpts.ignoreIfBlocked && $el.data('blockUI.isBlocked'))
+					return;
+				$el.unblock({ fadeOut: 0 });
+			});
+
+			return this.each(function() {
+				if ($.css(this,'position') == 'static') {
+					this.style.position = 'relative';
+					$(this).data('blockUI.static', true);
+				}
+				this.style.zoom = 1; // force 'hasLayout' in ie
+				install(this, opts);
+			});
+		};
+
+		// plugin method for unblocking element content
+		$.fn.unblock = function(opts) {
+			if ( this[0] === window ) {
+				$.unblockUI( opts );
+				return this;
+			}
+			return this.each(function() {
+				remove(this, opts);
+			});
+		};
+
+		$.blockUI.version = 2.70; // 2nd generation blocking at no extra cost!
+
+		// override these in your code to change the default behavior and style
+		$.blockUI.defaults = {
+			// message displayed when blocking (use null for no message)
+			message:  '<h1>Please wait...</h1>',
+
+			title: null,		// title string; only used when theme == true
+			draggable: true,	// only used when theme == true (requires jquery-ui.js to be loaded)
+
+			theme: false, // set to true to use with jQuery UI themes
+
+			// styles for the message when blocking; if you wish to disable
+			// these and use an external stylesheet then do this in your code:
+			// $.blockUI.defaults.css = {};
+			css: {
+				padding:	0,
+				margin:		0,
+				width:		'30%',
+				top:		'40%',
+				left:		'35%',
+				textAlign:	'center',
+				color:		'#000',
+				border:		'3px solid #aaa',
+				backgroundColor:'#fff',
+				cursor:		'wait'
+			},
+
+			// minimal style set used when themes are used
+			themedCSS: {
+				width:	'30%',
+				top:	'40%',
+				left:	'35%'
+			},
+
+			// styles for the overlay
+			overlayCSS:  {
+				backgroundColor:	'#000',
+				opacity:			0.6,
+				cursor:				'wait'
+			},
+
+			// style to replace wait cursor before unblocking to correct issue
+			// of lingering wait cursor
+			cursorReset: 'default',
+
+			// styles applied when using $.growlUI
+			growlCSS: {
+				width:		'350px',
+				top:		'10px',
+				left:		'',
+				right:		'10px',
+				border:		'none',
+				padding:	'5px',
+				opacity:	0.6,
+				cursor:		'default',
+				color:		'#fff',
+				backgroundColor: '#000',
+				'-webkit-border-radius':'10px',
+				'-moz-border-radius':	'10px',
+				'border-radius':		'10px'
+			},
+
+			// IE issues: 'about:blank' fails on HTTPS and javascript:false is s-l-o-w
+			// (hat tip to Jorge H. N. de Vasconcelos)
+			/*jshint scripturl:true */
+			iframeSrc: /^https/i.test(window.location.href || '') ? 'javascript:false' : 'about:blank',
+
+			// force usage of iframe in non-IE browsers (handy for blocking applets)
+			forceIframe: false,
+
+			// z-index for the blocking overlay
+			baseZ: 1000,
+
+			// set these to true to have the message automatically centered
+			centerX: true, // <-- only effects element blocking (page block controlled via css above)
+			centerY: true,
+
+			// allow body element to be stetched in ie6; this makes blocking look better
+			// on "short" pages.  disable if you wish to prevent changes to the body height
+			allowBodyStretch: true,
+
+			// enable if you want key and mouse events to be disabled for content that is blocked
+			bindEvents: true,
+
+			// be default blockUI will supress tab navigation from leaving blocking content
+			// (if bindEvents is true)
+			constrainTabKey: true,
+
+			// fadeIn time in millis; set to 0 to disable fadeIn on block
+			fadeIn:  200,
+
+			// fadeOut time in millis; set to 0 to disable fadeOut on unblock
+			fadeOut:  400,
+
+			// time in millis to wait before auto-unblocking; set to 0 to disable auto-unblock
+			timeout: 0,
+
+			// disable if you don't want to show the overlay
+			showOverlay: true,
+
+			// if true, focus will be placed in the first available input field when
+			// page blocking
+			focusInput: true,
+
+            // elements that can receive focus
+            focusableElements: ':input:enabled:visible',
+
+			// suppresses the use of overlay styles on FF/Linux (due to performance issues with opacity)
+			// no longer needed in 2012
+			// applyPlatformOpacityRules: true,
+
+			// callback method invoked when fadeIn has completed and blocking message is visible
+			onBlock: null,
+
+			// callback method invoked when unblocking has completed; the callback is
+			// passed the element that has been unblocked (which is the window object for page
+			// blocks) and the options that were passed to the unblock call:
+			//	onUnblock(element, options)
+			onUnblock: null,
+
+			// callback method invoked when the overlay area is clicked.
+			// setting this will turn the cursor to a pointer, otherwise cursor defined in overlayCss will be used.
+			onOverlayClick: null,
+
+			// don't ask; if you really must know: http://groups.google.com/group/jquery-en/browse_thread/thread/36640a8730503595/2f6a79a77a78e493#2f6a79a77a78e493
+			quirksmodeOffsetHack: 4,
+
+			// class name of the message block
+			blockMsgClass: 'blockMsg',
+
+			// if it is already blocked, then ignore it (don't unblock and reblock)
+			ignoreIfBlocked: false
+		};
+
+		// private data and functions follow...
+
+		var pageBlock = null;
+		var pageBlockEls = [];
+
+		function install(el, opts) {
+			var css, themedCSS;
+			var full = (el == window);
+			var msg = (opts && opts.message !== undefined ? opts.message : undefined);
+			opts = $.extend({}, $.blockUI.defaults, opts || {});
+
+			if (opts.ignoreIfBlocked && $(el).data('blockUI.isBlocked'))
+				return;
+
+			opts.overlayCSS = $.extend({}, $.blockUI.defaults.overlayCSS, opts.overlayCSS || {});
+			css = $.extend({}, $.blockUI.defaults.css, opts.css || {});
+			if (opts.onOverlayClick)
+				opts.overlayCSS.cursor = 'pointer';
+
+			themedCSS = $.extend({}, $.blockUI.defaults.themedCSS, opts.themedCSS || {});
+			msg = msg === undefined ? opts.message : msg;
+
+			// remove the current block (if there is one)
+			if (full && pageBlock)
+				remove(window, {fadeOut:0});
+
+			// if an existing element is being used as the blocking content then we capture
+			// its current place in the DOM (and current display style) so we can restore
+			// it when we unblock
+			if (msg && typeof msg != 'string' && (msg.parentNode || msg.jquery)) {
+				var node = msg.jquery ? msg[0] : msg;
+				var data = {};
+				$(el).data('blockUI.history', data);
+				data.el = node;
+				data.parent = node.parentNode;
+				data.display = node.style.display;
+				data.position = node.style.position;
+				if (data.parent)
+					data.parent.removeChild(node);
+			}
+
+			$(el).data('blockUI.onUnblock', opts.onUnblock);
+			var z = opts.baseZ;
+
+			// blockUI uses 3 layers for blocking, for simplicity they are all used on every platform;
+			// layer1 is the iframe layer which is used to supress bleed through of underlying content
+			// layer2 is the overlay layer which has opacity and a wait cursor (by default)
+			// layer3 is the message content that is displayed while blocking
+			var lyr1, lyr2, lyr3, s;
+			if (msie || opts.forceIframe)
+				lyr1 = $('<iframe class="blockUI" style="z-index:'+ (z++) +';display:none;border:none;margin:0;padding:0;position:absolute;width:100%;height:100%;top:0;left:0" src="'+opts.iframeSrc+'"></iframe>');
+			else
+				lyr1 = $('<div class="blockUI" style="display:none"></div>');
+
+			if (opts.theme)
+				lyr2 = $('<div class="blockUI blockOverlay ui-widget-overlay" style="z-index:'+ (z++) +';display:none"></div>');
+			else
+				lyr2 = $('<div class="blockUI blockOverlay" style="z-index:'+ (z++) +';display:none;border:none;margin:0;padding:0;width:100%;height:100%;top:0;left:0"></div>');
+
+			if (opts.theme && full) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage ui-dialog ui-widget ui-corner-all" style="z-index:'+(z+10)+';display:none;position:fixed">';
+				if ( opts.title ) {
+					s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">'+(opts.title || '&nbsp;')+'</div>';
+				}
+				s += '<div class="ui-widget-content ui-dialog-content"></div>';
+				s += '</div>';
+			}
+			else if (opts.theme) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement ui-dialog ui-widget ui-corner-all" style="z-index:'+(z+10)+';display:none;position:absolute">';
+				if ( opts.title ) {
+					s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">'+(opts.title || '&nbsp;')+'</div>';
+				}
+				s += '<div class="ui-widget-content ui-dialog-content"></div>';
+				s += '</div>';
+			}
+			else if (full) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage" style="z-index:'+(z+10)+';display:none;position:fixed"></div>';
+			}
+			else {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement" style="z-index:'+(z+10)+';display:none;position:absolute"></div>';
+			}
+			lyr3 = $(s);
+
+			// if we have a message, style it
+			if (msg) {
+				if (opts.theme) {
+					lyr3.css(themedCSS);
+					lyr3.addClass('ui-widget-content');
+				}
+				else
+					lyr3.css(css);
+			}
+
+			// style the overlay
+			if (!opts.theme /*&& (!opts.applyPlatformOpacityRules)*/)
+				lyr2.css(opts.overlayCSS);
+			lyr2.css('position', full ? 'fixed' : 'absolute');
+
+			// make iframe layer transparent in IE
+			if (msie || opts.forceIframe)
+				lyr1.css('opacity',0.0);
+
+			//$([lyr1[0],lyr2[0],lyr3[0]]).appendTo(full ? 'body' : el);
+			var layers = [lyr1,lyr2,lyr3], $par = full ? $('body') : $(el);
+			$.each(layers, function() {
+				this.appendTo($par);
+			});
+
+			if (opts.theme && opts.draggable && $.fn.draggable) {
+				lyr3.draggable({
+					handle: '.ui-dialog-titlebar',
+					cancel: 'li'
+				});
+			}
+
+			// ie7 must use absolute positioning in quirks mode and to account for activex issues (when scrolling)
+			var expr = setExpr && (!$.support.boxModel || $('object,embed', full ? null : el).length > 0);
+			if (ie6 || expr) {
+				// give body 100% height
+				if (full && opts.allowBodyStretch && $.support.boxModel)
+					$('html,body').css('height','100%');
+
+				// fix ie6 issue when blocked element has a border width
+				if ((ie6 || !$.support.boxModel) && !full) {
+					var t = sz(el,'borderTopWidth'), l = sz(el,'borderLeftWidth');
+					var fixT = t ? '(0 - '+t+')' : 0;
+					var fixL = l ? '(0 - '+l+')' : 0;
+				}
+
+				// simulate fixed position
+				$.each(layers, function(i,o) {
+					var s = o[0].style;
+					s.position = 'absolute';
+					if (i < 2) {
+						if (full)
+							s.setExpression('height','Math.max(document.body.scrollHeight, document.body.offsetHeight) - (jQuery.support.boxModel?0:'+opts.quirksmodeOffsetHack+') + "px"');
+						else
+							s.setExpression('height','this.parentNode.offsetHeight + "px"');
+						if (full)
+							s.setExpression('width','jQuery.support.boxModel && document.documentElement.clientWidth || document.body.clientWidth + "px"');
+						else
+							s.setExpression('width','this.parentNode.offsetWidth + "px"');
+						if (fixL) s.setExpression('left', fixL);
+						if (fixT) s.setExpression('top', fixT);
+					}
+					else if (opts.centerY) {
+						if (full) s.setExpression('top','(document.documentElement.clientHeight || document.body.clientHeight) / 2 - (this.offsetHeight / 2) + (blah = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + "px"');
+						s.marginTop = 0;
+					}
+					else if (!opts.centerY && full) {
+						var top = (opts.css && opts.css.top) ? parseInt(opts.css.top, 10) : 0;
+						var expression = '((document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + '+top+') + "px"';
+						s.setExpression('top',expression);
+					}
+				});
+			}
+
+			// show the message
+			if (msg) {
+				if (opts.theme)
+					lyr3.find('.ui-widget-content').append(msg);
+				else
+					lyr3.append(msg);
+				if (msg.jquery || msg.nodeType)
+					$(msg).show();
+			}
+
+			if ((msie || opts.forceIframe) && opts.showOverlay)
+				lyr1.show(); // opacity is zero
+			if (opts.fadeIn) {
+				var cb = opts.onBlock ? opts.onBlock : noOp;
+				var cb1 = (opts.showOverlay && !msg) ? cb : noOp;
+				var cb2 = msg ? cb : noOp;
+				if (opts.showOverlay)
+					lyr2._fadeIn(opts.fadeIn, cb1);
+				if (msg)
+					lyr3._fadeIn(opts.fadeIn, cb2);
+			}
+			else {
+				if (opts.showOverlay)
+					lyr2.show();
+				if (msg)
+					lyr3.show();
+				if (opts.onBlock)
+					opts.onBlock.bind(lyr3)();
+			}
+
+			// bind key and mouse events
+			bind(1, el, opts);
+
+			if (full) {
+				pageBlock = lyr3[0];
+				pageBlockEls = $(opts.focusableElements,pageBlock);
+				if (opts.focusInput)
+					setTimeout(focus, 20);
+			}
+			else
+				center(lyr3[0], opts.centerX, opts.centerY);
+
+			if (opts.timeout) {
+				// auto-unblock
+				var to = setTimeout(function() {
+					if (full)
+						$.unblockUI(opts);
+					else
+						$(el).unblock(opts);
+				}, opts.timeout);
+				$(el).data('blockUI.timeout', to);
+			}
+		}
+
+		// remove the block
+		function remove(el, opts) {
+			var count;
+			var full = (el == window);
+			var $el = $(el);
+			var data = $el.data('blockUI.history');
+			var to = $el.data('blockUI.timeout');
+			if (to) {
+				clearTimeout(to);
+				$el.removeData('blockUI.timeout');
+			}
+			opts = $.extend({}, $.blockUI.defaults, opts || {});
+			bind(0, el, opts); // unbind events
+
+			if (opts.onUnblock === null) {
+				opts.onUnblock = $el.data('blockUI.onUnblock');
+				$el.removeData('blockUI.onUnblock');
+			}
+
+			var els;
+			if (full) // crazy selector to handle odd field errors in ie6/7
+				els = $('body').children().filter('.blockUI').add('body > .blockUI');
+			else
+				els = $el.find('>.blockUI');
+
+			// fix cursor issue
+			if ( opts.cursorReset ) {
+				if ( els.length > 1 )
+					els[1].style.cursor = opts.cursorReset;
+				if ( els.length > 2 )
+					els[2].style.cursor = opts.cursorReset;
+			}
+
+			if (full)
+				pageBlock = pageBlockEls = null;
+
+			if (opts.fadeOut) {
+				count = els.length;
+				els.stop().fadeOut(opts.fadeOut, function() {
+					if ( --count === 0)
+						reset(els,data,opts,el);
+				});
+			}
+			else
+				reset(els, data, opts, el);
+		}
+
+		// move blocking element back into the DOM where it started
+		function reset(els,data,opts,el) {
+			var $el = $(el);
+			if ( $el.data('blockUI.isBlocked') )
+				return;
+
+			els.each(function(i,o) {
+				// remove via DOM calls so we don't lose event handlers
+				if (this.parentNode)
+					this.parentNode.removeChild(this);
+			});
+
+			if (data && data.el) {
+				data.el.style.display = data.display;
+				data.el.style.position = data.position;
+				data.el.style.cursor = 'default'; // #59
+				if (data.parent)
+					data.parent.appendChild(data.el);
+				$el.removeData('blockUI.history');
+			}
+
+			if ($el.data('blockUI.static')) {
+				$el.css('position', 'static'); // #22
+			}
+
+			if (typeof opts.onUnblock == 'function')
+				opts.onUnblock(el,opts);
+
+			// fix issue in Safari 6 where block artifacts remain until reflow
+			var body = $(document.body), w = body.width(), cssW = body[0].style.width;
+			body.width(w-1).width(w);
+			body[0].style.width = cssW;
+		}
+
+		// bind/unbind the handler
+		function bind(b, el, opts) {
+			var full = el == window, $el = $(el);
+
+			// don't bother unbinding if there is nothing to unbind
+			if (!b && (full && !pageBlock || !full && !$el.data('blockUI.isBlocked')))
+				return;
+
+			$el.data('blockUI.isBlocked', b);
+
+			// don't bind events when overlay is not in use or if bindEvents is false
+			if (!full || !opts.bindEvents || (b && !opts.showOverlay))
+				return;
+
+			// bind anchors and inputs for mouse and key events
+			var events = 'mousedown mouseup keydown keypress keyup touchstart touchend touchmove';
+			if (b)
+				$(document).bind(events, opts, handler);
+			else
+				$(document).unbind(events, handler);
+
+		// former impl...
+		//		var $e = $('a,:input');
+		//		b ? $e.bind(events, opts, handler) : $e.unbind(events, handler);
+		}
+
+		// event handler to suppress keyboard/mouse events when blocking
+		function handler(e) {
+			// allow tab navigation (conditionally)
+			if (e.type === 'keydown' && e.keyCode && e.keyCode == 9) {
+				if (pageBlock && e.data.constrainTabKey) {
+					var els = pageBlockEls;
+					var fwd = !e.shiftKey && e.target === els[els.length-1];
+					var back = e.shiftKey && e.target === els[0];
+					if (fwd || back) {
+						setTimeout(function(){focus(back);},10);
+						return false;
+					}
+				}
+			}
+			var opts = e.data;
+			var target = $(e.target);
+			if (target.hasClass('blockOverlay') && opts.onOverlayClick)
+				opts.onOverlayClick(e);
+
+			// allow events within the message content
+			if (target.parents('div.' + opts.blockMsgClass).length > 0)
+				return true;
+
+			// allow events for content that is not being blocked
+			return target.parents().children().filter('div.blockUI').length === 0;
+		}
+
+		function focus(back) {
+			if (!pageBlockEls)
+				return;
+			var e = pageBlockEls[back===true ? pageBlockEls.length-1 : 0];
+			if (e)
+				e.focus();
+		}
+
+		function center(el, x, y) {
+			var p = el.parentNode, s = el.style;
+			var l = ((p.offsetWidth - el.offsetWidth)/2) - sz(p,'borderLeftWidth');
+			var t = ((p.offsetHeight - el.offsetHeight)/2) - sz(p,'borderTopWidth');
+			if (x) s.left = l > 0 ? (l+'px') : '0';
+			if (y) s.top  = t > 0 ? (t+'px') : '0';
+		}
+
+		function sz(el, p) {
+			return parseInt($.css(el,p),10)||0;
+		}
+
+	}
+
+
+	/*global define:true */
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module.
+		define(['jquery'], setup);
+	} else if (typeof exports === 'object') {
+		// Node/CommonJS
+		setup(require('jquery'));
+	} else {
+		// Browser globals
+		setup(jQuery);
+	}
+
+})();
+
+},{"jquery":121}],107:[function(require,module,exports){
 /*! =======================================================
                       VERSION  9.8.1              
 ========================================================= */
@@ -46814,7 +48164,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 	return Slider;
 });
 
-},{"jquery":116}],103:[function(require,module,exports){
+},{"jquery":121}],108:[function(require,module,exports){
 // This file is autogenerated via the `commonjs` Grunt task. You can require() this file in a CommonJS environment.
 require('../../js/transition.js')
 require('../../js/alert.js')
@@ -46828,7 +48178,7 @@ require('../../js/popover.js')
 require('../../js/scrollspy.js')
 require('../../js/tab.js')
 require('../../js/affix.js')
-},{"../../js/affix.js":104,"../../js/alert.js":105,"../../js/button.js":106,"../../js/carousel.js":107,"../../js/collapse.js":108,"../../js/dropdown.js":109,"../../js/modal.js":110,"../../js/popover.js":111,"../../js/scrollspy.js":112,"../../js/tab.js":113,"../../js/tooltip.js":114,"../../js/transition.js":115}],104:[function(require,module,exports){
+},{"../../js/affix.js":109,"../../js/alert.js":110,"../../js/button.js":111,"../../js/carousel.js":112,"../../js/collapse.js":113,"../../js/dropdown.js":114,"../../js/modal.js":115,"../../js/popover.js":116,"../../js/scrollspy.js":117,"../../js/tab.js":118,"../../js/tooltip.js":119,"../../js/transition.js":120}],109:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: affix.js v3.3.7
  * http://getbootstrap.com/javascript/#affix
@@ -46992,7 +48342,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],105:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: alert.js v3.3.7
  * http://getbootstrap.com/javascript/#alerts
@@ -47088,7 +48438,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],106:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.7
  * http://getbootstrap.com/javascript/#buttons
@@ -47215,7 +48565,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],107:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: carousel.js v3.3.7
  * http://getbootstrap.com/javascript/#carousel
@@ -47454,7 +48804,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],108:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: collapse.js v3.3.7
  * http://getbootstrap.com/javascript/#collapse
@@ -47668,7 +49018,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],109:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: dropdown.js v3.3.7
  * http://getbootstrap.com/javascript/#dropdowns
@@ -47835,7 +49185,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],110:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: modal.js v3.3.7
  * http://getbootstrap.com/javascript/#modals
@@ -48176,7 +49526,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],111:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: popover.js v3.3.7
  * http://getbootstrap.com/javascript/#popovers
@@ -48286,7 +49636,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],112:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: scrollspy.js v3.3.7
  * http://getbootstrap.com/javascript/#scrollspy
@@ -48460,7 +49810,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],113:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tab.js v3.3.7
  * http://getbootstrap.com/javascript/#tabs
@@ -48617,7 +49967,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],114:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tooltip.js v3.3.7
  * http://getbootstrap.com/javascript/#tooltip
@@ -49139,7 +50489,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],115:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: transition.js v3.3.7
  * http://getbootstrap.com/javascript/#transitions
@@ -49200,7 +50550,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],116:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -59455,4 +60805,4 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}]},{},[1]);
+},{}]},{},[3]);

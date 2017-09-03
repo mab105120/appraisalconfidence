@@ -10,7 +10,7 @@
         }
 
         $scope.checkboxStatus = false;
-
+        // TODO replace this with angular form
         $scope.checkBox = function (status) {
             if(status === false) status = true;
             else status = false;

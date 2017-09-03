@@ -20,15 +20,18 @@
     </div>
 </div>
 <!--Teachers Dossiers: Begin-->
-<eval job-function="studentLearning"></eval>
-<eval job-function="instructionalPractice"></eval>
-<eval job-function="professionalism"></eval>
+<eval job-function="Student Learning"></eval>
+<eval job-function="Instructional Practice"></eval>
+<eval job-function="Professionalism"></eval>
 <!-- Modal -->
 <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <h5 class="modal-title" id="exampleModalLabel">
+                    <span class="glyphicon glyphicon-comment" style="font-size: 25px;"> </span>
+                    <strong>{{ selectedEvaluationTitle }}</strong>
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -85,8 +88,8 @@
     <!--Submit-->
     <div class="row" style="margin-top:50px;padding-right:30px;">
         <div class="col-sm-2 col-sm-offset-10">
-            <button class="btn btn-lite" type="button">Back</button>
-            <button class="btn btn-primary" type="button" ng-disabled="evaluationForm.$invalid">Continue</button>
+            <button class="btn btn-lite" type="button" ng-click="back()">Back</button>
+            <button class="btn btn-primary" type="button" ng-disabled="evaluationForm.$invalid" ng-click="saveAndContinue()">Continue</button>
         </div>
     </div>
 </form>
