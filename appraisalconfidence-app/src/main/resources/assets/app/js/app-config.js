@@ -32,6 +32,21 @@
             controller: 'procedureController',
             templateUrl: 'app/template/procedure.html'
           })
+          .state('questionnaire', {
+            url:'/questionnaire',
+            controller: 'quesGeneralController',
+            templateUrl:  'app/template/questionnaire/general.html'
+          })
+          .state('experience', {
+            url: '/questionnaire/experience',
+            controller: 'quesExperienceController',
+            templateUrl: 'app/template/questionnaire/experience.html'
+          })
+          .state('confidence', {
+            url: '/questionnaire/confidence',
+            controller: 'questConfidenceController',
+            templateUrl: 'app/template/questionnaire/confidence.html'
+          })
           .state('evaluation', {
             url: '/evaluation/:id',
             controller: 'evaluationController',

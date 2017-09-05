@@ -1,0 +1,52 @@
+<h4>[Questionnaire: 2/4] Please fill the form below to the best of your knowledge</h4>
+<hr>
+<form name="experience">
+    <div class="form-group">
+        <label>Professional Title <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please select your professional title</small>
+        <select class="form-control" ng-model="title" ng-options="title for title in titleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Number of Subordinates <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please indicate the total number of people reporting to you</small>
+        <select class="form-control" ng-model="subordinates" ng-options="x for x in fiveScaleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Years of professional experience <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please select the number of years you've been working in a professional environment</small>
+        <select class="form-control" ng-model="professionalExperience" ng-options="x for x in fiveScaleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Years of performance appraisal experience <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please select the number of years you've been involved with providing performance appraisal reviews</small>
+        <select class="form-control" ng-model="paExperience" ng-options="x for x in fiveScaleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Total number of reviews to date (approx.) <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please indicate, to the best of your ability, the total number of performance reviews you've given so far in your career</small>
+        <select class="form-control" ng-model="reviewsUpToDate" ng-options="x for x in fiftyScaleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Total number of reviewees to date (approx.) <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please indicate, to the best of your ability, the total number of people you reviewed for performance evaluation so far in your career</small>
+        <select class="form-control" ng-model="revieweesUpToDate" ng-options="x for x in twentyScaleGroup" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>Have you ever been involved with personnel selection? <span style="color: red">*</span></label>
+        <select class="form-control" ng-model="personnelSelection" ng-options="x for x in binaryGroup" required></select>
+    </div>
+
+    <div class="form-group" ng-show="personnelSelectionBool">
+        <label>Total number of candidates interviewed (approx.) <span style="color: red">*</span></label> </br>
+        <small class="form-text text-muted">Please indicate, to the best of your ability, the total number candidates you interviewed for a hiring position</small>
+        <select class="form-control" ng-model="interviewees" ng-options="x for x in twentyScaleGroup" ng-required="personnelSelectionBool"></select>
+    </div>
+
+    <button type="submit" class="btn btn-primary pull-right" ng-disabled="experience.$invalid" ng-click="submit()">Submit</button>
+</form>

@@ -33,6 +33,21 @@
             controller: 'procedureController',
             templateUrl: 'app/template/procedure.html'
           })
+          .state('questionnaire', {
+            url:'/questionnaire',
+            controller: 'quesGeneralController',
+            templateUrl:  'app/template/questionnaire/general.html'
+          })
+          .state('experience', {
+            url: '/questionnaire/experience',
+            controller: 'quesExperienceController',
+            templateUrl: 'app/template/questionnaire/experience.html'
+          })
+          .state('confidence', {
+            url: '/questionnaire/confidence',
+            controller: 'questConfidenceController',
+            templateUrl: 'app/template/questionnaire/confidence.html'
+          })
           .state('evaluation', {
             url: '/evaluation/:id',
             controller: 'evaluationController',
@@ -84,6 +99,9 @@
     appraisal_app.controller('callbackController', require('./controller/callback.controller.js'));
     appraisal_app.controller('welcomeController', require('./controller/welcome.controller.js'));
     appraisal_app.controller('procedureController', require('./controller/procedure.controller.js'));
+    appraisal_app.controller('quesGeneralController', require('./controller/questionnaire/general.controller.js'));
+    appraisal_app.controller('quesExperienceController', require('./controller/questionnaire/experience.controller.js'));
+    appraisal_app.controller('questConfidenceController', require('./controller/questionnaire/confidence.controller.js'));
     appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
 
     // Register app services
@@ -92,7 +110,8 @@
     // Register app directives
     appraisal_app.directive('navbar', require('./directive/navbar.directive.js'));
     appraisal_app.directive('eval', require('./directive/eval.directive.js'));
-    appraisal_app.directive('focusOnShow',require('./directive/focusonshow.directive.js'));
+    appraisal_app.directive('focusOnShow', require('./directive/focusonshow.directive.js'));
+    appraisal_app.directive('likert', require('./directive/likert.directive.js'));
 
     // Handle authentication when application runs
     appraisal_app.run(run);
@@ -104,7 +123,7 @@
         authService.handleAuthentication();
     }
 })();
-},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/evaluation.controller.js":6,"./controller/home.controller.js":7,"./controller/main.controller.js":8,"./controller/procedure.controller.js":9,"./controller/welcome.controller.js":10,"./directive/eval.directive.js":11,"./directive/focusonshow.directive.js":12,"./directive/navbar.directive.js":13,"./service/auth.service.js":14,"@uirouter/angularjs":18,"angular":105,"angular-auth0":102,"angular-spinner":103,"bootstrap":108,"jquery":121}],4:[function(require,module,exports){
+},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/evaluation.controller.js":6,"./controller/home.controller.js":7,"./controller/main.controller.js":8,"./controller/procedure.controller.js":9,"./controller/questionnaire/confidence.controller.js":10,"./controller/questionnaire/experience.controller.js":11,"./controller/questionnaire/general.controller.js":12,"./controller/welcome.controller.js":13,"./directive/eval.directive.js":14,"./directive/focusonshow.directive.js":15,"./directive/likert.directive.js":16,"./directive/navbar.directive.js":17,"./service/auth.service.js":18,"@uirouter/angularjs":22,"angular":109,"angular-auth0":106,"angular-spinner":107,"bootstrap":112,"jquery":125}],4:[function(require,module,exports){
 (function() {
 
     var auth_vars = {
@@ -200,7 +219,7 @@
     module.exports = evaluation_controller;
 
 })();
-},{"bootstrap-slider":107}],7:[function(require,module,exports){
+},{"bootstrap-slider":111}],7:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -234,6 +253,7 @@
         require('block-ui');
 
         $scope.showAlert = false;
+
         $scope.setAlert = function(title, body) {
             $scope.alertTitle = title;
             $scope.alertBody = body;
@@ -257,7 +277,7 @@
     module.exports = main_controller;
 
 })();
-},{"block-ui":106}],9:[function(require,module,exports){
+},{"block-ui":110}],9:[function(require,module,exports){
 (function() {
 
     procedure_controller.$inject = ['$scope', '$state', 'authService'];
@@ -287,6 +307,209 @@
 },{}],10:[function(require,module,exports){
 (function() {
 
+    quest_confidence_controller.$inject = [
+        '$scope',
+        '$state'
+    ];
+
+    function quest_confidence_controller($scope, $state) {
+        $scope.submit = function() {
+            console.log($scope.items);
+            console.log($scope.items2);
+        }
+
+        $scope.choices = [
+            {
+                choice: 'Strongly Disagree',
+                value: -2
+            },
+            {
+                choice: 'Disagree',
+                value: -1
+            },
+            {
+                choice: 'Neutral',
+                value: 0
+            },
+            {
+                choice: 'Agree',
+                value: 1
+            },
+            {
+                choice: 'Strongly Agree',
+                value: 2
+            }
+        ];
+
+        $scope.items = [
+            {
+                item: 'Often I put off making difficult decisions',
+                code: 'jsd1'
+            },
+            {
+                item: "I often don't trust myself to make the right decision",
+                code: 'jsd2'
+            },
+            {
+                item: "I often trust the judgment of others more than my own",
+                code: 'jsd3'
+            },
+            {
+                item: "In almost all situations I am confident of my ability to make the right choices",
+                code: 'jsd4'
+            },
+            {
+                item: "Frequently, I doubt my ability to make sound judgments",
+                code: 'jsd5'
+            },
+            {
+                item: "I often worry about whether a decision I made will have bad consequences",
+                code: 'jsd6'
+            },
+            {
+                item: "When making a decision, I often feel confused because I have trouble keeping all relevant factors in mind",
+                code: 'jsd7'
+            },
+            {
+                item: "I have a great deal of confidence in my opinions",
+                code: 'jsd8'
+            }
+        ];
+        $scope.items2 = [
+            {
+                item: 'I tend to struggle with most decisions',
+                code: 'pfi1'
+            },
+            {
+                item: 'Even after making an important decision I tend to continue to think about the pros and cons to make sure that I am not wrong',
+                code: 'pfi2'
+            },
+            {
+                item: 'I rarely doubt that the course of action I have selected be correct',
+                code: 'pfi3'
+            },
+            {
+                item: 'I tend to continue to evaluate recently made decisions',
+                code: 'pfi4'
+            },
+            {
+                item: 'Decisions rarely weigh heavily on my shoulders',
+                code: 'pfi5'
+            },
+        ]
+    }
+
+    module.exports = quest_confidence_controller;
+})();
+},{}],11:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+    ques_experience_controller.$inject = [
+        '$scope',
+        '$state'
+    ];
+
+    function ques_experience_controller($scope, $state) {
+        $scope.titleGroup = [
+            'Contingent Worker',
+            'Analyst',
+            'Associate',
+            'Vice President',
+            'Managing Director',
+            'Partner',
+            'Other'
+        ];
+
+        $scope.fiveScaleGroup = [
+            '[0-5]',
+            '[5-10]',
+            '[10-15]',
+            '[15-20]',
+            '20+'
+        ];
+
+        $scope.twentyScaleGroup = [
+            '[0-20]',
+            '[20-40]',
+            '[40-60]',
+            '[60-80]',
+            '80+',
+        ];
+
+        $scope.binaryGroup = [
+            'Yes',
+            'No'
+        ];
+
+        $scope.fiftyScaleGroup = [
+            '[0-50]',
+            '[50-100]',
+            '[100-150]',
+            '[150-200]',
+            '[200-250]',
+            '250+'
+        ];
+
+        $scope.$watch('personnelSelection', function() {
+            if($scope.personnelSelection === 'Yes') $scope.personnelSelectionBool = true;
+            else $scope.personnelSelectionBool = false;
+        })
+
+        $scope.submit = function() {
+            $state.go('confidence');
+        };
+    }
+
+    module.exports = ques_experience_controller;
+})();
+},{}],12:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+    questionnaire_controller.$inject = ['$scope', '$state'];
+
+    function questionnaire_controller($scope, $state) {
+        $scope.ageGroup = [
+            '[20-30]',
+            '[30-40]',
+            '[40-50]',
+            '[50-60]',
+            '60+'
+        ];
+
+        $scope.genderGroup = ['Male', 'Female'];
+
+        $scope.eductionGroup = [
+            'No degree',
+            'Associate degree',
+            'Bachelor degree',
+            'Master degree',
+            'Doctorate degree'
+        ];
+
+        $scope.divisionGroup = [
+            'Technology',
+            'Finance',
+            'Operations',
+            'Real Estate',
+            'Investment Banking',
+            'Securities',
+            'Other'
+        ];
+
+        $scope.submit = function() {
+            $state.go('experience');
+        }
+    }
+
+    module.exports = questionnaire_controller;
+})();
+},{}],13:[function(require,module,exports){
+(function() {
+
     welcome_controller.$inject = [
         '$scope',
         'authService'
@@ -301,7 +524,7 @@
     module.exports = welcome_controller;
 
 })();
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -351,7 +574,7 @@
 
     module.exports = eval_directive;
 })();
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -373,7 +596,25 @@
 
     module.exports = focusonshow_directive;
 })();
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+(function(){
+
+    'use strict';
+
+    function likert_directive() {
+        return {
+            restrict: 'E',
+            scope: {
+                'items': '=',
+                'choices': '='
+            },
+            templateUrl: 'app/template/likert.html'
+        }
+    }
+
+    module.exports = likert_directive;
+})();
+},{}],17:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -404,7 +645,7 @@
 
     module.exports = navbar_directive;
 })();
-},{}],14:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() {
 
     'use-strict';
@@ -465,14 +706,14 @@
 
     module.exports = authService;
 })();
-},{}],15:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ng_from_import = require("angular");
 var ng_from_global = angular;
 exports.ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
 
-},{"angular":105}],16:[function(require,module,exports){
+},{"angular":109}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1044,7 +1285,7 @@ angular_1.ng.module('ui.router.state')
     .directive('uiSrefActiveEq', uiSrefActive)
     .directive('uiState', uiState);
 
-},{"../angular":15,"@uirouter/core":49}],17:[function(require,module,exports){
+},{"../angular":19,"@uirouter/core":53}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1335,7 +1576,7 @@ function registerControllerCallbacks($q, $transitions, controllerInstance, $scop
 angular_1.ng.module('ui.router.state').directive('uiView', exports.uiView);
 angular_1.ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
 
-},{"../angular":15,"../services":21,"../statebuilders/views":25,"@uirouter/core":49,"angular":105}],18:[function(require,module,exports){
+},{"../angular":19,"../services":25,"../statebuilders/views":29,"@uirouter/core":53,"angular":109}],22:[function(require,module,exports){
 "use strict";
 /**
  * Main entry point for angular 1.x build
@@ -1359,7 +1600,7 @@ require("./directives/viewDirective");
 require("./viewScroll");
 exports.default = "ui.router";
 
-},{"./directives/stateDirectives":16,"./directives/viewDirective":17,"./injectables":19,"./services":21,"./stateFilters":22,"./stateProvider":23,"./statebuilders/views":25,"./urlRouterProvider":27,"./viewScroll":28,"@uirouter/core":49}],19:[function(require,module,exports){
+},{"./directives/stateDirectives":20,"./directives/viewDirective":21,"./injectables":23,"./services":25,"./stateFilters":26,"./stateProvider":27,"./statebuilders/views":29,"./urlRouterProvider":31,"./viewScroll":32,"@uirouter/core":53}],23:[function(require,module,exports){
 "use strict";
 /**
  * # Angular 1 injectable services
@@ -1728,7 +1969,7 @@ var $urlMatcherFactory;
  */
 var $urlMatcherFactoryProvider;
 
-},{}],20:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -1804,7 +2045,7 @@ var Ng1LocationServices = (function () {
 }());
 exports.Ng1LocationServices = Ng1LocationServices;
 
-},{"@uirouter/core":49}],21:[function(require,module,exports){
+},{"@uirouter/core":53}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1921,7 +2162,7 @@ exports.getLocals = function (ctx) {
     return tuples.reduce(core_1.applyPairs, {});
 };
 
-},{"./angular":15,"./locationServices":20,"./stateProvider":23,"./statebuilders/onEnterExitRetain":24,"./statebuilders/views":25,"./templateFactory":26,"./urlRouterProvider":27,"@uirouter/core":49}],22:[function(require,module,exports){
+},{"./angular":19,"./locationServices":24,"./stateProvider":27,"./statebuilders/onEnterExitRetain":28,"./statebuilders/views":29,"./templateFactory":30,"./urlRouterProvider":31,"@uirouter/core":53}],26:[function(require,module,exports){
 "use strict";
 /** @module ng1 */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1968,7 +2209,7 @@ angular_1.ng.module('ui.router.state')
     .filter('isState', $IsStateFilter)
     .filter('includedByState', $IncludedByStateFilter);
 
-},{"./angular":15}],23:[function(require,module,exports){
+},{"./angular":19}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** for typedoc */
@@ -2109,7 +2350,7 @@ var StateProvider = (function () {
 }());
 exports.StateProvider = StateProvider;
 
-},{"@uirouter/core":49}],24:[function(require,module,exports){
+},{"@uirouter/core":53}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2135,7 +2376,7 @@ exports.getStateHookBuilder = function (hookName) {
     };
 };
 
-},{"../services":21,"@uirouter/core":49}],25:[function(require,module,exports){
+},{"../services":25,"@uirouter/core":53}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -2245,7 +2486,7 @@ var Ng1ViewConfig = (function () {
 }());
 exports.Ng1ViewConfig = Ng1ViewConfig;
 
-},{"@uirouter/core":49}],26:[function(require,module,exports){
+},{"@uirouter/core":53}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module view */
@@ -2440,7 +2681,7 @@ var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {
     .filter(function (tuple) { return core_1.isDefined(tuple) && core_1.isArray(tuple[1]); })
     .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
 
-},{"./angular":15,"@uirouter/core":49}],27:[function(require,module,exports){
+},{"./angular":19,"@uirouter/core":53}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module url */ /** */
@@ -2647,7 +2888,7 @@ var UrlRouterProvider = (function () {
 }());
 exports.UrlRouterProvider = UrlRouterProvider;
 
-},{"@uirouter/core":49}],28:[function(require,module,exports){
+},{"@uirouter/core":53}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2671,7 +2912,7 @@ function $ViewScrollProvider() {
 }
 angular_1.ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
 
-},{"./angular":15}],29:[function(require,module,exports){
+},{"./angular":19}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3319,7 +3560,7 @@ exports.silentRejection = function (error) {
     return exports.silenceUncaughtInPromise(coreservices_1.services.$q.reject(error));
 };
 
-},{"./coreservices":30,"./hof":32,"./predicates":34}],30:[function(require,module,exports){
+},{"./coreservices":34,"./hof":36,"./predicates":38}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notImplemented = function (fnname) { return function () {
@@ -3331,7 +3572,7 @@ var services = {
 };
 exports.services = services;
 
-},{}],31:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3415,7 +3656,7 @@ var Glob = (function () {
 }());
 exports.Glob = Glob;
 
-},{}],32:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 /**
  * Higher order functions
@@ -3661,7 +3902,7 @@ function pattern(struct) {
 }
 exports.pattern = pattern;
 
-},{}],33:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -3677,7 +3918,7 @@ __export(require("./queue"));
 __export(require("./strings"));
 __export(require("./trace"));
 
-},{"./common":29,"./coreservices":30,"./glob":31,"./hof":32,"./predicates":34,"./queue":35,"./strings":36,"./trace":37}],34:[function(require,module,exports){
+},{"./common":33,"./coreservices":34,"./glob":35,"./hof":36,"./predicates":38,"./queue":39,"./strings":40,"./trace":41}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** Predicates
@@ -3725,7 +3966,7 @@ exports.isInjectable = isInjectable;
  */
 exports.isPromise = hof_1.and(exports.isObject, hof_1.pipe(hof_1.prop('then'), exports.isFunction));
 
-},{"../state/stateObject":67,"./hof":32}],35:[function(require,module,exports){
+},{"../state/stateObject":71,"./hof":36}],39:[function(require,module,exports){
 "use strict";
 /**
  * @module common
@@ -3772,7 +4013,7 @@ var Queue = (function () {
 }());
 exports.Queue = Queue;
 
-},{}],36:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 "use strict";
 /**
  * Functions that manipulate strings
@@ -3925,7 +4166,7 @@ function joinNeighborsR(acc, x) {
 exports.joinNeighborsR = joinNeighborsR;
 ;
 
-},{"../resolve/resolvable":61,"../transition/rejectFactory":76,"../transition/transition":77,"./common":29,"./hof":32,"./predicates":34}],37:[function(require,module,exports){
+},{"../resolve/resolvable":65,"../transition/rejectFactory":80,"../transition/transition":81,"./common":33,"./hof":36,"./predicates":38}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4169,7 +4410,7 @@ exports.Trace = Trace;
 var trace = new Trace();
 exports.trace = trace;
 
-},{"../common/hof":32,"../common/predicates":34,"./strings":36}],38:[function(require,module,exports){
+},{"../common/hof":36,"../common/predicates":38,"./strings":40}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4208,7 +4449,7 @@ var UIRouterGlobals = (function () {
 }());
 exports.UIRouterGlobals = UIRouterGlobals;
 
-},{"./common/queue":35,"./params/stateParams":55}],39:[function(require,module,exports){
+},{"./common/queue":39,"./params/stateParams":59}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4227,7 +4468,7 @@ exports.registerAddCoreResolvables = function (transitionService) {
     return transitionService.onCreate({}, addCoreResolvables);
 };
 
-},{"../router":63,"../transition/transition":77}],40:[function(require,module,exports){
+},{"../router":67,"../transition/transition":81}],44:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4259,7 +4500,7 @@ exports.registerIgnoredTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
 };
 
-},{"../common/trace":37,"../transition/rejectFactory":76}],41:[function(require,module,exports){
+},{"../common/trace":41,"../transition/rejectFactory":80}],45:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4279,7 +4520,7 @@ exports.registerInvalidTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
 };
 
-},{}],42:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var coreservices_1 = require("../common/coreservices");
@@ -4377,7 +4618,7 @@ function lazyLoadState(transition, state) {
 }
 exports.lazyLoadState = lazyLoadState;
 
-},{"../common/coreservices":30}],43:[function(require,module,exports){
+},{"../common/coreservices":34}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4435,7 +4676,7 @@ exports.registerOnEnterHook = function (transitionService) {
     return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
 };
 
-},{}],44:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4473,7 +4714,7 @@ exports.registerRedirectToHook = function (transitionService) {
     return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
 };
 
-},{"../common/coreservices":30,"../common/predicates":34,"../state/targetState":71}],45:[function(require,module,exports){
+},{"../common/coreservices":34,"../common/predicates":38,"../state/targetState":75}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
@@ -4517,7 +4758,7 @@ exports.registerLazyResolveState = function (transitionService) {
     return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
 };
 
-},{"../common/common":29,"../common/hof":32,"../resolve/resolveContext":62}],46:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../resolve/resolveContext":66}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -4553,7 +4794,7 @@ exports.registerUpdateGlobalState = function (transitionService) {
     return transitionService.onCreate({}, updateGlobalState);
 };
 
-},{"../common/common":29}],47:[function(require,module,exports){
+},{"../common/common":33}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4579,7 +4820,7 @@ exports.registerUpdateUrl = function (transitionService) {
     return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
 };
 
-},{}],48:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** for typedoc */
@@ -4627,7 +4868,7 @@ exports.registerActivateViews = function (transitionService) {
     return transitionService.onSuccess({}, activateViews);
 };
 
-},{"../common/common":29,"../common/coreservices":30}],49:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34}],53:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -4650,7 +4891,7 @@ __export(require("./router"));
 __export(require("./vanilla"));
 __export(require("./interface"));
 
-},{"./common/index":33,"./globals":38,"./interface":50,"./params/index":51,"./path/index":56,"./resolve/index":59,"./router":63,"./state/index":64,"./transition/index":74,"./url/index":81,"./vanilla":87,"./view/index":99}],50:[function(require,module,exports){
+},{"./common/index":37,"./globals":42,"./interface":54,"./params/index":55,"./path/index":60,"./resolve/index":63,"./router":67,"./state/index":68,"./transition/index":78,"./url/index":85,"./vanilla":91,"./view/index":103}],54:[function(require,module,exports){
 "use strict";
 /**
  * # Core classes and interfaces
@@ -4672,7 +4913,7 @@ var UIRouterPluginBase = (function () {
 }());
 exports.UIRouterPluginBase = UIRouterPluginBase;
 
-},{}],51:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4683,7 +4924,7 @@ __export(require("./paramTypes"));
 __export(require("./stateParams"));
 __export(require("./paramType"));
 
-},{"./param":52,"./paramType":53,"./paramTypes":54,"./stateParams":55}],52:[function(require,module,exports){
+},{"./param":56,"./paramType":57,"./paramTypes":58,"./stateParams":59}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4882,7 +5123,7 @@ var Param = (function () {
 }());
 exports.Param = Param;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"./paramType":53}],53:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/predicates":38,"./paramType":57}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5025,7 +5266,7 @@ function ArrayType(type, mode) {
     });
 }
 
-},{"../common/common":29,"../common/predicates":34}],54:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5182,7 +5423,7 @@ function initDefaultTypes() {
 }
 initDefaultTypes();
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"./paramType":53}],55:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/predicates":38,"./paramType":57}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5227,7 +5468,7 @@ var StateParams = (function () {
 }());
 exports.StateParams = StateParams;
 
-},{"../common/common":29}],56:[function(require,module,exports){
+},{"../common/common":33}],60:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5237,7 +5478,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./pathNode"));
 __export(require("./pathFactory"));
 
-},{"./pathFactory":57,"./pathNode":58}],57:[function(require,module,exports){
+},{"./pathFactory":61,"./pathNode":62}],61:[function(require,module,exports){
 "use strict";
 /** @module path */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -5411,7 +5652,7 @@ PathUtils.paramValues = function (path) {
 };
 exports.PathUtils = PathUtils;
 
-},{"../common/common":29,"../common/hof":32,"../state/targetState":71,"./pathNode":58}],58:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../state/targetState":75,"./pathNode":62}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
@@ -5489,7 +5730,7 @@ var PathNode = (function () {
 }());
 exports.PathNode = PathNode;
 
-},{"../common/common":29,"../common/hof":32,"../params/param":52}],59:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../params/param":56}],63:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5500,7 +5741,7 @@ __export(require("./interface"));
 __export(require("./resolvable"));
 __export(require("./resolveContext"));
 
-},{"./interface":60,"./resolvable":61,"./resolveContext":62}],60:[function(require,module,exports){
+},{"./interface":64,"./resolvable":65,"./resolveContext":66}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @internalapi */
@@ -5516,7 +5757,7 @@ exports.resolvePolicies = {
     }
 };
 
-},{}],61:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5650,7 +5891,7 @@ Resolvable.fromData = function (token, data) {
 };
 exports.Resolvable = Resolvable;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/predicates":34,"../common/strings":36,"../common/trace":37}],62:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/predicates":38,"../common/strings":40,"../common/trace":41}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */
@@ -5851,7 +6092,7 @@ var UIInjectorImpl = (function () {
     return UIInjectorImpl;
 }());
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/strings":36,"../common/trace":37,"../path/pathFactory":57,"./interface":60,"./resolvable":61}],63:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/strings":40,"../common/trace":41,"../path/pathFactory":61,"./interface":64,"./resolvable":65}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -6036,7 +6277,7 @@ var UIRouter = (function () {
 }());
 exports.UIRouter = UIRouter;
 
-},{"./common/common":29,"./common/predicates":34,"./common/trace":37,"./globals":38,"./state/stateRegistry":69,"./state/stateService":70,"./transition/transitionService":80,"./url/urlMatcherFactory":83,"./url/urlRouter":84,"./url/urlService":86,"./view/view":100}],64:[function(require,module,exports){
+},{"./common/common":33,"./common/predicates":38,"./common/trace":41,"./globals":42,"./state/stateRegistry":73,"./state/stateService":74,"./transition/transitionService":84,"./url/urlMatcherFactory":87,"./url/urlRouter":88,"./url/urlService":90,"./view/view":104}],68:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -6050,7 +6291,7 @@ __export(require("./stateRegistry"));
 __export(require("./stateService"));
 __export(require("./targetState"));
 
-},{"./stateBuilder":65,"./stateMatcher":66,"./stateObject":67,"./stateQueueManager":68,"./stateRegistry":69,"./stateService":70,"./targetState":71}],65:[function(require,module,exports){
+},{"./stateBuilder":69,"./stateMatcher":70,"./stateObject":71,"./stateQueueManager":72,"./stateRegistry":73,"./stateService":74,"./targetState":75}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6326,7 +6567,7 @@ var StateBuilder = (function () {
 }());
 exports.StateBuilder = StateBuilder;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../resolve/resolvable":61}],66:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/predicates":38,"../common/strings":40,"../resolve/resolvable":65}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6390,7 +6631,7 @@ var StateMatcher = (function () {
 }());
 exports.StateMatcher = StateMatcher;
 
-},{"../common/common":29,"../common/predicates":34}],67:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -6505,7 +6746,7 @@ StateObject.isState = function (obj) {
 };
 exports.StateObject = StateObject;
 
-},{"../common/common":29,"../common/glob":31,"../common/hof":32,"../common/predicates":34}],68:[function(require,module,exports){
+},{"../common/common":33,"../common/glob":35,"../common/hof":36,"../common/predicates":38}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6598,7 +6839,7 @@ var StateQueueManager = (function () {
 }());
 exports.StateQueueManager = StateQueueManager;
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"./stateObject":67}],69:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"./stateObject":71}],73:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -6755,7 +6996,7 @@ var StateRegistry = (function () {
 }());
 exports.StateRegistry = StateRegistry;
 
-},{"../common/common":29,"../common/hof":32,"./stateBuilder":65,"./stateMatcher":66,"./stateQueueManager":68}],70:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"./stateBuilder":69,"./stateMatcher":70,"./stateQueueManager":72}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7329,7 +7570,7 @@ var StateService = (function () {
 }());
 exports.StateService = StateService;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/glob":31,"../common/hof":32,"../common/predicates":34,"../common/queue":35,"../hooks/lazyLoad":42,"../params/param":52,"../path/pathFactory":57,"../path/pathNode":58,"../resolve/resolveContext":62,"../transition/rejectFactory":76,"../transition/transitionService":80,"./targetState":71}],71:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/glob":35,"../common/hof":36,"../common/predicates":38,"../common/queue":39,"../hooks/lazyLoad":46,"../params/param":56,"../path/pathFactory":61,"../path/pathNode":62,"../resolve/resolveContext":66,"../transition/rejectFactory":80,"../transition/transitionService":84,"./targetState":75}],75:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7444,7 +7685,7 @@ TargetState.isDef = function (obj) {
 };
 exports.TargetState = TargetState;
 
-},{"../common/common":29,"../common/predicates":34}],72:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38}],76:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7564,7 +7805,7 @@ function tupleSort(reverseDepthSort) {
     };
 }
 
-},{"../common/common":29,"../common/predicates":34,"./interface":75,"./transitionHook":79}],73:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38,"./interface":79,"./transitionHook":83}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7721,7 +7962,7 @@ function makeEvent(registry, transitionService, eventType) {
 }
 exports.makeEvent = makeEvent;
 
-},{"../common/common":29,"../common/glob":31,"../common/predicates":34,"./interface":75}],74:[function(require,module,exports){
+},{"../common/common":33,"../common/glob":35,"../common/predicates":38,"./interface":79}],78:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -7750,7 +7991,7 @@ __export(require("./transitionHook"));
 __export(require("./transitionEventType"));
 __export(require("./transitionService"));
 
-},{"./hookBuilder":72,"./hookRegistry":73,"./interface":75,"./rejectFactory":76,"./transition":77,"./transitionEventType":78,"./transitionHook":79,"./transitionService":80}],75:[function(require,module,exports){
+},{"./hookBuilder":76,"./hookRegistry":77,"./interface":79,"./rejectFactory":80,"./transition":81,"./transitionEventType":82,"./transitionHook":83,"./transitionService":84}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TransitionHookPhase;
@@ -7767,7 +8008,7 @@ var TransitionHookScope;
     TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
 })(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
 
-},{}],76:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 /**
  * @coreapi
  * @module transition
@@ -7857,7 +8098,7 @@ var Rejection = (function () {
 }());
 exports.Rejection = Rejection;
 
-},{"../common/common":29,"../common/hof":32,"../common/strings":36}],77:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/strings":40}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8485,7 +8726,7 @@ var Transition = (function () {
 Transition.diToken = Transition;
 exports.Transition = Transition;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/trace":37,"../params/param":52,"../path/pathFactory":57,"../resolve/resolvable":61,"../resolve/resolveContext":62,"../state/targetState":71,"./hookBuilder":72,"./hookRegistry":73,"./interface":75,"./transitionHook":79}],78:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/predicates":38,"../common/trace":41,"../params/param":56,"../path/pathFactory":61,"../resolve/resolvable":65,"../resolve/resolveContext":66,"../state/targetState":75,"./hookBuilder":76,"./hookRegistry":77,"./interface":79,"./transitionHook":83}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var transitionHook_1 = require("./transitionHook");
@@ -8514,7 +8755,7 @@ var TransitionEventType = (function () {
 }());
 exports.TransitionEventType = TransitionEventType;
 
-},{"./transitionHook":79}],79:[function(require,module,exports){
+},{"./transitionHook":83}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8735,7 +8976,7 @@ TransitionHook.THROW_ERROR = function (hook) { return function (error) {
 }; };
 exports.TransitionHook = TransitionHook;
 
-},{"../common/common":29,"../common/coreservices":30,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../common/trace":37,"../state/targetState":71,"./interface":75,"./rejectFactory":76}],80:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34,"../common/hof":36,"../common/predicates":38,"../common/strings":40,"../common/trace":41,"../state/targetState":75,"./interface":79,"./rejectFactory":80}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8975,7 +9216,7 @@ var TransitionService = (function () {
 }());
 exports.TransitionService = TransitionService;
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../hooks/coreResolvables":39,"../hooks/ignoredTransition":40,"../hooks/invalidTransition":41,"../hooks/lazyLoad":42,"../hooks/onEnterExitRetain":43,"../hooks/redirectTo":44,"../hooks/resolve":45,"../hooks/updateGlobals":46,"../hooks/url":47,"../hooks/views":48,"./hookRegistry":73,"./interface":75,"./transition":77,"./transitionEventType":78,"./transitionHook":79}],81:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"../hooks/coreResolvables":43,"../hooks/ignoredTransition":44,"../hooks/invalidTransition":45,"../hooks/lazyLoad":46,"../hooks/onEnterExitRetain":47,"../hooks/redirectTo":48,"../hooks/resolve":49,"../hooks/updateGlobals":50,"../hooks/url":51,"../hooks/views":52,"./hookRegistry":77,"./interface":79,"./transition":81,"./transitionEventType":82,"./transitionHook":83}],85:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8987,7 +9228,7 @@ __export(require("./urlRouter"));
 __export(require("./urlRule"));
 __export(require("./urlService"));
 
-},{"./urlMatcher":82,"./urlMatcherFactory":83,"./urlRouter":84,"./urlRule":85,"./urlService":86}],82:[function(require,module,exports){
+},{"./urlMatcher":86,"./urlMatcherFactory":87,"./urlRouter":88,"./urlRule":89,"./urlService":90}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9491,7 +9732,7 @@ var UrlMatcher = (function () {
 UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
 exports.UrlMatcher = UrlMatcher;
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../common/strings":36,"../params/param":52}],83:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"../common/strings":40,"../params/param":56}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9619,7 +9860,7 @@ var UrlMatcherFactory = (function () {
 }());
 exports.UrlMatcherFactory = UrlMatcherFactory;
 
-},{"../common/common":29,"../common/predicates":34,"../params/param":52,"../params/paramTypes":54,"./urlMatcher":82}],84:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38,"../params/param":56,"../params/paramTypes":58,"./urlMatcher":86}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9893,7 +10134,7 @@ function getHandlerFn(handler) {
     return predicates_1.isFunction(handler) ? handler : hof_1.val(handler);
 }
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../state/targetState":71,"./urlMatcher":82,"./urlRule":85}],85:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"../state/targetState":75,"./urlMatcher":86,"./urlRule":89}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10103,7 +10344,7 @@ var BaseUrlRule = (function () {
 }());
 exports.BaseUrlRule = BaseUrlRule;
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"./urlMatcher":82}],86:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"./urlMatcher":86}],90:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -10184,7 +10425,7 @@ UrlService.locationServiceStub = makeStub(locationServicesFns);
 UrlService.locationConfigStub = makeStub(locationConfigFns);
 exports.UrlService = UrlService;
 
-},{"../common/common":29,"../common/coreservices":30}],87:[function(require,module,exports){
+},{"../common/common":33,"../common/coreservices":34}],91:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10197,7 +10438,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** */
 __export(require("./vanilla/index"));
 
-},{"./vanilla/index":91}],88:[function(require,module,exports){
+},{"./vanilla/index":95}],92:[function(require,module,exports){
 "use strict";
 /**
  * @internalapi
@@ -10243,7 +10484,7 @@ var BaseLocationServices = (function () {
 }());
 exports.BaseLocationServices = BaseLocationServices;
 
-},{"../common/common":29,"../common/predicates":34,"./utils":98}],89:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38,"./utils":102}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10291,7 +10532,7 @@ var BrowserLocationConfig = (function () {
 }());
 exports.BrowserLocationConfig = BrowserLocationConfig;
 
-},{"../common/predicates":34}],90:[function(require,module,exports){
+},{"../common/predicates":38}],94:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10333,7 +10574,7 @@ var HashLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.HashLocationService = HashLocationService;
 
-},{"./baseLocationService":88,"./utils":98}],91:[function(require,module,exports){
+},{"./baseLocationService":92,"./utils":102}],95:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10350,7 +10591,7 @@ __export(require("./browserLocationConfig"));
 __export(require("./utils"));
 __export(require("./plugins"));
 
-},{"./baseLocationService":88,"./browserLocationConfig":89,"./hashLocationService":90,"./injector":92,"./memoryLocationConfig":93,"./memoryLocationService":94,"./plugins":95,"./pushStateLocationService":96,"./q":97,"./utils":98}],92:[function(require,module,exports){
+},{"./baseLocationService":92,"./browserLocationConfig":93,"./hashLocationService":94,"./injector":96,"./memoryLocationConfig":97,"./memoryLocationService":98,"./plugins":99,"./pushStateLocationService":100,"./q":101,"./utils":102}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10451,7 +10692,7 @@ exports.$injector = {
     }
 };
 
-},{"../common/index":33}],93:[function(require,module,exports){
+},{"../common/index":37}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = require("../common/predicates");
@@ -10477,7 +10718,7 @@ var MemoryLocationConfig = (function () {
 }());
 exports.MemoryLocationConfig = MemoryLocationConfig;
 
-},{"../common/common":29,"../common/predicates":34}],94:[function(require,module,exports){
+},{"../common/common":33,"../common/predicates":38}],98:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10512,7 +10753,7 @@ var MemoryLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.MemoryLocationService = MemoryLocationService;
 
-},{"./baseLocationService":88}],95:[function(require,module,exports){
+},{"./baseLocationService":92}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10542,7 +10783,7 @@ exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushSta
 /** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
 exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
 
-},{"../common/coreservices":30,"./browserLocationConfig":89,"./hashLocationService":90,"./injector":92,"./memoryLocationConfig":93,"./memoryLocationService":94,"./pushStateLocationService":96,"./q":97,"./utils":98}],96:[function(require,module,exports){
+},{"../common/coreservices":34,"./browserLocationConfig":93,"./hashLocationService":94,"./injector":96,"./memoryLocationConfig":97,"./memoryLocationService":98,"./pushStateLocationService":100,"./q":101,"./utils":102}],100:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10595,7 +10836,7 @@ var PushStateLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.PushStateLocationService = PushStateLocationService;
 
-},{"./baseLocationService":88,"./utils":98}],97:[function(require,module,exports){
+},{"./baseLocationService":92,"./utils":102}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10651,7 +10892,7 @@ exports.$q = {
     }
 };
 
-},{"../common/index":33}],98:[function(require,module,exports){
+},{"../common/index":37}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10720,7 +10961,7 @@ function locationPluginFactory(name, isHtml5, serviceClass, configurationClass) 
 }
 exports.locationPluginFactory = locationPluginFactory;
 
-},{"../common/common":29,"../common/index":33}],99:[function(require,module,exports){
+},{"../common/common":33,"../common/index":37}],103:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10728,7 +10969,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./view"));
 
-},{"./view":100}],100:[function(require,module,exports){
+},{"./view":104}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11012,7 +11253,7 @@ ViewService.matches = function (uiViewsByFqn, uiView) { return function (viewCon
 }; };
 exports.ViewService = ViewService;
 
-},{"../common/common":29,"../common/hof":32,"../common/predicates":34,"../common/trace":37}],101:[function(require,module,exports){
+},{"../common/common":33,"../common/hof":36,"../common/predicates":38,"../common/trace":41}],105:[function(require,module,exports){
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11168,11 +11409,11 @@ module.exports = auth0;
 
 /***/ })
 /******/ ]);
-},{}],102:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 require('./dist/angular-auth0');
 module.exports = 'auth0.auth0';
 
-},{"./dist/angular-auth0":101}],103:[function(require,module,exports){
+},{"./dist/angular-auth0":105}],107:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("angular"));
@@ -11794,7 +12035,7 @@ return /******/ (function(modules) { // webpackBootstrap
 });
 ;
 
-},{"angular":105}],104:[function(require,module,exports){
+},{"angular":109}],108:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
@@ -45626,11 +45867,11 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],105:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":104}],106:[function(require,module,exports){
+},{"./angular":108}],110:[function(require,module,exports){
 /*!
  * jQuery blockUI plugin
  * Version 2.70.0-2014.11.23
@@ -46257,7 +46498,7 @@ module.exports = angular;
 
 })();
 
-},{"jquery":121}],107:[function(require,module,exports){
+},{"jquery":125}],111:[function(require,module,exports){
 /*! =======================================================
                       VERSION  9.8.1              
 ========================================================= */
@@ -48164,7 +48405,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 	return Slider;
 });
 
-},{"jquery":121}],108:[function(require,module,exports){
+},{"jquery":125}],112:[function(require,module,exports){
 // This file is autogenerated via the `commonjs` Grunt task. You can require() this file in a CommonJS environment.
 require('../../js/transition.js')
 require('../../js/alert.js')
@@ -48178,7 +48419,7 @@ require('../../js/popover.js')
 require('../../js/scrollspy.js')
 require('../../js/tab.js')
 require('../../js/affix.js')
-},{"../../js/affix.js":109,"../../js/alert.js":110,"../../js/button.js":111,"../../js/carousel.js":112,"../../js/collapse.js":113,"../../js/dropdown.js":114,"../../js/modal.js":115,"../../js/popover.js":116,"../../js/scrollspy.js":117,"../../js/tab.js":118,"../../js/tooltip.js":119,"../../js/transition.js":120}],109:[function(require,module,exports){
+},{"../../js/affix.js":113,"../../js/alert.js":114,"../../js/button.js":115,"../../js/carousel.js":116,"../../js/collapse.js":117,"../../js/dropdown.js":118,"../../js/modal.js":119,"../../js/popover.js":120,"../../js/scrollspy.js":121,"../../js/tab.js":122,"../../js/tooltip.js":123,"../../js/transition.js":124}],113:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: affix.js v3.3.7
  * http://getbootstrap.com/javascript/#affix
@@ -48342,7 +48583,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],110:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: alert.js v3.3.7
  * http://getbootstrap.com/javascript/#alerts
@@ -48438,7 +48679,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],111:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.7
  * http://getbootstrap.com/javascript/#buttons
@@ -48565,7 +48806,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],112:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: carousel.js v3.3.7
  * http://getbootstrap.com/javascript/#carousel
@@ -48804,7 +49045,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],113:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: collapse.js v3.3.7
  * http://getbootstrap.com/javascript/#collapse
@@ -49018,7 +49259,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],114:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: dropdown.js v3.3.7
  * http://getbootstrap.com/javascript/#dropdowns
@@ -49185,7 +49426,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],115:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: modal.js v3.3.7
  * http://getbootstrap.com/javascript/#modals
@@ -49526,7 +49767,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],116:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: popover.js v3.3.7
  * http://getbootstrap.com/javascript/#popovers
@@ -49636,7 +49877,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],117:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: scrollspy.js v3.3.7
  * http://getbootstrap.com/javascript/#scrollspy
@@ -49810,7 +50051,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],118:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tab.js v3.3.7
  * http://getbootstrap.com/javascript/#tabs
@@ -49967,7 +50208,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],119:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tooltip.js v3.3.7
  * http://getbootstrap.com/javascript/#tooltip
@@ -50489,7 +50730,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],120:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: transition.js v3.3.7
  * http://getbootstrap.com/javascript/#transitions
@@ -50550,7 +50791,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],121:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
