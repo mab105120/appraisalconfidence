@@ -1,1 +1,19 @@
-select * from PERFORMANCE_REVIEW
+-- Populate in-memory database with performance reviews.
+insert into PERFORMANCE_REVIEW VALUES ('A', 'SL', 'SP1', 'A-SL-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'SL', 'SP2', 'A-SL-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'SL', 'SP3', 'A-SL-SP3');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'IP', 'SP1', 'A-IP-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'IP', 'SP2', 'A-IP-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'IP', 'SP3', 'A-IP-SP3');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'PF', 'SP1', 'A-PF-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'PF', 'SP2', 'A-PF-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('A', 'PF', 'SP3', 'A-PF-SP3');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'SL', 'SP1', 'B-SL-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'SL', 'SP2', 'B-SL-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'SL', 'SP3', 'B-SL-SP3');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'IP', 'SP1', 'B-SL-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'IP', 'SP2', 'B-SL-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'IP', 'SP3', 'B-SL-SP3');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'PF', 'SP1', 'B-SL-SP1');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'PF', 'SP2', 'B-SL-SP2');
+insert into PERFORMANCE_REVIEW VALUES ('B', 'PF', 'SP3', 'B-SL-SP3');

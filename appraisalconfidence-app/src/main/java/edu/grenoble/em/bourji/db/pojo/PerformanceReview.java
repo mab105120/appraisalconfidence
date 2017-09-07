@@ -12,15 +12,15 @@ import java.io.Serializable;
 public class PerformanceReview {
 
     @Id
-    @Column(name = "ID")
+    @Column(name = "ID", length = 10, nullable = false)
     private String id;
     @Id
-    @Column(name = "JOB_FUNCTION")
+    @Column(name = "JOB_FUNCTION", length = 64, nullable = false)
     private String jobFunction;
     @Id
-    @Column(name = "SUPERVISOR")
+    @Column(name = "SUPERVISOR", length = 64, nullable = false)
     private String supervisor;
-    @Column(name = "REVIEW")
+    @Column(name = "REVIEW", length = 1000, nullable = false)
     private String review;
 
     public PerformanceReview() {
