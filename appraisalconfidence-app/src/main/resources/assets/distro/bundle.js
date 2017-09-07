@@ -253,7 +253,6 @@
         require('block-ui');
 
         $scope.showAlert = false;
-
         $scope.setAlert = function(title, body) {
             $scope.alertTitle = title;
             $scope.alertBody = body;

@@ -4,13 +4,10 @@ import edu.grenoble.em.bourji.db.dao.PerformanceReviewDAO;
 import edu.grenoble.em.bourji.db.pojo.PerformanceReview;
 import edu.grenoble.em.bourji.resource.AppraisalConfidenceResource;
 import edu.grenoble.em.bourji.resource.PerformanceReviewResource;
-import io.dropwizard.Application;
-import io.dropwizard.assets.AssetsBundle;
-import io.dropwizard.db.DataSourceFactory;
-import io.dropwizard.hibernate.HibernateBundle;
-import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -18,20 +15,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 /**
- * Created by Moe on 8/16/2017.
+ * Created by Moe on 9/5/2017.
  */
-public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfig> {
-
-    protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(PerformanceReview.class) {
-        @Override
-        public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
-            return configuration.getDataSourceFactory();
-        }
-    };
-
-    public static void main(String[] args) throws Exception {
-        new AppraisalConfidenceApp().run(args);
-    }
+public class AppraisalConfidenceTestApp extends AppraisalConfidenceApp {
 
     @Override
     public void run(AppraisalConfidenceConfig appraisalConfidenceConfig, Environment environment) throws Exception {
@@ -44,13 +30,20 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         params.put(CrossOriginFilter.ALLOW_CREDENTIALS_PARAM, "true");
         cors.setInitParameters(params);
 
+
+        PerformanceReviewDAO performanceReviewDAO = new PerformanceReviewDAO(hibernate.getSessionFactory());
+
+
+        setUpPerformanceAppraisalData(hibernate.getSessionFactory());
         environment.jersey().register(new AppraisalConfidenceResource(appraisalConfidenceConfig.getAuth0Domain(), appraisalConfidenceConfig.getKid()));
-        environment.jersey().register(new PerformanceReviewResource(new PerformanceReviewDAO(hibernate.getSessionFactory())));
+        environment.jersey().register(new PerformanceReviewResource(performanceReviewDAO));
     }
 
-    @Override
-    public void initialize(Bootstrap<AppraisalConfidenceConfig> bootstrap) {
-        bootstrap.addBundle(new AssetsBundle("/assets", "/", "index.html"));
-        bootstrap.addBundle(hibernate);
+
+    private void setUpPerformanceAppraisalData(SessionFactory sessionFactory) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.save(new PerformanceReview("A", "SL","SP1","Test"));
+        session.getTransaction().commit();
     }
 }

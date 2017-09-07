@@ -27,7 +27,7 @@ public class AppraisalConfidenceResourceTest {
 
     @ClassRule
     public static final DropwizardAppRule<AppraisalConfidenceConfig> RULE =
-            new DropwizardAppRule<AppraisalConfidenceConfig>(AppraisalConfidenceApp.class,
+            new DropwizardAppRule<>(AppraisalConfidenceApp.class,
                     ResourceHelpers.resourceFilePath("test.yml"));
 
     //@Test
