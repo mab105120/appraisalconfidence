@@ -8,6 +8,7 @@ import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
@@ -43,9 +44,12 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         params.put(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
         params.put(CrossOriginFilter.ALLOW_CREDENTIALS_PARAM, "true");
         cors.setInitParameters(params);
-
+        PerformanceReviewDAO dao = new PerformanceReviewDAO(hibernate.getSessionFactory());
+        PerformanceReviewCache performanceReviewCache = new UnitOfWorkAwareProxyFactory(hibernate).create(PerformanceReviewCache.class,
+                PerformanceReviewDAO.class, dao);
+        performanceReviewCache.instantiateCache();
         environment.jersey().register(new AppraisalConfidenceResource(appraisalConfidenceConfig.getAuth0Domain(), appraisalConfidenceConfig.getKid()));
-        environment.jersey().register(new PerformanceReviewResource(new PerformanceReviewDAO(hibernate.getSessionFactory())));
+        environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
     }
 
     @Override

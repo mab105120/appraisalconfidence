@@ -54,7 +54,7 @@ public class PerformanceAppraisalResourceTest {
         Response response = getPerformanceReview("INVALID_ID");
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.getStatus());
-        assertEquals("Unknown evaluation code: INVALID_ID", response.readEntity(String.class));
+        assertEquals("Unable to retrieve evaluation reviews from database. Error details: Invalid evaluation code: INVALID_ID", response.readEntity(String.class));
     }
 
     private Response getPerformanceReview(String evaluationId) {
