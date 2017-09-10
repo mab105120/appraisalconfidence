@@ -11,6 +11,12 @@
     function authService($state, angularAuth0, $timeout) {
 
         function login() {
+            // remember current state to reroute to after authentication
+            if ($state.current.name === 'welcome')
+                localStorage.setItem('redirect_state', 'home');
+            else
+                localStorage.setItem('redirect_state', $state.current.name);
+
             angularAuth0.authorize();
         }
 
@@ -18,9 +24,14 @@
             angularAuth0.parseHash(function(err, authResult) {
                if(authResult && authResult.accessToken && authResult.idToken) {
                     setSession(authResult);
-                    $state.go('home');
+                    if (localStorage.getItem('redirect_state') === null)
+                        $state.go('home');
+                    else {
+                        $state.go(localStorage.getItem('redirect_state'));
+                        localStorage.removeItem('redirect_state');
+                    }
                } else if (err) {
-                    alert('An error occured while trying to parse the URL has. Please see console for more details!');
+                    alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);
                }
             });

@@ -3,12 +3,12 @@
     procedure_controller.$inject = ['$scope', '$state', 'authService'];
 
     function procedure_controller($scope, $state, authService) {
+//        if(!authService.isAuthenticated()) {
+//            alert('You are not logged in. You need to log in to view this page.');
+//            authService.login();
+//        }
 
-        if(!authService.isAuthenticated()) {
-            alert('you must login to view this page!');
-            $state.go('welcome');
-        }
-
+        console.log('the controller is also executing');
         $scope.checkboxStatus = false;
         // TODO replace this with angular form
         $scope.checkBox = function (status) {
@@ -19,7 +19,7 @@
         $scope.next = function() {
             $state.go('evaluation', { id: 1 });
         }
-    };
+    }
 
     module.exports = procedure_controller;
 

@@ -6,10 +6,12 @@
         '$stateProvider',
         '$locationProvider',
         '$urlRouterProvider',
-        'angularAuth0Provider'
+        'angularAuth0Provider',
+        'appconProvider'
     ];
 
-    function app_config($stateProvider, $locationProvider, $urlRouterProvider, angularAuth0Provider) {
+    function app_config($stateProvider, $locationProvider,
+                        $urlRouterProvider, angularAuth0Provider, appconProvider) {
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {
@@ -65,6 +67,9 @@
 
           $urlRouterProvider.otherwise('/');
           $locationProvider.hashPrefix('');
+
+          appconProvider.setUrl('http://localhost:5000');
+          console.log('Just configured app con');
     }
 
     module.exports = app_config;

@@ -89,7 +89,11 @@
                 item: 'Decisions rarely weigh heavily on my shoulders',
                 code: 'pfi5'
             },
-        ]
+        ];
+
+        $scope.submit = function() {
+            $state.go('procedure');
+        }
     }
 
     module.exports = quest_confidence_controller;

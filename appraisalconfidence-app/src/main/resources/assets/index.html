@@ -17,14 +17,6 @@
             <navbar></navbar>
 
             <div class="container" style="margin-bottom:100px;">
-                <!--Begin: alert box-->
-                <div class="alert alert-danger alert-dismissible" role="alert" id="alert" focus-on-show ng-show="showAlert">
-                    <button type="button" aria-label="Close" class="close" ng-click="hideAlert()">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <strong>{{ alertTitle }}: </strong> {{ alertBody }}
-                </div>
-                <!--End: alert box-->
                 <ui-view></ui-view>
             </div>
             <!--Begin: spinner-->

@@ -24,6 +24,7 @@
 
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
+    appraisal_app.provider('appcon', require('./service/appcon.provider.js'));
 
     // Register app directives
     appraisal_app.directive('navbar', require('./directive/navbar.directive.js'));

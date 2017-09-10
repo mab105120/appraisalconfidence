@@ -7,13 +7,13 @@
 
     function home_controller($scope, $state, authService) {
 
-        if(!authService.isAuthenticated()) {
-            alert('you must login to view this page!');
-            $state.go('welcome');
-        }
+//        if(!authService.isAuthenticated()) {
+//            alert('you must login to view this page!');
+//            $state.go('welcome');
+//        }
 
         $scope.start = function() {
-            $state.go('procedure');
+            $state.go('questionnaire');
         };
     };
 
