@@ -30,21 +30,12 @@ public class AppraisalConfidenceResourceTest {
             new DropwizardAppRule<>(AppraisalConfidenceApp.class,
                     ResourceHelpers.resourceFilePath("test.yml"));
 
-    //@Test
-    public void createTable() {
-        Client client = ClientBuilder.newClient();
-        Response response = client.target(String.format(URL, RULE.getLocalPort()))
-                .path("/api/appraisal/create-table")
-                .request()
-                .get();
-        assertEquals(HttpStatus.OK_200, response.getStatus());
-    }
 
     @Test
     public void getTeacherDossierWithValidId() {
         Client client = ClientBuilder.newClient();
         Response response = client.target(String.format(URL, RULE.getLocalPort()))
-                .path("/api/appraisal/evaluations/1")
+                .path("/api/performance-review/1")
                 .request()
                 .get();
         assertEquals(HttpStatus.OK_200, response.getStatus());
@@ -54,23 +45,23 @@ public class AppraisalConfidenceResourceTest {
         assertNotNull(teacher1);
         JobFunctionReview studentLearningSkills = teacher1.getStudentLearning();
         assertNotNull(studentLearningSkills);
-        assertEquals(studentLearningSkills.getSupervisor1Review(), "Teacher 1 has proven, over the past four years, capable of enhancing the students' learning experience and promoting participation in the classroom. During the times I attended her classes, the majority of her students were actively participting in the class discussion. I believe Teacher 1's teaching methods are innovative and effective.");
-        assertEquals(studentLearningSkills.getSupervisor3Review(), "I think Teacher 1 has succeeded in improving her class's academic performance against difficult conditions. While her class doesn't rank very high on standard exams, we should focus on the relative improvement of the class's performance. This puts teacher 1's class in a higher rank. I believe Teacher 1 still have a lot of room to grow. I have no good reason to believe that Teacher 1 won't continue learning new teaching methods and developing a stronger academic cohort.");
+        assertEquals("A-SL-SP1", studentLearningSkills.getSupervisor1Review());
+        assertEquals("A-SL-SP3", studentLearningSkills.getSupervisor3Review());
         TeacherDossier teacher2 = teacherDossiers.getTeacher2();
         assertNotNull(teacher2);
         JobFunctionReview professionalism = teacher2.getProfessionalism();
         assertNotNull(professionalism);
-        assertEquals(professionalism.getSupervisor2Review(), "Teacher 2 has maintained a good relation with students' parents through close involvement with teacher\\parent conferences and closer communication with the parents. Such behavior is welcome and expected of tenured faculty. I think Teacher 2 should spend more time developing a career plan. During my time as a supervisor I we had only few of meetings for discussing career development. A tenured teacher is one committed to growing a career in education and that is something I expect of Teacher 2.");
+        assertEquals("B-PF-SP2", professionalism.getSupervisor2Review());
     }
 
     @Test
     public void getTeacherDossierWithInvalidId() {
         Client client = ClientBuilder.newClient();
         Response response = client.target(String.format(URL, RULE.getLocalPort()))
-                .path("/api/appraisal/evaluations/100")
+                .path("/api/performance-review/100")
                 .request()
                 .get();
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, response.getStatus());
-        assertEquals("Invalid evaluation id: 100", response.readEntity(String.class));
+        assertEquals("Unable to retrieve evaluation reviews from database. Error details: Invalid evaluation code: 100", response.readEntity(String.class));
     }
 }
