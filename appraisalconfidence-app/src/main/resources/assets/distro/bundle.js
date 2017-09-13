@@ -316,10 +316,12 @@
 
     quest_confidence_controller.$inject = [
         '$scope',
-        '$state'
+        '$state',
+        'authService',
+        'appcon'
     ];
 
-    function quest_confidence_controller($scope, $state) {
+    function quest_confidence_controller($scope, $state, authService, appcon) {
         $scope.submit = function() {
             console.log($scope.items);
             console.log($scope.items2);
@@ -328,6 +330,10 @@
         $scope.choices = [
             {
                 choice: 'Strongly Disagree',
+                value: -3
+            },
+            {
+                choice: 'Somewhat Disagree',
                 value: -2
             },
             {
@@ -335,16 +341,16 @@
                 value: -1
             },
             {
-                choice: 'Neutral',
-                value: 0
-            },
-            {
                 choice: 'Agree',
                 value: 1
             },
             {
-                choice: 'Strongly Agree',
+                choice: 'Somewhat agree',
                 value: 2
+            },
+            {
+                choice: 'Strongly Agree',
+                value: 3
             }
         ];
 
@@ -405,8 +411,40 @@
             },
         ];
 
+        function getUserResponsesForApiCall() {
+            var userResponses = [];
+
+            function formatItems(item) {
+                userResponses.push({
+                    itemCode: item.code,
+                    response: item.answer
+                });
+            }
+
+            angular.forEach($scope.items, formatItems);
+            angular.forEach($scope.items2, formatItems);
+
+            return userResponses;
+        }
+
         $scope.submit = function() {
-            $state.go('procedure');
+//            if(!authService.isAuthenticated()) {
+//                alert('You need to be logged in to perform this operation!');
+//                return;
+//            }
+
+            var userConfidenceResponse = getUserResponsesForApiCall();
+
+            $scope.$parent.startSpinner();
+            appcon.postUserConfidence(userConfidenceResponse)
+            .then(function success(response) {
+                console.log('POST /api/questionnaire/confidence ' + response.status);
+                $scope.$parent.stopSpinner();
+                $state.go('procedure');
+            }, function failure(response) {
+                alert("Sorry we weren't able to save your response. Reason: " + response.data.message);
+                $scope.$parent.stopSpinner();
+            });
         }
     }
 
@@ -485,7 +523,7 @@
                 personnelSelection: $scope.personnelSelection
             };
             if($scope.interviewees !== undefined) {
-                user.totalCandidate = $scope.interviewees;
+                user.totalCandidates = $scope.interviewees;
             }
             $scope.$parent.startSpinner();
             appcon.postUserExperience(user)
@@ -559,7 +597,7 @@
                 $scope.$parent.stopSpinner();
                 $state.go('experience');
             }, function failure(response) {
-                alert('Failed to persist response. Error: ' + response.message);
+                alert("Sorry we were unable to save your response. Reason (" + response.status + "): " + response.statusText);
                 $scope.$parent.stopSpinner();
             });
         }
@@ -751,10 +789,23 @@
                 });
             }
 
+            function postUserConfidence(user) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        data: user,
+                        url: url + '/api/questionnaire/user-confidence'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
-                postUserExperience: postUserExperience
+                postUserExperience: postUserExperience,
+                postUserConfidence: postUserConfidence
             }
         };
 

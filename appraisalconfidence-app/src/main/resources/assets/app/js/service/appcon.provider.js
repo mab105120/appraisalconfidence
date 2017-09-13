@@ -43,10 +43,23 @@
                 });
             }
 
+            function postUserConfidence(user) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        data: user,
+                        url: url + '/api/questionnaire/user-confidence'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
-                postUserExperience: postUserExperience
+                postUserExperience: postUserExperience,
+                postUserConfidence: postUserConfidence
             }
         };
 

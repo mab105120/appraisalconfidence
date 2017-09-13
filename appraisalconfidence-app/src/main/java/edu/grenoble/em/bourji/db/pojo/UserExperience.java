@@ -32,7 +32,7 @@ public class UserExperience {
     private String totalReviewees;
     @Column(name = "PERSONNEL_SELECTION", nullable = false, length = 64)
     private String personnelSelection;
-    @Column(name = "CANDIDATE_REVIEWS", length = 64)
+    @Column(name = "CANDIDATES_REVIEWS", length = 64)
     private String totalCandidates;
 
     public UserExperience() {

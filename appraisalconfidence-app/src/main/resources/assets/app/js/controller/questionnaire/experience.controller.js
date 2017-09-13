@@ -70,7 +70,7 @@
                 personnelSelection: $scope.personnelSelection
             };
             if($scope.interviewees !== undefined) {
-                user.totalCandidate = $scope.interviewees;
+                user.totalCandidates = $scope.interviewees;
             }
             $scope.$parent.startSpinner();
             appcon.postUserExperience(user)

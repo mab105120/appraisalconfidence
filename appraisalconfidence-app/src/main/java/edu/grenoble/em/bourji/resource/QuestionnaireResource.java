@@ -2,7 +2,9 @@ package edu.grenoble.em.bourji.resource;
 
 import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
+import edu.grenoble.em.bourji.api.BadResponse;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
+import edu.grenoble.em.bourji.db.pojo.UserConfidence;
 import edu.grenoble.em.bourji.db.pojo.UserDemographic;
 import edu.grenoble.em.bourji.db.pojo.UserExperience;
 import io.dropwizard.hibernate.UnitOfWork;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by Moe on 9/9/2017.
@@ -77,6 +80,29 @@ public class QuestionnaireResource {
         return Response.ok().build();
     }
 
+    @POST
+    @Path("/user-confidence")
+    @UnitOfWork
+    public Response addUserConfidence(List<UserConfidence> userConfidenceResponse,
+                                      @Context HttpHeaders httpHeaders) {
+
+        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
+        if (authorizationHeader == null)
+            return respondWithUnauthorized();
+
+        String accessToken = authorizationHeader.substring(7);
+
+        try {
+            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            LOGGER.info("User id: " + userId);
+            userConfidenceResponse.stream().forEach(res -> res.setUser(userId));
+            dao.getUserConfidenceDAO().addAll(userConfidenceResponse);
+        } catch (HibernateException | JwkException e) {
+            return respondWithError("Unable to save response. Error: " + e.getMessage());
+        }
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/user-demographic/{userId}")
     @UnitOfWork
@@ -91,16 +117,18 @@ public class QuestionnaireResource {
     }
 
     private Response respondWithError(String errorMessage) {
+        BadResponse response = new BadResponse().withMessage(errorMessage);
         return Response
                 .status(500)
-                .entity(errorMessage)
+                .entity(response)
                 .build();
     }
 
     private Response respondWithUnauthorized() {
+        BadResponse response = new BadResponse().withMessage("You are not authorized to perform this operation!");
         return Response
                 .status(403)
-                .entity("You are not authorized to perform this operation!")
+                .entity(response)
                 .build();
     }
 }

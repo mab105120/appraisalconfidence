@@ -7,6 +7,7 @@ public class QuestionnaireDAO {
 
     private UserDemographicDAO userDemographicDAO;
     private UserExperienceDAO userExperienceDAO;
+    private UserConfidenceDAO userConfidenceDAO;
 
     public QuestionnaireDAO withUserDemographicDao(UserDemographicDAO dao) {
         this.userDemographicDAO = dao;
@@ -18,6 +19,11 @@ public class QuestionnaireDAO {
         return this;
     }
 
+    public QuestionnaireDAO withUserConfidenceDao(UserConfidenceDAO dao) {
+        this.userConfidenceDAO = dao;
+        return this;
+    }
+
     public UserDemographicDAO getUserDemographicDAO() {
         return userDemographicDAO;
     }
@@ -25,4 +31,6 @@ public class QuestionnaireDAO {
     public UserExperienceDAO getUserExperienceDAO() {
         return userExperienceDAO;
     }
+
+    public UserConfidenceDAO getUserConfidenceDAO() { return userConfidenceDAO;}
 }

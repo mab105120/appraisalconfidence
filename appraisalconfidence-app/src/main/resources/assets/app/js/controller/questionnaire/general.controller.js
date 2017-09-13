@@ -55,7 +55,7 @@
                 $scope.$parent.stopSpinner();
                 $state.go('experience');
             }, function failure(response) {
-                alert('Failed to persist response. Error: ' + response.message);
+                alert("Sorry we were unable to save your response. Reason (" + response.status + "): " + response.data.message);
                 $scope.$parent.stopSpinner();
             });
         }
