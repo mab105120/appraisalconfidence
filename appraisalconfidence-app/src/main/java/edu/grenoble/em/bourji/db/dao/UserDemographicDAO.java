@@ -14,7 +14,7 @@ public class UserDemographicDAO extends AbstractDAO<UserDemographic> {
     }
 
     public void add(UserDemographic user) {
-        currentSession().save(user);
+        persist(user);
     }
 
     public UserDemographic getUserDemographics(String userId) {

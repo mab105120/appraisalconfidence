@@ -20,7 +20,7 @@ public class UserDemographic {
     @Column(name = "ID", nullable = false, length = 64)
     private String user;
     @Column(name = "AGE", nullable = false, length = 10)
-    private int age;
+    private String age;
     @Column(name = "GENDER", nullable = false, length = 10)
     private String gender;
     @Column(name = "EDUCATION", nullable = false, length = 64)
@@ -32,7 +32,7 @@ public class UserDemographic {
         // no-arg constructor for hibernate
     }
 
-    public UserDemographic(String user, int age, String gender, String education, String division) {
+    public UserDemographic(String user, String age, String gender, String education, String division) {
         this.user = user;
         this.age = age;
         this.gender = gender;
@@ -44,7 +44,7 @@ public class UserDemographic {
         return user;
     }
 
-    public int getAge() {
+    public String getAge() {
         return age;
     }
 

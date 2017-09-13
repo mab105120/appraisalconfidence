@@ -419,10 +419,12 @@
 
     ques_experience_controller.$inject = [
         '$scope',
-        '$state'
+        '$state',
+        'appcon',
+        'authService'
     ];
 
-    function ques_experience_controller($scope, $state) {
+    function ques_experience_controller($scope, $state, appcon, authService) {
         $scope.titleGroup = [
             'Contingent Worker',
             'Analyst',
@@ -469,7 +471,31 @@
         })
 
         $scope.submit = function() {
-            $state.go('confidence');
+            if(!authService.isAuthenticated()) {
+                alert('You have to be logged in to perform this operation!');
+                return;
+            }
+            var user = {
+                title: $scope.title,
+                subordinates: $scope.subordinates,
+                professionalExperience: $scope.professionalExperience,
+                appraisalExperience: $scope.paExperience,
+                totalReviews: $scope.reviewsUpToDate,
+                totalReviewees: $scope.revieweesUpToDate,
+                personnelSelection: $scope.personnelSelection
+            };
+            if($scope.interviewees !== undefined) {
+                user.totalCandidate = $scope.interviewees;
+            }
+            $scope.$parent.startSpinner();
+            appcon.postUserExperience(user)
+            .then(function success(response) {
+                $scope.$parent.stopSpinner();
+                $state.go('confidence');
+            }, function failure(response) {
+                $scope.$parent.stopSpinner();
+                alert('Error saving data: ' + response.message);
+            });
         };
     }
 
@@ -480,9 +506,14 @@
 
     'use strict';
 
-    questionnaire_controller.$inject = ['$scope', '$state'];
+    questionnaire_controller.$inject = [
+            '$scope',
+            '$state',
+            'appcon',
+            'authService'
+        ];
 
-    function questionnaire_controller($scope, $state) {
+    function questionnaire_controller($scope, $state, appcon, authService) {
         $scope.ageGroup = [
             '[20-30]',
             '[30-40]',
@@ -511,16 +542,26 @@
             'Other'
         ];
 
-        function sleep(miliseconds) {
-           var currentTime = new Date().getTime();
-
-           while (currentTime + miliseconds >= new Date().getTime()) {
-           }
-        }
-
         $scope.submit = function() {
-
-            $state.go('experience');
+            if(!authService.isAuthenticated) {
+                alert('You must be logged in to perform this operation!');
+                return;
+            }
+            var user = {
+                age: $scope.age,
+                gender: $scope.gender,
+                education: $scope.education,
+                division: $scope.division
+            };
+            $scope.$parent.startSpinner();
+            appcon.postUserDemographic(user)
+            .then(function success(response) {
+                $scope.$parent.stopSpinner();
+                $state.go('experience');
+            }, function failure(response) {
+                alert('Failed to persist response. Error: ' + response.message);
+                $scope.$parent.stopSpinner();
+            });
         }
     }
 
@@ -674,9 +715,9 @@
             url = val;
         }
 
-        appcon_service.$inject = ['$http'];
+        appcon_service.$inject = ['$http', 'authService'];
 
-        function appcon_service($http) {
+        function appcon_service($http, authService) {
 
             function getReviews(evaluationCode) {
                 var config = {
@@ -686,8 +727,34 @@
                 return $http(config);
             }
 
+            function postUserDemographic(user) {
+                var access_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'POST',
+                    headers: {
+                        "Authorization": 'Bearer ' + access_token
+                    },
+                    data: user,
+                    url: url + '/api/questionnaire/user-demographic'
+                });
+            }
+
+            function postUserExperience(user) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + id_token
+                    },
+                    data: user,
+                    url: url + '/api/questionnaire/user-experience'
+                });
+            }
+
             return {
-                getReviews: getReviews
+                getReviews: getReviews,
+                postUserDemographic: postUserDemographic,
+                postUserExperience: postUserExperience
             }
         };
 

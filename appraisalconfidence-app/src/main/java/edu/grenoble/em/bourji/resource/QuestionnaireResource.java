@@ -4,8 +4,10 @@ import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.pojo.UserDemographic;
+import edu.grenoble.em.bourji.db.pojo.UserExperience;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
+import org.slf4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionnaireResource {
 
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireResource.class);
     private final QuestionnaireDAO dao;
     private final JwtTokenHelper tokenHelper;
 
@@ -36,17 +39,38 @@ public class QuestionnaireResource {
                                        @Context HttpHeaders httpHeaders) {
         String authorizationHeader = httpHeaders.getHeaderString("Authorization");
         if (authorizationHeader == null)
-            return Response
-                    .status(403)
-                    .entity("You are not authorized to perform this operation!")
-                    .build();
+            return respondWithUnauthorized();
 
         String accessToken = authorizationHeader.substring(7);
 
         try {
             String userId = tokenHelper.getUserIdFromToken(accessToken);
+            LOGGER.info("User id: " + userId);
             userDemographic.setUser(userId);
             dao.getUserDemographicDAO().add(userDemographic);
+        } catch (HibernateException | JwkException e) {
+            return respondWithError("Unable to save response. Error: " + e.getMessage());
+        }
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/user-experience")
+    @UnitOfWork
+    public Response addUserExperience(UserExperience userExperience,
+                                      @Context HttpHeaders httpHeaders) {
+
+        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
+        if (authorizationHeader == null)
+            return respondWithUnauthorized();
+
+        String accessToken = authorizationHeader.substring(7);
+
+        try {
+            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            LOGGER.info("User id: " + userId);
+            userExperience.setUser(userId);
+            dao.getUserExperienceDAO().add(userExperience);
         } catch (HibernateException | JwkException e) {
             return respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -70,6 +94,13 @@ public class QuestionnaireResource {
         return Response
                 .status(500)
                 .entity(errorMessage)
+                .build();
+    }
+
+    private Response respondWithUnauthorized() {
+        return Response
+                .status(403)
+                .entity("You are not authorized to perform this operation!")
                 .build();
     }
 }

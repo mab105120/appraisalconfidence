@@ -2,9 +2,14 @@
 
     'use strict';
 
-    questionnaire_controller.$inject = ['$scope', '$state'];
+    questionnaire_controller.$inject = [
+            '$scope',
+            '$state',
+            'appcon',
+            'authService'
+        ];
 
-    function questionnaire_controller($scope, $state) {
+    function questionnaire_controller($scope, $state, appcon, authService) {
         $scope.ageGroup = [
             '[20-30]',
             '[30-40]',
@@ -33,16 +38,26 @@
             'Other'
         ];
 
-        function sleep(miliseconds) {
-           var currentTime = new Date().getTime();
-
-           while (currentTime + miliseconds >= new Date().getTime()) {
-           }
-        }
-
         $scope.submit = function() {
-
-            $state.go('experience');
+            if(!authService.isAuthenticated) {
+                alert('You must be logged in to perform this operation!');
+                return;
+            }
+            var user = {
+                age: $scope.age,
+                gender: $scope.gender,
+                education: $scope.education,
+                division: $scope.division
+            };
+            $scope.$parent.startSpinner();
+            appcon.postUserDemographic(user)
+            .then(function success(response) {
+                $scope.$parent.stopSpinner();
+                $state.go('experience');
+            }, function failure(response) {
+                alert('Failed to persist response. Error: ' + response.message);
+                $scope.$parent.stopSpinner();
+            });
         }
     }
 

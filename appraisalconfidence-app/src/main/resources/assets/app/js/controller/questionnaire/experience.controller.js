@@ -4,10 +4,12 @@
 
     ques_experience_controller.$inject = [
         '$scope',
-        '$state'
+        '$state',
+        'appcon',
+        'authService'
     ];
 
-    function ques_experience_controller($scope, $state) {
+    function ques_experience_controller($scope, $state, appcon, authService) {
         $scope.titleGroup = [
             'Contingent Worker',
             'Analyst',
@@ -54,7 +56,31 @@
         })
 
         $scope.submit = function() {
-            $state.go('confidence');
+            if(!authService.isAuthenticated()) {
+                alert('You have to be logged in to perform this operation!');
+                return;
+            }
+            var user = {
+                title: $scope.title,
+                subordinates: $scope.subordinates,
+                professionalExperience: $scope.professionalExperience,
+                appraisalExperience: $scope.paExperience,
+                totalReviews: $scope.reviewsUpToDate,
+                totalReviewees: $scope.revieweesUpToDate,
+                personnelSelection: $scope.personnelSelection
+            };
+            if($scope.interviewees !== undefined) {
+                user.totalCandidate = $scope.interviewees;
+            }
+            $scope.$parent.startSpinner();
+            appcon.postUserExperience(user)
+            .then(function success(response) {
+                $scope.$parent.stopSpinner();
+                $state.go('confidence');
+            }, function failure(response) {
+                $scope.$parent.stopSpinner();
+                alert('Error saving data: ' + response.message);
+            });
         };
     }
 

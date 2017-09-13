@@ -6,9 +6,15 @@ package edu.grenoble.em.bourji.db.dao;
 public class QuestionnaireDAO {
 
     private UserDemographicDAO userDemographicDAO;
+    private UserExperienceDAO userExperienceDAO;
 
     public QuestionnaireDAO withUserDemographicDao(UserDemographicDAO dao) {
         this.userDemographicDAO = dao;
+        return this;
+    }
+
+    public QuestionnaireDAO withUserExperienceDao(UserExperienceDAO dao) {
+        this.userExperienceDAO = dao;
         return this;
     }
 
@@ -16,4 +22,7 @@ public class QuestionnaireDAO {
         return userDemographicDAO;
     }
 
+    public UserExperienceDAO getUserExperienceDAO() {
+        return userExperienceDAO;
+    }
 }

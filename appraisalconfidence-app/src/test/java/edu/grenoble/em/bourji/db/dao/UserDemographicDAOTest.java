@@ -31,12 +31,12 @@ public class UserDemographicDAOTest {
     @Test
     public void addUserDemographic() {
         UserDemographic userDemographic = new UserDemographic(
-                "user123", 30, "male", "masters", "other"
+                "user123", "[20-30]", "male", "masters", "other"
         );
         userDemographicDAO.add(userDemographic);
         UserDemographic queriedUser = userDemographicDAO.getUserDemographics("user123");
         assertNotNull(queriedUser);
-        assertEquals(30, queriedUser.getAge());
+        assertEquals("[20-30]", queriedUser.getAge());
         assertEquals("masters", queriedUser.getEducation());
         assertEquals("other", queriedUser.getDivision());
         UserDemographic invalidUser = userDemographicDAO.getUserDemographics("invalid");

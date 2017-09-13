@@ -7,9 +7,9 @@
             url = val;
         }
 
-        appcon_service.$inject = ['$http'];
+        appcon_service.$inject = ['$http', 'authService'];
 
-        function appcon_service($http) {
+        function appcon_service($http, authService) {
 
             function getReviews(evaluationCode) {
                 var config = {
@@ -20,15 +20,33 @@
             }
 
             function postUserDemographic(user) {
+                var access_token = localStorage.getItem("id_token");
                 return $http({
                     method: 'POST',
+                    headers: {
+                        "Authorization": 'Bearer ' + access_token
+                    },
+                    data: user,
                     url: url + '/api/questionnaire/user-demographic'
+                });
+            }
+
+            function postUserExperience(user) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + id_token
+                    },
+                    data: user,
+                    url: url + '/api/questionnaire/user-experience'
                 });
             }
 
             return {
                 getReviews: getReviews,
-                postUserDemographic: postUserDemographic
+                postUserDemographic: postUserDemographic,
+                postUserExperience: postUserExperience
             }
         };
 

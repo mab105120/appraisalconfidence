@@ -3,8 +3,10 @@ package edu.grenoble.em.bourji;
 import edu.grenoble.em.bourji.db.dao.PerformanceReviewDAO;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.dao.UserDemographicDAO;
+import edu.grenoble.em.bourji.db.dao.UserExperienceDAO;
 import edu.grenoble.em.bourji.db.pojo.PerformanceReview;
 import edu.grenoble.em.bourji.db.pojo.UserDemographic;
+import edu.grenoble.em.bourji.db.pojo.UserExperience;
 import edu.grenoble.em.bourji.resource.AppraisalConfidenceResource;
 import edu.grenoble.em.bourji.resource.PerformanceReviewResource;
 import edu.grenoble.em.bourji.resource.QuestionnaireResource;
@@ -29,7 +31,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
 
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
             PerformanceReview.class,
-            UserDemographic.class) {
+            UserDemographic.class,
+            UserExperience.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -56,7 +59,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         performanceReviewCache.instantiateCache();
 
         QuestionnaireDAO questionnaireDAO = new QuestionnaireDAO()
-                .withUserDemographicDao(new UserDemographicDAO(hibernate.getSessionFactory()));
+                .withUserDemographicDao(new UserDemographicDAO(hibernate.getSessionFactory()))
+                .withUserExperienceDao(new UserExperienceDAO(hibernate.getSessionFactory()));
 
         JwtTokenHelper tokenHelper = new JwtTokenHelper(config.getAuth0Domain(), config.getKid());
 
