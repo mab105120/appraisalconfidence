@@ -6,6 +6,7 @@
     require('@uirouter/angularjs');
     require('angular-auth0');
     require('angular-spinner');
+    require('angularjs-toaster');
 
     var appraisal_app = angular.module('appraisal_app', require('./app-modules.js'));
     // Configure app

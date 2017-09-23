@@ -7,21 +7,19 @@
         <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
         <link href="node_modules/bootstrap-slider/dist/css/bootstrap-slider.min.css" rel="stylesheet"/>
         <link rel="stylesheet" href="app/css/style.css">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:200" rel="stylesheet">
+        <link href="//cdnjs.cloudflare.com/ajax/libs/angularjs-toaster/2.1.0/toaster.css" rel="stylesheet" />
         <!--auth0 dependencies-->
         <script src="node_modules/auth0-js/build/auth0.min.js"></script>
         <script type="text/javascript" src="distro/bundle.js"></script>
-        <style>
-            p {
-                font-family: 'Roboto', sans-serif;
-            }
-        </style>
     </head>
     <body>
         <div ng-app="appraisal_app" class="ngCloak" ng-controller="mainController">
 
             <navbar></navbar>
-
+            <toaster-container toaster-options="{'close-button': true,
+            'time-out':{ 'toast-error': 0, 'toast-warning': 5000, 'toast-success': 3000 },
+            'body-output-type': 'trustedHtml'
+            }"></toaster-container>
             <div class="container" style="margin-bottom:100px;">
                 <ui-view></ui-view>
             </div>

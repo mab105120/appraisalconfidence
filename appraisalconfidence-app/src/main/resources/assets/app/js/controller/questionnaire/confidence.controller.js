@@ -4,10 +4,11 @@
         '$scope',
         '$state',
         'authService',
+        'toaster',
         'appcon'
     ];
 
-    function quest_confidence_controller($scope, $state, authService, appcon) {
+    function quest_confidence_controller($scope, $state, authService, toaster, appcon) {
         $scope.submit = function() {
             console.log($scope.items);
             console.log($scope.items2);
@@ -115,7 +116,7 @@
 
         $scope.submit = function() {
             if(!authService.isAuthenticated()) {
-                alert('You need to be logged in to perform this operation!');
+                toaster.pop('error', 'Error', 'You need to be logged in to perform this operation!');
                 return;
             }
 
@@ -124,11 +125,13 @@
             $scope.$parent.startSpinner();
             appcon.postUserConfidence(userConfidenceResponse)
             .then(function success(response) {
+                toaster.pop('success', 'Saved!', 'Your response has been saved');
                 console.log('POST /api/questionnaire/confidence ' + response.status);
                 $scope.$parent.stopSpinner();
                 $state.go('procedure');
             }, function failure(response) {
-                alert("Sorry we weren't able to save your response. Reason: " + response.data.message);
+                var error = response.data === null ? 'Server unreachable!' : response.data.message;
+                toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
                 $scope.$parent.stopSpinner();
             });
         }

@@ -55,11 +55,24 @@
                 });
             }
 
+            function postUserEvaluation(userEvaluation) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        data: userEvaluation,
+                        url: url + '/api/appraisal'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
                 postUserExperience: postUserExperience,
-                postUserConfidence: postUserConfidence
+                postUserConfidence: postUserConfidence,
+                postUserEvaluation: postUserEvaluation
             }
         };
 

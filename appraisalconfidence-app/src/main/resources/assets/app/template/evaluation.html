@@ -3,7 +3,7 @@
 </div>
 <div class="row">
     <div class="col-sm-12" style="margin-bottom:30px;">
-        <h4>Teacher evaluation [1 of 10]</h4>
+        <h4>Teacher evaluation [ {{ currentEvaluation }}of 10]</h4>
         <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion. To review
         each teacher on a specific job function (Teaching skills, communication, or professionalism) click on the button labeled supervisor
         next to each job function to review the supervisor's review of that teacher on the job function. You are free to reach as many
@@ -50,8 +50,8 @@
     <div class="row" style="margin-top:50px;">
         <div class="col-sm-12">
             <p>After reviewing each teacher's dossier, I recommend that the board give tenure promotion to: <span style="color: red">*</span>
-                <label style="margin-left:180px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="teacher1" required>Teacher 1</label>
-                <label style="margin-left:40px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="teacher2" required>Teacher 2</label>
+                <label style="margin-left:180px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="1" required>Teacher 1</label>
+                <label style="margin-left:40px;" class="radio-inline"><input type="radio" name="optradio" ng-model="selectedTeacher" value="2" required>Teacher 2</label>
             </p>
         </div>
     </div>

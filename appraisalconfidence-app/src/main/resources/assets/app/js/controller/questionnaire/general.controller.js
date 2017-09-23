@@ -6,10 +6,11 @@
             '$scope',
             '$state',
             'appcon',
-            'authService'
+            'authService',
+            'toaster'
         ];
 
-    function questionnaire_controller($scope, $state, appcon, authService) {
+    function questionnaire_controller($scope, $state, appcon, authService, toaster) {
         $scope.ageGroup = [
             '[20-30]',
             '[30-40]',
@@ -39,8 +40,8 @@
         ];
 
         $scope.submit = function() {
-            if(!authService.isAuthenticated) {
-                alert('You must be logged in to perform this operation!');
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error','Authentication Issue','You must be logged in to perform this action');
                 return;
             }
             var user = {
@@ -53,9 +54,11 @@
             appcon.postUserDemographic(user)
             .then(function success(response) {
                 $scope.$parent.stopSpinner();
+                toaster.pop('success','Saved!','Your response has been saved successfully!');
                 $state.go('experience');
             }, function failure(response) {
-                alert("Sorry we were unable to save your response. Reason (" + response.status + "): " + response.data.message);
+                var errorMessage = (response.data === null) ? 'Server unreachable' : response.data.message;
+                toaster.pop('error','Error', "Sorry we were unable to save your response. Reason (" + response.status + "): " + errorMessage);
                 $scope.$parent.stopSpinner();
             });
         }

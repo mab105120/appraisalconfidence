@@ -55,6 +55,7 @@
 
 
         function isAuthenticated() {
+            console.log('isAuthenticated is executed');
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
             return new Date().getTime() < expiresAt;
         }

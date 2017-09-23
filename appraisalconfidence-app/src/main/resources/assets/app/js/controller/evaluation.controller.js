@@ -2,14 +2,20 @@
 
     evaluation_controller.$inject = [
             '$scope',
+            '$state',
             '$stateParams',
             '$http',
-            'appcon'
+            'appcon',
+            'authService',
+            'toaster'
         ];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $stateParams, $http, appcon) {
+    function evaluation_controller($scope, $state, $stateParams, $http, appcon, authService, toaster) {
+        var TOTAL_EVALUATIONS = 10;
+        $scope.currentEvaluation = $stateParams.id;
+
         $('#slider1').slider();
         $('#slider1').on('slide', function(slideEvt) {
             var val = slideEvt.value;
@@ -34,7 +40,8 @@
                 $scope.$parent.stopSpinner();
             },
             function(response) {
-                alert('Error: Unable to retrieve teacher evaluations');
+                var errorMessage = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Unable to get teacher reviews: ' + errorMessage);
                 console.log('GET /api/performance-review/ ' + response.status);
                 console.log(response);
                 $scope.$parent.stopSpinner();
@@ -50,14 +57,36 @@
         }
 
         $scope.saveAndContinue = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                return;
+            }
             $scope.$parent.startSpinner();
-            $timeout(function() {
+            var userEval = {
+                evaluationCode: $stateParams.id,
+                recommendationPick: $scope.selectedTeacher,
+                relConfidence: $scope.relConfidence,
+                absConfidence: $scope.absConfidence,
+                comment: $scope.comment
+            };
+            $scope.$parent.startSpinner();
+            appcon.postUserEvaluation(userEval)
+            .then(function success(response) {
+                toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                if($stateParams.id === TOTAL_EVALUATIONS)
+                    $state.go('end');
+                $state.go('/evaluation/' + $stateParams.id + 1);
                 $scope.$parent.stopSpinner();
-            }, 5000);
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                console.log('Error Object');
+                console.log(response);
+            });
         }
 
         $scope.back = function() {
-            alert('The back button is not available yet!');
+            toaster.pop('warning', 'Operation unavailable', 'Back button is currently unavailable!');
         }
 
     };

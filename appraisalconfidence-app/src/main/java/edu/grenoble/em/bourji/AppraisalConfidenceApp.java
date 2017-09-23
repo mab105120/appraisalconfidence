@@ -1,10 +1,7 @@
 package edu.grenoble.em.bourji;
 
 import edu.grenoble.em.bourji.db.dao.*;
-import edu.grenoble.em.bourji.db.pojo.PerformanceReview;
-import edu.grenoble.em.bourji.db.pojo.UserConfidence;
-import edu.grenoble.em.bourji.db.pojo.UserDemographic;
-import edu.grenoble.em.bourji.db.pojo.UserExperience;
+import edu.grenoble.em.bourji.db.pojo.*;
 import edu.grenoble.em.bourji.resource.AppraisalConfidenceResource;
 import edu.grenoble.em.bourji.resource.PerformanceReviewResource;
 import edu.grenoble.em.bourji.resource.QuestionnaireResource;
@@ -29,7 +26,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
 
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
             PerformanceReview.class,
-            UserDemographic.class, UserExperience.class, UserConfidence.class) {
+            UserDemographic.class, UserExperience.class, UserConfidence.class, TeacherRecommendation.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -63,7 +60,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         JwtTokenHelper tokenHelper = new JwtTokenHelper(config.getAuth0Domain(), config.getKid());
 
         // register resources
-        environment.jersey().register(new AppraisalConfidenceResource(config.getAuth0Domain(), config.getKid()));
+        environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
+        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, new AppraisalConfidenceDAO(hibernate.getSessionFactory())));
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
         environment.jersey().register(new QuestionnaireResource(questionnaireDAO, tokenHelper));
     }

@@ -6,10 +6,11 @@
         '$scope',
         '$state',
         'appcon',
+        'toaster',
         'authService'
     ];
 
-    function ques_experience_controller($scope, $state, appcon, authService) {
+    function ques_experience_controller($scope, $state, appcon, toaster, authService) {
         $scope.titleGroup = [
             'Contingent Worker',
             'Analyst',
@@ -57,7 +58,7 @@
 
         $scope.submit = function() {
             if(!authService.isAuthenticated()) {
-                alert('You have to be logged in to perform this operation!');
+                toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
             var user = {
@@ -76,10 +77,12 @@
             appcon.postUserExperience(user)
             .then(function success(response) {
                 $scope.$parent.stopSpinner();
+                toaster.pop('success', 'Saved!', 'Your response have been saved');
                 $state.go('confidence');
             }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
                 $scope.$parent.stopSpinner();
-                alert('Error saving data: ' + response.message);
+                toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
             });
         };
     }
