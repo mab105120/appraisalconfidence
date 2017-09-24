@@ -6,6 +6,7 @@ import edu.grenoble.em.bourji.api.TeacherDossier;
 import edu.grenoble.em.bourji.db.pojo.PerformanceReview;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
  * Created by Moe on 9/5/2017.
  */
 public class PerformanceReviewDAO extends AbstractDAO<PerformanceReview> {
+
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PerformanceReviewDAO.class);
 
     public PerformanceReviewDAO(SessionFactory sessionFactory) {
         super(sessionFactory);
@@ -38,7 +41,9 @@ public class PerformanceReviewDAO extends AbstractDAO<PerformanceReview> {
     }
 
     public Map<String, TeacherDossier> getTeacherDossiers() {
+        LOGGER.info("Getting teacher reviews...");
         Map<String, List<PerformanceReview>> reviewsByTeacherId = getAllPerformanceReviews();
+        LOGGER.info(String.format("Found %s reviews", reviewsByTeacherId.size()));
         Map<String, TeacherDossier> reviewDossiersByTeacherId = new HashMap<>();
         for (Map.Entry<String, List<PerformanceReview>> entry : reviewsByTeacherId.entrySet())
             reviewDossiersByTeacherId.put(entry.getKey(), getTeacherDossier(entry.getValue()));

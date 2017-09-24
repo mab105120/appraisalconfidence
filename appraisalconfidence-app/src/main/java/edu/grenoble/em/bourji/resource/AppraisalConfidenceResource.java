@@ -2,8 +2,10 @@ package edu.grenoble.em.bourji.resource;
 
 import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
+import edu.grenoble.em.bourji.db.dao.StatusDAO;
+import edu.grenoble.em.bourji.db.pojo.Status;
+import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
@@ -28,10 +30,12 @@ public class AppraisalConfidenceResource {
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppraisalConfidenceResource.class);
     private final JwtTokenHelper tokenHelper;
     private final AppraisalConfidenceDAO dao;
+    private final StatusDAO statusDAO;
 
-    public AppraisalConfidenceResource(JwtTokenHelper tokenHelper, AppraisalConfidenceDAO dao) {
+    public AppraisalConfidenceResource(JwtTokenHelper tokenHelper, AppraisalConfidenceDAO dao, StatusDAO statusDAO) {
         this.tokenHelper = tokenHelper;
         this.dao = dao;
+        this.statusDAO = statusDAO;
     }
 
     @POST
@@ -49,6 +53,7 @@ public class AppraisalConfidenceResource {
             LOGGER.info("User id: " + userId);
             teacherRecommendation.setUser(userId);
             dao.add(teacherRecommendation);
+            statusDAO.add(new Status(userId, "EVALUATION_" + teacherRecommendation.getEvaluationCode()));
         } catch (HibernateException | JwkException e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());

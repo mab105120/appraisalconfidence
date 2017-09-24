@@ -2,8 +2,9 @@ package edu.grenoble.em.bourji.resource;
 
 import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
-import edu.grenoble.em.bourji.api.BadResponse;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
+import edu.grenoble.em.bourji.db.dao.StatusDAO;
+import edu.grenoble.em.bourji.db.pojo.Status;
 import edu.grenoble.em.bourji.db.pojo.UserConfidence;
 import edu.grenoble.em.bourji.db.pojo.UserDemographic;
 import edu.grenoble.em.bourji.db.pojo.UserExperience;
@@ -28,11 +29,13 @@ public class QuestionnaireResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireResource.class);
     private final QuestionnaireDAO dao;
+    private final StatusDAO statusDAO;
     private final JwtTokenHelper tokenHelper;
 
-    public QuestionnaireResource(QuestionnaireDAO dao, JwtTokenHelper tokenHelper) {
+    public QuestionnaireResource(QuestionnaireDAO dao, JwtTokenHelper tokenHelper, StatusDAO statusDAO) {
         this.dao = dao;
         this.tokenHelper = tokenHelper;
+        this.statusDAO = statusDAO;
     }
 
     @POST
@@ -42,7 +45,7 @@ public class QuestionnaireResource {
                                        @Context HttpHeaders httpHeaders) {
         String authorizationHeader = httpHeaders.getHeaderString("Authorization");
         if (authorizationHeader == null)
-            return respondWithUnauthorized();
+            return Respond.respondWithUnauthorized();
 
         String accessToken = authorizationHeader.substring(7);
 
@@ -51,8 +54,9 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userDemographic.setUser(userId);
             dao.getUserDemographicDAO().add(userDemographic);
+            statusDAO.add(new Status(userId, "USER_DEMOGRAPHIC"));
         } catch (HibernateException | JwkException e) {
-            return respondWithError("Unable to save response. Error: " + e.getMessage());
+            return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
         return Response.ok().build();
     }
@@ -65,7 +69,7 @@ public class QuestionnaireResource {
 
         String authorizationHeader = httpHeaders.getHeaderString("Authorization");
         if (authorizationHeader == null)
-            return respondWithUnauthorized();
+            return Respond.respondWithUnauthorized();
 
         String accessToken = authorizationHeader.substring(7);
 
@@ -74,8 +78,9 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userExperience.setUser(userId);
             dao.getUserExperienceDAO().add(userExperience);
+            statusDAO.add(new Status(userId, "USER_EXPERIENCE"));
         } catch (HibernateException | JwkException e) {
-            return respondWithError("Unable to save response. Error: " + e.getMessage());
+            return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
         return Response.ok().build();
     }
@@ -88,7 +93,7 @@ public class QuestionnaireResource {
 
         String authorizationHeader = httpHeaders.getHeaderString("Authorization");
         if (authorizationHeader == null)
-            return respondWithUnauthorized();
+            return Respond.respondWithUnauthorized();
 
         String accessToken = authorizationHeader.substring(7);
 
@@ -97,8 +102,9 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userConfidenceResponse.stream().forEach(res -> res.setUser(userId));
             dao.getUserConfidenceDAO().addAll(userConfidenceResponse);
+            statusDAO.add(new Status(userId, "USER_CONFIDENCE"));
         } catch (HibernateException | JwkException e) {
-            return respondWithError("Unable to save response. Error: " + e.getMessage());
+            return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
         return Response.ok().build();
     }
@@ -111,24 +117,9 @@ public class QuestionnaireResource {
         try {
             userDemographic = dao.getUserDemographicDAO().getUserDemographics(userId);
         } catch (HibernateException e) {
-            return respondWithError("Unable to save response. Error: " + e.getMessage());
+            return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
         return Response.ok(userDemographic).build();
     }
 
-    private Response respondWithError(String errorMessage) {
-        BadResponse response = new BadResponse().withMessage(errorMessage);
-        return Response
-                .status(500)
-                .entity(response)
-                .build();
-    }
-
-    private Response respondWithUnauthorized() {
-        BadResponse response = new BadResponse().withMessage("You are not authorized to perform this operation!");
-        return Response
-                .status(403)
-                .entity(response)
-                .build();
-    }
 }

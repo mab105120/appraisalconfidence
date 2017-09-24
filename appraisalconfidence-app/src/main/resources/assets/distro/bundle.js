@@ -168,6 +168,7 @@
             '$state',
             '$stateParams',
             '$http',
+            '$window',
             'appcon',
             'authService',
             'toaster'
@@ -175,7 +176,7 @@
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $state, $stateParams, $http, appcon, authService, toaster) {
+    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster) {
         var TOTAL_EVALUATIONS = 10;
         $scope.currentEvaluation = $stateParams.id;
 
@@ -238,7 +239,9 @@
                 toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
                 if($stateParams.id === TOTAL_EVALUATIONS)
                     $state.go('end');
-                $state.go('/evaluation/' + $stateParams.id + 1);
+                var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                $window.scrollTo(0, 0); // scroll to top
+                $state.go('evaluation', {id: nextEvaluationCode});
                 $scope.$parent.stopSpinner();
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable' : response.data.message;

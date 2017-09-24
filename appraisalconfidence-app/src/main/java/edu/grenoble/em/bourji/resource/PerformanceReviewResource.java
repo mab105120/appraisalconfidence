@@ -31,14 +31,8 @@ public class PerformanceReviewResource {
         try {
             dossiers = cache.getTeacherDossiers(evaluationCode);
         } catch (HibernateException | NullPointerException e) {
-            return respondWithError("Unable to retrieve evaluation reviews from database. Error details: " + e.getMessage());
+            return Respond.respondWithError("Unable to retrieve evaluation reviews from database. Error details: " + e.getMessage());
         }
         return Response.ok(dossiers).build();
-    }
-
-    private Response respondWithError(String errorMessage) {
-        return Response.status(500)
-                .entity(errorMessage)
-                .build();
     }
 }
