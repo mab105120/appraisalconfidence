@@ -54,7 +54,8 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userDemographic.setUser(userId);
             dao.getUserDemographicDAO().add(userDemographic);
-            statusDAO.add(new Status(userId, "USER_DEMOGRAPHIC"));
+            LOGGER.info(String.format("Setting user (%s) status to QUEST_DEMO", userId));
+            statusDAO.add(new Status(userId, "QUEST_DEMO"));
         } catch (HibernateException | JwkException e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -78,7 +79,8 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userExperience.setUser(userId);
             dao.getUserExperienceDAO().add(userExperience);
-            statusDAO.add(new Status(userId, "USER_EXPERIENCE"));
+            LOGGER.info(String.format("Setting user (%s) status to QUEST_EXP", userId));
+            statusDAO.add(new Status(userId, "QUEST_EXP"));
         } catch (HibernateException | JwkException e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -102,7 +104,8 @@ public class QuestionnaireResource {
             LOGGER.info("User id: " + userId);
             userConfidenceResponse.stream().forEach(res -> res.setUser(userId));
             dao.getUserConfidenceDAO().addAll(userConfidenceResponse);
-            statusDAO.add(new Status(userId, "USER_CONFIDENCE"));
+            LOGGER.info(String.format("Setting user (%s) status to QUEST_CON", userId));
+            statusDAO.add(new Status(userId, "QUEST_CON"));
         } catch (HibernateException | JwkException e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }

@@ -146,9 +146,15 @@
 
     'use-strict';
 
-    callback_controller.$inject = ['$state']
+    callback_controller.$inject = [
+            '$scope',
+            '$state',
+            'toaster',
+            'appcon'
+        ]
 
-    function callback_controller($state) {
+    function callback_controller($scope, $state, toaster, appcon) {
+        console.log('This is not running!');
         // implement controller
         if(localStorage.getItem('redirect_state') === null)
             $state.go('home');
@@ -293,17 +299,6 @@
     function main_controller($scope, usSpinnerService) {
 
         require('block-ui');
-
-        $scope.showAlert = false;
-        $scope.setAlert = function(title, body) {
-            $scope.alertTitle = title;
-            $scope.alertBody = body;
-            $scope.showAlert = true;
-        }
-
-        $scope.hideAlert = function() {
-            $scope.showAlert = false;
-        }
 
         $scope.startSpinner = function() {
             $.blockUI({ message: null });
@@ -770,9 +765,9 @@
         };
     }
 
-    navbar_controller.$inject = ['$scope', 'authService', '$timeout'];
+    navbar_controller.$inject = ['$scope', 'authService', 'appcon'];
 
-    function navbar_controller($scope, authService, $timeout) {
+    function navbar_controller($scope, authService, appcon) {
         var vm = this; // why do this ?
         vm.auth = authService;
         $scope.login = function() {
@@ -781,8 +776,15 @@
 
         $scope.logout = function() {
             $scope.startSpinner();
-            authService.logout();
-            $scope.stopSpinner();
+            appcon.postLogout()
+            .then(function success(response) {
+                console.log('User successfully logged out!');
+                authService.logout();
+                $scope.stopSpinner();
+            }, function failure(response) {
+                $scope.stopSpinner();
+            });
+
         }
     };
 
@@ -858,12 +860,36 @@
                 });
             }
 
+            function postLogin() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/login'
+                });
+            }
+
+            function postLogout() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/logout'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
                 postUserExperience: postUserExperience,
                 postUserConfidence: postUserConfidence,
-                postUserEvaluation: postUserEvaluation
+                postUserEvaluation: postUserEvaluation,
+                postLogin: postLogin,
+                postLogout: postLogout
             }
         };
 
@@ -880,10 +906,10 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$timeout'
+        '$http'
     ]
 
-    function authService($state, angularAuth0, $timeout) {
+    function authService($state, angularAuth0, $http) {
 
         function login() {
             // remember current state to reroute to after authentication
@@ -905,6 +931,20 @@
                         $state.go(localStorage.getItem('redirect_state'));
                         localStorage.removeItem('redirect_state');
                     }
+
+                    $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('id_token')
+                        },
+                        url: 'http://localhost:5000/api/activity/logout' // TODO Change this base url
+                    })
+                    .then(function success(response){
+                        console.log('User login recorded successfully');
+                    }, function failure(response) {
+                        console.log('Unable to record user login!');
+                    });
+
                } else if (err) {
                     alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);

@@ -2,10 +2,7 @@ package edu.grenoble.em.bourji;
 
 import edu.grenoble.em.bourji.db.dao.*;
 import edu.grenoble.em.bourji.db.pojo.*;
-import edu.grenoble.em.bourji.resource.AppraisalConfidenceResource;
-import edu.grenoble.em.bourji.resource.PerformanceReviewResource;
-import edu.grenoble.em.bourji.resource.QuestionnaireResource;
-import edu.grenoble.em.bourji.resource.StatusResource;
+import edu.grenoble.em.bourji.resource.*;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.db.DataSourceFactory;
@@ -26,8 +23,8 @@ import java.util.HashMap;
 public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfig> {
 
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
-            PerformanceReview.class,
-            UserDemographic.class, UserExperience.class, UserConfidence.class, TeacherRecommendation.class, Status.class) {
+            PerformanceReview.class, UserDemographic.class, UserExperience.class,
+            UserConfidence.class, TeacherRecommendation.class, Status.class, Activity.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -59,13 +56,16 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
                 .withUserConfidenceDao(new UserConfidenceDAO(hibernate.getSessionFactory()));
 
         JwtTokenHelper tokenHelper = new JwtTokenHelper(config.getAuth0Domain(), config.getKid());
-
+        StatusDAO statusDAO = new StatusDAO(hibernate.getSessionFactory());
+        ActivityDAO activityDAO = new ActivityDAO(hibernate.getSessionFactory());
         // register resources
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
-        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, new AppraisalConfidenceDAO(hibernate.getSessionFactory())));
+        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, new AppraisalConfidenceDAO(hibernate.getSessionFactory()),
+                statusDAO, performanceReviewCache));
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
-        environment.jersey().register(new QuestionnaireResource(questionnaireDAO, tokenHelper));
+        environment.jersey().register(new QuestionnaireResource(questionnaireDAO, tokenHelper, statusDAO));
         environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory()), tokenHelper));
+        environment.jersey().register(new ActivityResource(tokenHelper, activityDAO));
     }
 
     @Override

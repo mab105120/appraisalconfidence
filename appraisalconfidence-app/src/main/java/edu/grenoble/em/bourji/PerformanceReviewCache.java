@@ -36,4 +36,8 @@ public class PerformanceReviewCache {
         if (teachers == null) throw new NullPointerException("Invalid evaluation code: " + evaluationCode);
         return new TeacherDossiers(teacherDossiers.get(teachers.getLeft()), teacherDossiers.get(teachers.getRight()));
     }
+
+    public boolean isValid(String evaluationCode) {
+        return codeToProfilesMap.get(evaluationCode) != null;
+    }
 }

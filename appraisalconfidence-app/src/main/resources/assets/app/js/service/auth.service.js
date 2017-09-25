@@ -5,10 +5,10 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$timeout'
+        '$http'
     ]
 
-    function authService($state, angularAuth0, $timeout) {
+    function authService($state, angularAuth0, $http) {
 
         function login() {
             // remember current state to reroute to after authentication
@@ -30,6 +30,20 @@
                         $state.go(localStorage.getItem('redirect_state'));
                         localStorage.removeItem('redirect_state');
                     }
+
+                    $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('id_token')
+                        },
+                        url: 'http://localhost:5000/api/activity/logout' // TODO Change this base url
+                    })
+                    .then(function success(response){
+                        console.log('User login recorded successfully');
+                    }, function failure(response) {
+                        console.log('Unable to record user login!');
+                    });
+
                } else if (err) {
                     alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);

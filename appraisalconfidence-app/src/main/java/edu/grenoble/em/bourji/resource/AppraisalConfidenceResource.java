@@ -2,6 +2,7 @@ package edu.grenoble.em.bourji.resource;
 
 import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
+import edu.grenoble.em.bourji.PerformanceReviewCache;
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
 import edu.grenoble.em.bourji.db.pojo.Status;
@@ -29,13 +30,16 @@ public class AppraisalConfidenceResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppraisalConfidenceResource.class);
     private final JwtTokenHelper tokenHelper;
+    private final PerformanceReviewCache performanceReviewCache;
     private final AppraisalConfidenceDAO dao;
     private final StatusDAO statusDAO;
 
-    public AppraisalConfidenceResource(JwtTokenHelper tokenHelper, AppraisalConfidenceDAO dao, StatusDAO statusDAO) {
+    public AppraisalConfidenceResource(JwtTokenHelper tokenHelper, AppraisalConfidenceDAO dao,
+                                       StatusDAO statusDAO, PerformanceReviewCache performanceReviewCache) {
         this.tokenHelper = tokenHelper;
         this.dao = dao;
         this.statusDAO = statusDAO;
+        this.performanceReviewCache = performanceReviewCache;
     }
 
     @POST
@@ -46,6 +50,9 @@ public class AppraisalConfidenceResource {
         if (authorizationHeader == null)
             return Respond.respondWithUnauthorized();
 
+        if(!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
+            return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", teacherRecommendation.getEvaluationCode()));
+
         String accessToken = authorizationHeader.substring(7);
 
         try {
@@ -53,7 +60,9 @@ public class AppraisalConfidenceResource {
             LOGGER.info("User id: " + userId);
             teacherRecommendation.setUser(userId);
             dao.add(teacherRecommendation);
-            statusDAO.add(new Status(userId, "EVALUATION_" + teacherRecommendation.getEvaluationCode()));
+            String status = "EVALUATION_" + teacherRecommendation.getEvaluationCode();
+            LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
+            statusDAO.add(new Status(userId, status));
         } catch (HibernateException | JwkException e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());

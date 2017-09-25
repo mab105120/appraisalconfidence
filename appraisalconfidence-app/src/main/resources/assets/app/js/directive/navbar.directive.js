@@ -10,9 +10,9 @@
         };
     }
 
-    navbar_controller.$inject = ['$scope', 'authService', '$timeout'];
+    navbar_controller.$inject = ['$scope', 'authService', 'appcon'];
 
-    function navbar_controller($scope, authService, $timeout) {
+    function navbar_controller($scope, authService, appcon) {
         var vm = this; // why do this ?
         vm.auth = authService;
         $scope.login = function() {
@@ -21,8 +21,15 @@
 
         $scope.logout = function() {
             $scope.startSpinner();
-            authService.logout();
-            $scope.stopSpinner();
+            appcon.postLogout()
+            .then(function success(response) {
+                console.log('User successfully logged out!');
+                authService.logout();
+                $scope.stopSpinner();
+            }, function failure(response) {
+                $scope.stopSpinner();
+            });
+
         }
     };
 

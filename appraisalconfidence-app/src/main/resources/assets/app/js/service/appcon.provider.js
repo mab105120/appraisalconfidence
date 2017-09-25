@@ -67,12 +67,36 @@
                 });
             }
 
+            function postLogin() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/login'
+                });
+            }
+
+            function postLogout() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/logout'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
                 postUserExperience: postUserExperience,
                 postUserConfidence: postUserConfidence,
-                postUserEvaluation: postUserEvaluation
+                postUserEvaluation: postUserEvaluation,
+                postLogin: postLogin,
+                postLogout: postLogout
             }
         };
 

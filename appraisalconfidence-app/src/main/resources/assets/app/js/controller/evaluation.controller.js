@@ -85,6 +85,7 @@
                 toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
                 console.log('Error Object');
                 console.log(response);
+                $scope.$parent.stopSpinner();
             });
         }
 
