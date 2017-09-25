@@ -10,7 +10,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <dropwizard.version>0.9.1</dropwizard.version>
+        <dropwizard.version>1.0.9</dropwizard.version>
     </properties>
 
     <modules>

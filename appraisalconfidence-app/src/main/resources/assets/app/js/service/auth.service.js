@@ -5,12 +5,18 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$timeout'
+        '$http'
     ]
 
-    function authService($state, angularAuth0, $timeout) {
+    function authService($state, angularAuth0, $http) {
 
         function login() {
+            // remember current state to reroute to after authentication
+            if ($state.current.name === 'welcome')
+                localStorage.setItem('redirect_state', 'home');
+            else
+                localStorage.setItem('redirect_state', $state.current.name);
+
             angularAuth0.authorize();
         }
 
@@ -18,9 +24,28 @@
             angularAuth0.parseHash(function(err, authResult) {
                if(authResult && authResult.accessToken && authResult.idToken) {
                     setSession(authResult);
-                    $state.go('home');
+                    if (localStorage.getItem('redirect_state') === null)
+                        $state.go('home');
+                    else {
+                        $state.go(localStorage.getItem('redirect_state'));
+                        localStorage.removeItem('redirect_state');
+                    }
+
+                    $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('id_token')
+                        },
+                        url: 'http://localhost:5000/api/activity/logout' // TODO Change this base url
+                    })
+                    .then(function success(response){
+                        console.log('User login recorded successfully');
+                    }, function failure(response) {
+                        console.log('Unable to record user login!');
+                    });
+
                } else if (err) {
-                    alert('An error occured while trying to parse the URL has. Please see console for more details!');
+                    alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);
                }
             });
@@ -44,6 +69,7 @@
 
 
         function isAuthenticated() {
+            console.log('isAuthenticated is executed');
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
             return new Date().getTime() < expiresAt;
         }
