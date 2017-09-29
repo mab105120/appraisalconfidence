@@ -36,7 +36,7 @@
                         headers: {
                             'Authorization': 'Bearer ' + localStorage.getItem('id_token')
                         },
-                        url: 'http://localhost:5000/api/activity/logout' // TODO Change this base url
+                        url: 'http://localhost:5000/api/activity/login' // TODO Change this base url
                     })
                     .then(function success(response){
                         console.log('User login recorded successfully');

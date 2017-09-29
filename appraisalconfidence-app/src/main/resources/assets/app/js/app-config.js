@@ -34,6 +34,11 @@
             controller: 'procedureController',
             templateUrl: 'app/template/procedure.html'
           })
+          .state('tenure', {
+            url: '/tenure',
+            controller: 'tenureController',
+            templateUrl: 'app/template/tenure.html'
+          })
           .state('questionnaire', {
             url:'/questionnaire',
             controller: 'quesGeneralController',

@@ -3,8 +3,8 @@
 <form name="general">
     <div class="form-group">
         <label>Age <span style="color: red">*</span></label> </br>
-        <small class="form-text text-muted">Please select your age group</small>
-        <select class="form-control" ng-model="age" ng-options="age for age in ageGroup" required></select>
+        <small class="form-text text-muted">Please enter your age</small>
+        <input class="form-control" type="number" ng-model="age" required>
     </div>
     <div class="form-group">
         <label>Gender <span style="color: red">*</span></label> </br>
