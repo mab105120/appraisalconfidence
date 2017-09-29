@@ -43,14 +43,14 @@
                 });
             }
 
-            function postUserConfidence(user) {
+            function postUserConfidence(payload) {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
-                        data: user,
+                        data: payload,
                         url: url + '/api/questionnaire/user-confidence'
                 });
             }

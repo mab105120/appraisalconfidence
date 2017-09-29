@@ -1,5 +1,7 @@
 package edu.grenoble.em.bourji;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import edu.grenoble.em.bourji.db.dao.*;
 import edu.grenoble.em.bourji.db.pojo.*;
 import edu.grenoble.em.bourji.resource.*;
@@ -24,7 +26,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
 
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
             PerformanceReview.class, UserDemographic.class, UserExperience.class,
-            UserConfidence.class, TeacherRecommendation.class, Status.class, Activity.class) {
+            UserConfidence.class, TeacherRecommendation.class, Status.class, Activity.class,
+            EvaluationActivity.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -45,6 +48,10 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         params.put(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
         params.put(CrossOriginFilter.ALLOW_CREDENTIALS_PARAM, "true");
         cors.setInitParameters(params);
+
+        environment.getObjectMapper().registerModule(new JavaTimeModule());
+        environment.getObjectMapper().configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
         PerformanceReviewDAO dao = new PerformanceReviewDAO(hibernate.getSessionFactory());
         PerformanceReviewCache performanceReviewCache = new UnitOfWorkAwareProxyFactory(hibernate).create(PerformanceReviewCache.class,
                 PerformanceReviewDAO.class, dao);
@@ -58,9 +65,11 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         JwtTokenHelper tokenHelper = new JwtTokenHelper(config.getAuth0Domain(), config.getKid());
         StatusDAO statusDAO = new StatusDAO(hibernate.getSessionFactory());
         ActivityDAO activityDAO = new ActivityDAO(hibernate.getSessionFactory());
+        AppraisalConfidenceDAO confidenceDAO = new AppraisalConfidenceDAO(hibernate.getSessionFactory());
+        EvaluationActivityDAO evaluationActivityDAO = new EvaluationActivityDAO(hibernate.getSessionFactory());
         // register resources
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
-        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, new AppraisalConfidenceDAO(hibernate.getSessionFactory()),
+        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, confidenceDAO, evaluationActivityDAO,
                 statusDAO, performanceReviewCache));
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
         environment.jersey().register(new QuestionnaireResource(questionnaireDAO, tokenHelper, statusDAO));

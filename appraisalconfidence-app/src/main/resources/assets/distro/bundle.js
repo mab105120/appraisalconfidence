@@ -206,6 +206,7 @@
             $('#slider2Val').text(val);
         });
 
+        $scope.selectedEvaluationCode = '';
         $scope.selectedEvaluation = '';
         $scope.selectedEvaluationTitle = '';
 
@@ -232,6 +233,20 @@
             $scope.remainingChars = comment_max_length - $scope.comment.length;
         }
 
+        // evaluation activity
+        $scope.activities = [];
+        $scope.time_modal_open;
+        $('#reviewModal').on('hidden.bs.modal', function() {
+            var closeTime = new Date().toISOString();
+            $scope.activities.push({
+                evaluationCode: $stateParams.id,
+                selectedReview: $scope.selectedEvaluationCode,
+                openTime: $scope.time_modal_open,
+                closeTime: closeTime
+            });
+            console.log($scope.activities);
+        });
+
         $scope.saveAndContinue = function() {
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
@@ -245,8 +260,12 @@
                 absConfidence: $scope.absConfidence,
                 comment: $scope.comment
             };
+            var payload = {
+                recommendation: userEval,
+                activities: $scope.activities
+            }
             $scope.$parent.startSpinner();
-            appcon.postUserEvaluation(userEval)
+            appcon.postUserEvaluation(payload)
             .then(function success(response) {
                 toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
                 if($stateParams.id === TOTAL_EVALUATIONS)
@@ -723,7 +742,8 @@
                                 return null; // TODO handle this case
                         }
                     }
-
+                    scope.$parent.time_modal_open = new Date().toISOString();
+                    scope.$parent.selectedEvaluationCode = scope.jobFunction + '-' + teacher + '-' + supervisor;
                     scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][normalizeJobFunction(scope.jobFunction)][supervisor];
                     scope.$parent.selectedEvaluationTitle = "This is what " + getSupervisorName(supervisor) + " had to say about "+getTeacherName(teacher)+"'s "+scope.jobFunction+"  skills";
                 }
@@ -859,14 +879,14 @@
                 });
             }
 
-            function postUserConfidence(user) {
+            function postUserConfidence(payload) {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
-                        data: user,
+                        data: payload,
                         url: url + '/api/questionnaire/user-confidence'
                 });
             }
@@ -993,7 +1013,6 @@
 
 
         function isAuthenticated() {
-            console.log('isAuthenticated is executed');
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
             return new Date().getTime() < expiresAt;
         }

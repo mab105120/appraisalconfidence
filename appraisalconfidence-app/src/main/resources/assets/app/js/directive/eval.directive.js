@@ -37,7 +37,8 @@
                                 return null; // TODO handle this case
                         }
                     }
-
+                    scope.$parent.time_modal_open = new Date().toISOString();
+                    scope.$parent.selectedEvaluationCode = scope.jobFunction + '-' + teacher + '-' + supervisor;
                     scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][normalizeJobFunction(scope.jobFunction)][supervisor];
                     scope.$parent.selectedEvaluationTitle = "This is what " + getSupervisorName(supervisor) + " had to say about "+getTeacherName(teacher)+"'s "+scope.jobFunction+"  skills";
                 }

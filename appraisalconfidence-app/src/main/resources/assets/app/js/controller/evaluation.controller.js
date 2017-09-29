@@ -31,6 +31,7 @@
             $('#slider2Val').text(val);
         });
 
+        $scope.selectedEvaluationCode = '';
         $scope.selectedEvaluation = '';
         $scope.selectedEvaluationTitle = '';
 
@@ -57,6 +58,20 @@
             $scope.remainingChars = comment_max_length - $scope.comment.length;
         }
 
+        // evaluation activity
+        $scope.activities = [];
+        $scope.time_modal_open;
+        $('#reviewModal').on('hidden.bs.modal', function() {
+            var closeTime = new Date().toISOString();
+            $scope.activities.push({
+                evaluationCode: $stateParams.id,
+                selectedReview: $scope.selectedEvaluationCode,
+                openTime: $scope.time_modal_open,
+                closeTime: closeTime
+            });
+            console.log($scope.activities);
+        });
+
         $scope.saveAndContinue = function() {
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
@@ -70,8 +85,12 @@
                 absConfidence: $scope.absConfidence,
                 comment: $scope.comment
             };
+            var payload = {
+                recommendation: userEval,
+                activities: $scope.activities
+            }
             $scope.$parent.startSpinner();
-            appcon.postUserEvaluation(userEval)
+            appcon.postUserEvaluation(payload)
             .then(function success(response) {
                 toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
                 if($stateParams.id === TOTAL_EVALUATIONS)
