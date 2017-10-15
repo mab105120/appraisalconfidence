@@ -1,12 +1,17 @@
 package edu.grenoble.em.bourji.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by Moe on 8/29/17.
  */
 public class JobFunctionReview {
-    
+
+    @JsonProperty("SP1")
     private String supervisor1Review;
+    @JsonProperty("SP2")
     private String supervisor2Review;
+    @JsonProperty("SP3")
     private String supervisor3Review;
 
     public JobFunctionReview() {
