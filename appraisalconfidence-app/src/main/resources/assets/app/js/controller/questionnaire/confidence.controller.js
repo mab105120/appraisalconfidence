@@ -5,10 +5,11 @@
         '$state',
         'authService',
         'toaster',
-        'appcon'
+        'appcon',
+        '$window'
     ];
 
-    function quest_confidence_controller($scope, $state, authService, toaster, appcon) {
+    function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
         $scope.submit = function() {
             console.log($scope.items);
             console.log($scope.items2);
@@ -128,6 +129,7 @@
                 toaster.pop('success', 'Saved!', 'Your response has been saved');
                 console.log('POST /api/questionnaire/confidence ' + response.status);
                 $scope.$parent.stopSpinner();
+                $window.scrollTo(0, 0);
                 $state.go('procedure');
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable!' : response.data.message;

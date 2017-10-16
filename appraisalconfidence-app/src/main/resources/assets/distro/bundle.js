@@ -342,9 +342,9 @@
 },{"block-ui":113}],9:[function(require,module,exports){
 (function() {
 
-    procedure_controller.$inject = ['$scope', '$state', 'authService'];
+    procedure_controller.$inject = ['$scope', '$state', 'authService', '$window'];
 
-    function procedure_controller($scope, $state, authService) {
+    function procedure_controller($scope, $state, authService, $window) {
 //        if(!authService.isAuthenticated()) {
 //            alert('You are not logged in. You need to log in to view this page.');
 //            authService.login();
@@ -359,6 +359,7 @@
         }
 
         $scope.next = function() {
+            $window.scrollTo(0, 0);
             $state.go('tenure');
         }
     }
@@ -374,10 +375,11 @@
         '$state',
         'authService',
         'toaster',
-        'appcon'
+        'appcon',
+        '$window'
     ];
 
-    function quest_confidence_controller($scope, $state, authService, toaster, appcon) {
+    function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
         $scope.submit = function() {
             console.log($scope.items);
             console.log($scope.items2);
@@ -497,6 +499,7 @@
                 toaster.pop('success', 'Saved!', 'Your response has been saved');
                 console.log('POST /api/questionnaire/confidence ' + response.status);
                 $scope.$parent.stopSpinner();
+                $window.scrollTo(0, 0);
                 $state.go('procedure');
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable!' : response.data.message;
@@ -674,11 +677,13 @@
 
     tenure_controller.$inject = [
         '$scope',
-        '$state'
+        '$state',
+        '$window'
     ]
 
-    function tenure_controller($scope, $state) {
+    function tenure_controller($scope, $state, $window) {
         $scope.submit = function() {
+            $window.scrollTo(0, 0);
             $state.go('evaluation', {id: 1});
         }
     }
