@@ -69,7 +69,6 @@
                 openTime: $scope.time_modal_open,
                 closeTime: closeTime
             });
-            console.log($scope.activities);
         });
 
         $scope.saveAndContinue = function() {

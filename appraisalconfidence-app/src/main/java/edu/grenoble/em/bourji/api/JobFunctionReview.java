@@ -7,6 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobFunctionReview {
 
+    private String teacherName;
+
+    public JobFunctionReview(String teacherName) {
+        this.teacherName = teacherName;
+    }
+
+
     @JsonProperty("SP1")
     private String supervisor1Review;
     @JsonProperty("SP2")
@@ -19,15 +26,19 @@ public class JobFunctionReview {
     }
 
     public String getSupervisor1Review() {
-        return supervisor1Review;
+        return teacherName != null ? setTeacherName(supervisor1Review, teacherName) : supervisor1Review;
     }
 
     public String getSupervisor2Review() {
-        return supervisor2Review;
+        return teacherName != null ? setTeacherName(supervisor2Review, teacherName) : supervisor2Review;
     }
 
     public String getSupervisor3Review() {
-        return supervisor3Review;
+        return teacherName != null ? setTeacherName(supervisor3Review, teacherName) : supervisor3Review;
+    }
+
+    private String setTeacherName(String review, String teacherName) {
+        return review.replaceAll(String.format("${%s}","teacher"), teacherName);
     }
 
     public void setSupervisor1Review(String supervisor1Review) {

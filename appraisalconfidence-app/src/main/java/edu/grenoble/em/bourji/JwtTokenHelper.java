@@ -20,7 +20,7 @@ public class JwtTokenHelper {
     private final String authDomain;
     private final String kid;
 
-    public JwtTokenHelper(String authDomain, String kid) {
+    JwtTokenHelper(String authDomain, String kid) {
         this.authDomain = authDomain;
         this.kid = kid;
     }
@@ -35,7 +35,7 @@ public class JwtTokenHelper {
                     .withIssuer(String.format("https://%s/", authDomain))
                     .build();
             DecodedJWT decodedJWT = verifier.verify(access_id);
-            return decodedJWT.getClaim("nickname").asString();
+            return decodedJWT.getClaim("name").asString();
         } catch (JWTVerificationException e) {
             throw new RuntimeException("An error occurred: " + e.getMessage());
         }
