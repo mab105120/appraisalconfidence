@@ -9,6 +9,7 @@
     <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-left">
             <li><a href="#about">Welcome</a></li>
+            <li ng-show="vm.auth.isAuthenticated()"><a ui-sref="progress">My Progress</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
             <li ng-show="!vm.auth.isAuthenticated()"><a ng-click="login()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>

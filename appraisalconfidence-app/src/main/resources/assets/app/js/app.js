@@ -23,6 +23,7 @@
     appraisal_app.controller('quesExperienceController', require('./controller/questionnaire/experience.controller.js'));
     appraisal_app.controller('questConfidenceController', require('./controller/questionnaire/confidence.controller.js'));
     appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
+    appraisal_app.controller('progressController', require('./controller/progress.controller.js'));
 
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));

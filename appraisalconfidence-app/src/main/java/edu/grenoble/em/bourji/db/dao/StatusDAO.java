@@ -27,4 +27,11 @@ public class StatusDAO extends AbstractDAO<Status> {
     public void add(Status s) {
         persist(s);
     }
+
+    public boolean stepCompleted(String user, String status) {
+        Criteria cr = currentSession().createCriteria(Status.class)
+                .add(Restrictions.eq("user", user))
+                .add(Restrictions.eq("status", status));
+        return !list(cr).isEmpty();
+    }
 }

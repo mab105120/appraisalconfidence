@@ -20,15 +20,37 @@
             }
 
             function postUserDemographic(user) {
-                var access_token = localStorage.getItem("id_token");
+                var id_token = localStorage.getItem("id_token");
                 return $http({
                     method: 'POST',
                     headers: {
-                        "Authorization": 'Bearer ' + access_token
+                        "Authorization": 'Bearer ' + id_token
                     },
                     data: user,
                     url: url + '/api/questionnaire/user-demographic'
                 });
+            }
+
+            function questionnaireCompleted(questionnaireType) {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/questionnaire-is-completed/' + questionnaireType
+                });
+            }
+
+            function getUserDemographics() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-demographic'
+                })
             }
 
             function postUserExperience(user) {
@@ -41,6 +63,17 @@
                     data: user,
                     url: url + '/api/questionnaire/user-experience'
                 });
+            }
+
+            function getUserExperience() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-experience'
+                })
             }
 
             function postUserConfidence(payload) {
@@ -92,9 +125,12 @@
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
+                getUserDemographics: getUserDemographics,
                 postUserExperience: postUserExperience,
                 postUserConfidence: postUserConfidence,
+                getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
+                questionnaireCompleted: questionnaireCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout
             }

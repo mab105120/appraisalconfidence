@@ -58,6 +58,11 @@
             url: '/evaluation/:id',
             controller: 'evaluationController',
             templateUrl: 'app/template/evaluation.html'
+          })
+          .state('progress', {
+            url: '/progress',
+            controller: 'progressController',
+            templateUrl: 'app/template/progress.html'
           });
 
           // Configure auth provider

@@ -11,6 +11,40 @@
         ];
 
     function questionnaire_controller($scope, $state, appcon, authService, toaster) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+            appcon.questionnaireCompleted('QUEST_DEMO')
+            .then(function success(response) {
+                console.log(response);
+                if(response.data === true) {
+                    appcon.getUserDemographics()
+                    .then(function success(response) {
+                        var userDemographics = response.data;
+                        // populate the fields
+                        $scope.age = parseInt(userDemographics.age);
+                        $scope.gender = userDemographics.gender;
+                        $scope.education = userDemographics.education;
+                        $scope.division = userDemographics.division;
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+        init();
+
         $scope.ageGroup = [
             '[20-30]',
             '[30-40]',

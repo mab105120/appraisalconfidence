@@ -11,6 +11,44 @@
     ];
 
     function ques_experience_controller($scope, $state, appcon, toaster, authService) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+            appcon.questionnaireCompleted('QUEST_EXP')
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserExperience()
+                    .then(function success(response) {
+                        var userExperience = response.data;
+                        // populate form fields
+                        $scope.title = userExperience.title;
+                        $scope.subordinates = parseInt(userExperience.subordinates);
+                        $scope.professionalExperience = parseInt(userExperience.professionalExperience);
+                        $scope.paExperience = parseInt(userExperience.appraisalExperience);
+                        $scope.reviewsUpToDate = parseInt(userExperience.totalReviews);
+                        $scope.revieweesUpToDate = parseInt(userExperience.totalReviewees);
+                        $scope.personnelSelection = userExperience.personnelSelection;
+                        if(userExperience.personnelSelection === 'Yes')
+                            $scope.interviewees = parseInt(userExperience.totalCandidates);
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+        init();
+
         $scope.titleGroup = [
             'Contingent Worker',
             'Analyst',
