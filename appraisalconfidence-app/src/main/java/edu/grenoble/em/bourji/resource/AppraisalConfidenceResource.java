@@ -14,10 +14,7 @@ import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -79,5 +76,27 @@ public class AppraisalConfidenceResource {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
         return Response.ok().build();
+    }
+
+    @GET
+    @Path("/{evalCode}")
+    @UnitOfWork
+    public Response getAppraisal(@PathParam("evalCode") String evalCode, @Context HttpHeaders httpHeaders) {
+        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
+        if (authorizationHeader == null)
+            return Respond.respondWithUnauthorized();
+
+        String accessToken = authorizationHeader.substring(7);
+
+        try {
+            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            LOGGER.info("Getting performance appraisal recommendation for " + userId);
+            TeacherRecommendation recommendation = dao.getEvaluation(userId, evalCode);
+            return Response.ok(recommendation).build();
+        } catch (Throwable e) {
+            String message = "Unable to retrieve user performance appraisal report. Details: " + e.getMessage();
+            LOGGER.error(message);
+            return Respond.respondWithError(message);
+        }
     }
 }

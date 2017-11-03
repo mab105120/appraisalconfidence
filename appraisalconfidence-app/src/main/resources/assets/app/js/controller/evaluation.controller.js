@@ -14,6 +14,40 @@
     require('bootstrap-slider');
 
     function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+            appcon.questionnaireCompleted('EVALUATION_' + $stateParams.id)
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserEvaluation($stateParams.id)
+                    .then(function success(response) {
+
+                        $scope.selectedTeacher = response.data.recommendationPick;
+                        $scope.comment = response.data.comment;
+                        $scope.absConfidence = response.data.absConfidence;
+                        $('#slider1').slider().slider('setValue', response.data.absConfidence);
+                        $scope.relConfidence = response.data.relConfidence;
+                        $('#slider2').slider().slider('setValue', response.data.relConfidence);
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+         init();
+
         var TOTAL_EVALUATIONS = 15;
         $scope.currentEvaluation = $stateParams.id;
 
@@ -22,6 +56,14 @@
             var val = slideEvt.value;
             $scope.absConfidence = val;
             $('#slider1Val').text(val);
+        });
+
+        $scope.$watch('absConfidence', function(value) {
+            $('#slider1Val').text(value);
+        });
+
+        $scope.$watch('relConfidence', function(value) {
+            $('#slider2Val').text(value);
         });
 
         $('#slider2').slider();

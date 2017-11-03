@@ -20,9 +20,6 @@
                     .then(function success(response) {
 
                         angular.forEach(response.data, function(item) {
-                            var identifier = 'input[name=' + item.itemCode + '][value=' + item.response + ']';
-                            $(identifier).prop('checked', true);
-
                             if(item.itemCode.startsWith("jsd")) {
                                 angular.forEach($scope.jsdItems, function(element) {
                                     if(element.code === item.itemCode) element.answer = item.response;

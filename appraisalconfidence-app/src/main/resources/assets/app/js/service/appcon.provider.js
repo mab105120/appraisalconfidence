@@ -111,6 +111,17 @@
                 });
             }
 
+            function getUserEvaluation(evalCode) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/appraisal/' + evalCode
+                });
+            }
+
             function postLogin() {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
@@ -142,6 +153,7 @@
                 getUserConfidence: getUserConfidence,
                 getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
+                getUserEvaluation: getUserEvaluation,
                 questionnaireCompleted: questionnaireCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout

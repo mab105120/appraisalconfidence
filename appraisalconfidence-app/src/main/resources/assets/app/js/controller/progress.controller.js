@@ -35,6 +35,8 @@
                 $state.go('questionnaire');
             } else if (step === 'Professional experience questionnaire') {
                 $state.go('experience');
+            } else if (step === 'Judgment confidence questionnaire') {
+                $state.go('confidence');
             }
             console.log('This function will take you to step: ' + step);
         }

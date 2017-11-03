@@ -195,6 +195,40 @@
     require('bootstrap-slider');
 
     function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+            appcon.questionnaireCompleted('EVALUATION_' + $stateParams.id)
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserEvaluation($stateParams.id)
+                    .then(function success(response) {
+
+                        $scope.selectedTeacher = response.data.recommendationPick;
+                        $scope.comment = response.data.comment;
+                        $scope.absConfidence = response.data.absConfidence;
+                        $('#slider1').slider().slider('setValue', response.data.absConfidence);
+                        $scope.relConfidence = response.data.relConfidence;
+                        $('#slider2').slider().slider('setValue', response.data.relConfidence);
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+         init();
+
         var TOTAL_EVALUATIONS = 15;
         $scope.currentEvaluation = $stateParams.id;
 
@@ -203,6 +237,14 @@
             var val = slideEvt.value;
             $scope.absConfidence = val;
             $('#slider1Val').text(val);
+        });
+
+        $scope.$watch('absConfidence', function(value) {
+            $('#slider1Val').text(value);
+        });
+
+        $scope.$watch('relConfidence', function(value) {
+            $('#slider2Val').text(value);
         });
 
         $('#slider2').slider();
@@ -410,6 +452,8 @@
                 $state.go('questionnaire');
             } else if (step === 'Professional experience questionnaire') {
                 $state.go('experience');
+            } else if (step === 'Judgment confidence questionnaire') {
+                $state.go('confidence');
             }
             console.log('This function will take you to step: ' + step);
         }
@@ -440,9 +484,6 @@
                     .then(function success(response) {
 
                         angular.forEach(response.data, function(item) {
-                            var identifier = 'input[name=' + item.itemCode + '][value=' + item.response + ']';
-                            $(identifier).prop('checked', true);
-
                             if(item.itemCode.startsWith("jsd")) {
                                 angular.forEach($scope.jsdItems, function(element) {
                                     if(element.code === item.itemCode) element.answer = item.response;
@@ -1100,6 +1141,17 @@
                 });
             }
 
+            function getUserEvaluation(evalCode) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/appraisal/' + evalCode
+                });
+            }
+
             function postLogin() {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
@@ -1131,6 +1183,7 @@
                 getUserConfidence: getUserConfidence,
                 getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
+                getUserEvaluation: getUserEvaluation,
                 questionnaireCompleted: questionnaireCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout
