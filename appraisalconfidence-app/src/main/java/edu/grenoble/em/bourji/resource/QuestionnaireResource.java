@@ -111,6 +111,29 @@ public class QuestionnaireResource {
     }
 
     @GET
+    @Path("/user-confidence")
+    @UnitOfWork
+    public Response getUserConfidence(@Context HttpHeaders httpHeaders) {
+        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
+        if (authorizationHeader == null)
+            return Respond.respondWithUnauthorized();
+
+        String accessToken = authorizationHeader.substring(7);
+
+        try {
+            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            LOGGER.info("User id: " + userId);
+            List<UserConfidence> userConfidence = dao.getUserConfidenceDAO().getUserConfidence(userId);
+            LOGGER.info("Retrieved user confidence response for user: " + userId);
+            return Response.ok(userConfidence).build();
+        } catch (Throwable e) {
+            String message = "Error retrieving user confidence response. Details: " + e.getMessage();
+            LOGGER.error(message);
+            return Respond.respondWithError(message);
+        }
+    }
+
+    @GET
     @Path("/questionnaire-is-completed/{questionnaireType}")
     @UnitOfWork
     public Response isQuestionnaireCompleted(@PathParam("questionnaireType") String questionnaireType,

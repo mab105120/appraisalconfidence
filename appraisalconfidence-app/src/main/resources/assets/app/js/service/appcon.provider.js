@@ -76,6 +76,17 @@
                 })
             }
 
+            function getUserConfidence() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-confidence'
+                })
+            }
+
             function postUserConfidence(payload) {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
@@ -128,6 +139,7 @@
                 getUserDemographics: getUserDemographics,
                 postUserExperience: postUserExperience,
                 postUserConfidence: postUserConfidence,
+                getUserConfidence: getUserConfidence,
                 getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
                 questionnaireCompleted: questionnaireCompleted,

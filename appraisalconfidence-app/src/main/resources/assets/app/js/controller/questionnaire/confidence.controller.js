@@ -10,10 +10,49 @@
     ];
 
     function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
-        $scope.submit = function() {
-            console.log($scope.items);
-            console.log($scope.items2);
+
+        function init() {
+            $scope.$parent.startSpinner();
+            appcon.questionnaireCompleted('QUEST_CON')
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserConfidence()
+                    .then(function success(response) {
+
+                        angular.forEach(response.data, function(item) {
+                            var identifier = 'input[name=' + item.itemCode + '][value=' + item.response + ']';
+                            $(identifier).prop('checked', true);
+
+                            if(item.itemCode.startsWith("jsd")) {
+                                angular.forEach($scope.jsdItems, function(element) {
+                                    if(element.code === item.itemCode) element.answer = item.response;
+                                });
+                            } else if(item.itemCode.startsWith("pfi")) {
+                                angular.forEach($scope.pfiItems, function(element) {
+                                    if(element.code === item.itemCode) element.answer = item.response;
+                                });
+                            }
+                        });
+                        // enable submit
+                        $('#submitBtn').prop('disabled', false);
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
         }
+
+         init();
+
 
         $scope.choices = [
             {
@@ -21,19 +60,19 @@
                 value: -3
             },
             {
-                choice: 'Somewhat Disagree',
+                choice: 'Disagree',
                 value: -2
             },
             {
-                choice: 'Disagree',
+                choice: 'Somewhat Disagree',
                 value: -1
             },
             {
-                choice: 'Agree',
+                choice: 'Somewhat Agree',
                 value: 1
             },
             {
-                choice: 'Somewhat agree',
+                choice: 'Agree',
                 value: 2
             },
             {
@@ -42,7 +81,7 @@
             }
         ];
 
-        $scope.items = [
+        $scope.jsdItems = [
             {
                 item: 'Often I put off making difficult decisions',
                 code: 'jsd1'
@@ -76,7 +115,7 @@
                 code: 'jsd8'
             }
         ];
-        $scope.items2 = [
+        $scope.pfiItems = [
             {
                 item: 'I tend to struggle with most decisions',
                 code: 'pfi1'
@@ -109,8 +148,8 @@
                 });
             }
 
-            angular.forEach($scope.items, formatItems);
-            angular.forEach($scope.items2, formatItems);
+            angular.forEach($scope.jsdItems, formatItems);
+            angular.forEach($scope.pfiItems, formatItems);
 
             return userResponses;
         }
