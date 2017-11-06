@@ -14,7 +14,7 @@
 
         function init() {
             $scope.$parent.startSpinner();
-            appcon.questionnaireCompleted('QUEST_DEMO')
+            appcon.stepIsCompleted('QUEST_DEMO')
             .then(function success(response) {
                 console.log(response);
                 if(response.data === true) {

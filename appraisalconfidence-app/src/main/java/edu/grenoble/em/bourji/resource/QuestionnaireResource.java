@@ -1,6 +1,7 @@
 package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.JwtTokenHelper;
+import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
 import edu.grenoble.em.bourji.db.pojo.Status;
@@ -53,7 +54,7 @@ public class QuestionnaireResource {
             userDemographic.setUser(userId);
             dao.getUserDemographicDAO().add(userDemographic);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_DEMO", userId));
-            statusDAO.add(new Status(userId, "QUEST_DEMO"));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_DEMO.name()));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -78,7 +79,7 @@ public class QuestionnaireResource {
             userExperience.setUser(userId);
             dao.getUserExperienceDAO().add(userExperience);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_EXP", userId));
-            statusDAO.add(new Status(userId, "QUEST_EXP"));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_EXP.name()));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -103,7 +104,7 @@ public class QuestionnaireResource {
             userConfidenceResponse.stream().forEach(res -> res.setUser(userId));
             dao.getUserConfidenceDAO().addAll(userConfidenceResponse);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_CON", userId));
-            statusDAO.add(new Status(userId, "QUEST_CON"));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_CON.name()));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -128,30 +129,6 @@ public class QuestionnaireResource {
             return Response.ok(userConfidence).build();
         } catch (Throwable e) {
             String message = "Error retrieving user confidence response. Details: " + e.getMessage();
-            LOGGER.error(message);
-            return Respond.respondWithError(message);
-        }
-    }
-
-    @GET
-    @Path("/questionnaire-is-completed/{questionnaireType}")
-    @UnitOfWork
-    public Response isQuestionnaireCompleted(@PathParam("questionnaireType") String questionnaireType,
-                                             @Context HttpHeaders httpHeaders) {
-        LOGGER.info("Checking if user demographics step is completed");
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
-
-        try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
-            boolean isCompleted = statusDAO.stepCompleted(userId, questionnaireType);
-            LOGGER.info(String.format("User demographics completed for %s is %s", userId, isCompleted));
-            return Response.ok(isCompleted).build();
-        } catch (Throwable e) {
-            String message = "Failed to retrieve whether user completed demographics questionnaire. Details: " + e.getMessage();
             LOGGER.error(message);
             return Respond.respondWithError(message);
         }

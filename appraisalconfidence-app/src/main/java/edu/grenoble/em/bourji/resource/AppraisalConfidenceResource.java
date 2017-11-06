@@ -1,9 +1,9 @@
 package edu.grenoble.em.bourji.resource;
 
-import com.auth0.jwk.JwkException;
 import edu.grenoble.em.bourji.JwtTokenHelper;
 import edu.grenoble.em.bourji.PerformanceReviewCache;
 import edu.grenoble.em.bourji.api.EvaluationPayload;
+import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
 import edu.grenoble.em.bourji.db.dao.EvaluationActivityDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
@@ -11,7 +11,6 @@ import edu.grenoble.em.bourji.db.pojo.EvaluationActivity;
 import edu.grenoble.em.bourji.db.pojo.Status;
 import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
 import io.dropwizard.hibernate.UnitOfWork;
-import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
@@ -56,7 +55,7 @@ public class AppraisalConfidenceResource {
         TeacherRecommendation teacherRecommendation = payload.getRecommendation();
         List<EvaluationActivity> activities = payload.getActivities();
 
-        if(!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
+        if (!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
             return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", teacherRecommendation.getEvaluationCode()));
 
         String accessToken = authorizationHeader.substring(7);
@@ -68,10 +67,10 @@ public class AppraisalConfidenceResource {
             dao.add(teacherRecommendation);
             activities.forEach(e -> e.setUser(userId));
             activities.forEach(evaluationActivityDAO::add);
-            String status = "EVALUATION_" + teacherRecommendation.getEvaluationCode();
+            ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
             LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
-            statusDAO.add(new Status(userId, status));
-        } catch (HibernateException | JwkException e) {
+            statusDAO.add(new Status(userId, status.name()));
+        } catch (Throwable e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }

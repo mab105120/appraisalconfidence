@@ -13,7 +13,7 @@
 
         function init() {
             $scope.$parent.startSpinner();
-            appcon.questionnaireCompleted('QUEST_CON')
+            appcon.stepIsCompleted('QUEST_CON')
             .then(function success(response) {
                 if(response.data === true) {
                     appcon.getUserConfidence()

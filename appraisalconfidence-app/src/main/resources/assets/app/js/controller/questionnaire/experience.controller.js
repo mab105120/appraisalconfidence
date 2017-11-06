@@ -14,7 +14,7 @@
 
         function init() {
             $scope.$parent.startSpinner();
-            appcon.questionnaireCompleted('QUEST_EXP')
+            appcon.stepIsCompleted('QUEST_EXP')
             .then(function success(response) {
                 if(response.data === true) {
                     appcon.getUserExperience()

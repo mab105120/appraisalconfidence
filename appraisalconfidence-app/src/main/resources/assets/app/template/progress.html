@@ -17,13 +17,14 @@
             </thead>
             <tbody ng-repeat="row in rows">
             <tr>
-                <th scope="row">{{ row.step }}</th>
+                <th scope="row">{{ row.display }}</th>
                 <td>{{ row.status }}
                     <span ng-show="row.status=='Complete'" class="glyphicon glyphicon-ok" style="color:green"> </span>
                     <span ng-show="row.status=='Not Started'" class="glyphicon glyphicon-remove-circle" style="color:orange"> </span>
                 </td>
                 <td>
-                    <a ng-show="row.status=='Complete'" ng-click="edit(row.step)"><span class="glyphicon glyphicon-edit"> </span></a>
+                    <a ng-show="row.status=='Complete'" ng-click="edit(row.id)"><span class="glyphicon glyphicon-edit"> </span></a>
+                    <a ng-show="row.status=='Next'" ng-click="edit(row.id)"><span class="glyphicon glyphicon-arrow-right"> </span></a>
                 </td>
             </tr>
             </tbody>

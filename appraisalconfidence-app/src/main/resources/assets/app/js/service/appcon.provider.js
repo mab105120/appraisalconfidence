@@ -31,14 +31,14 @@
                 });
             }
 
-            function questionnaireCompleted(questionnaireType) {
+            function stepIsCompleted(step) {
                 var id_token = localStorage.getItem("id_token");
                 return $http({
                     method: 'GET',
                     headers: {
                         "Authorization": 'Bearer ' + id_token
                     },
-                    url: url + '/api/questionnaire/questionnaire-is-completed/' + questionnaireType
+                    url: url + '/api/status/step-is-completed/' + step
                 });
             }
 
@@ -144,6 +144,17 @@
                 });
             }
 
+            function getProgress() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/status/progress'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
@@ -154,9 +165,10 @@
                 getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
                 getUserEvaluation: getUserEvaluation,
-                questionnaireCompleted: questionnaireCompleted,
+                stepIsCompleted: stepIsCompleted,
                 postLogin: postLogin,
-                postLogout: postLogout
+                postLogout: postLogout,
+                getProgress: getProgress
             }
         };
 
