@@ -3,10 +3,7 @@ package edu.grenoble.em.bourji.db.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by Moe on 9/9/2017.
@@ -14,11 +11,15 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "USER_DEMOGRAPHIC")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@IdClass(UserSubmissionIdentifier.class)
 public class UserDemographic {
 
     @Id
     @Column(name = "ID", nullable = false, length = 64)
     private String user;
+    @Id
+    @Column(name = "SUBMISSION_ID", nullable = false)
+    private Integer submissionId;
     @Column(name = "AGE", nullable = false, length = 10)
     private String age;
     @Column(name = "GENDER", nullable = false, length = 10)
@@ -30,18 +31,6 @@ public class UserDemographic {
 
     public UserDemographic() {
         // no-arg constructor for hibernate
-    }
-
-    public UserDemographic(String user, String age, String gender, String education, String division) {
-        this.user = user;
-        this.age = age;
-        this.gender = gender;
-        this.education = education;
-        this.division = division;
-    }
-
-    public String getUser() {
-        return user;
     }
 
     public String getAge() {
@@ -60,7 +49,19 @@ public class UserDemographic {
         return division;
     }
 
+    public String getUser() {
+        return user;
+    }
+
+    public Integer getSubmissionId() {
+        return submissionId;
+    }
+
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public void setSubmissionId(Integer submissionId) {
+        this.submissionId = submissionId;
     }
 }

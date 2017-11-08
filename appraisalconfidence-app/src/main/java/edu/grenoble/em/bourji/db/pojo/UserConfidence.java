@@ -23,6 +23,9 @@ public class UserConfidence {
     private String itemCode;
     @Column(name = "RESPONSE", nullable = false)
     private int response;
+    @Id
+    @Column(name = "SUBMISSION_ID", nullable = false, unique = true)
+    private int submissionId;
 
     public UserConfidence(String user, String itemCode, int response) {
         this.user = user;
@@ -37,6 +40,7 @@ public class UserConfidence {
     public static class UniqueIdentifier implements Serializable {
         private String user;
         private String itemCode;
+        private int submissionId;
 
         public UniqueIdentifier() {
             // no-arg constructor for hibernate
@@ -49,7 +53,8 @@ public class UserConfidence {
                 return false;
             }
             UniqueIdentifier that = (UniqueIdentifier) o;
-            return this.user.equals(that.user) && Objects.equals(this.itemCode, that.itemCode);
+            return this.user.equals(that.user) && Objects.equals(this.itemCode, that.itemCode)
+                    && this.submissionId == that.submissionId;
         }
 
         @Override
@@ -67,6 +72,14 @@ public class UserConfidence {
 
     public String getUser() {
         return user;
+    }
+
+    public int getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
     }
 
     public String getItemCode() {

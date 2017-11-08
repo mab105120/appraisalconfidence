@@ -50,11 +50,13 @@ public class QuestionnaireResource {
 
         try {
             String userId = tokenHelper.getUserIdFromToken(accessToken);
-            LOGGER.info("User id: " + userId);
+            int submissionId = dao.getUserDemographicDAO().getNextSubmissionId(userId);
+            LOGGER.info(String.format("Posting demographic questionnaire response for user %s submission id %s ", userId, submissionId));
             userDemographic.setUser(userId);
+            userDemographic.setSubmissionId(submissionId);
             dao.getUserDemographicDAO().add(userDemographic);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_DEMO", userId));
-            statusDAO.add(new Status(userId, ProgressStatus.QUEST_DEMO.name()));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_DEMO.name(), submissionId));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -75,11 +77,13 @@ public class QuestionnaireResource {
 
         try {
             String userId = tokenHelper.getUserIdFromToken(accessToken);
-            LOGGER.info("User id: " + userId);
+            int submissionId = dao.getUserExperienceDAO().getNextSubmissionId(userId);
+            LOGGER.info(String.format("Posting experience questionnaire response for user %s submission id %s ", userId, submissionId));
             userExperience.setUser(userId);
+            userExperience.setSubmissionId(submissionId);
             dao.getUserExperienceDAO().add(userExperience);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_EXP", userId));
-            statusDAO.add(new Status(userId, ProgressStatus.QUEST_EXP.name()));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_EXP.name(), submissionId));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }
@@ -100,11 +104,15 @@ public class QuestionnaireResource {
 
         try {
             String userId = tokenHelper.getUserIdFromToken(accessToken);
-            LOGGER.info("User id: " + userId);
-            userConfidenceResponse.stream().forEach(res -> res.setUser(userId));
+            int submissionId = dao.getUserConfidenceDAO().getNextSubmissionId(userId);
+            LOGGER.info(String.format("Posting confidence questionnaire response for user %s submission id %s ", userId, submissionId));
+            userConfidenceResponse.stream().forEach(res -> {
+                res.setUser(userId);
+                res.setSubmissionId(submissionId);
+            });
             dao.getUserConfidenceDAO().addAll(userConfidenceResponse);
             LOGGER.info(String.format("Setting user (%s) status to QUEST_CON", userId));
-            statusDAO.add(new Status(userId, ProgressStatus.QUEST_CON.name()));
+            statusDAO.add(new Status(userId, ProgressStatus.QUEST_CON.name(), submissionId));
         } catch (Throwable e) {
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
         }

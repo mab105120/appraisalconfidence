@@ -4,8 +4,10 @@ import edu.grenoble.em.bourji.db.pojo.UserConfidence;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -28,5 +30,14 @@ public class UserConfidenceDAO extends AbstractDAO<UserConfidence> {
         Criteria cr = currentSession().createCriteria(UserConfidence.class)
                 .add(Restrictions.eq("user", user));
         return cr.list();
+    }
+
+    public int getNextSubmissionId(String user) {
+        Criteria cr = currentSession().createCriteria(UserConfidence.class);
+        cr.add(Restrictions.eq("user", user));
+        cr.setProjection(Projections.distinct(Projections.property("submissionId")));
+        List<Integer> submissionIds = cr.list();
+        submissionIds.sort(Comparator.naturalOrder());
+        return submissionIds.isEmpty() ? 0 : submissionIds.get(submissionIds.size() - 1) + 1;
     }
 }

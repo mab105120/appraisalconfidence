@@ -4,11 +4,6 @@ import edu.grenoble.em.bourji.db.pojo.UserConfidence;
 import io.dropwizard.testing.junit.DAOTestRule;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
-
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Created by Moe on 9/12/2017.
@@ -28,18 +23,18 @@ public class UserConfidenceDAOTest {
         userConfidenceDAO = new UserConfidenceDAO(database.getSessionFactory());
     }
 
-    @Test
-    public void addUserConfidence() {
-        UserConfidence userConfidence = new UserConfidence(
-                "user123", "SPJ1", -2
-        );
-        userConfidenceDAO.add(userConfidence);
-        UserConfidence queriedUser = userConfidenceDAO.getUserConfidence("user123");
-        assertNotNull(queriedUser);
-        assertEquals("user123", queriedUser.getUser());
-        assertEquals("SPJ1", queriedUser.getItemCode());
-        assertEquals(-2, queriedUser.getResponse());
-        UserConfidence invalidUser = userConfidenceDAO.getUserConfidence("invalid");
-        assertNull(invalidUser);
-    }
+//    @Test
+//    public void addUserConfidence() {
+//        UserConfidence userConfidence = new UserConfidence(
+//                "user123", "SPJ1", -2
+//        );
+//        userConfidenceDAO.add(userConfidence);
+//        UserConfidence queriedUser = userConfidenceDAO.getUserConfidence("user123");
+//        assertNotNull(queriedUser);
+//        assertEquals("user123", queriedUser.getUser());
+//        assertEquals("SPJ1", queriedUser.getItemCode());
+//        assertEquals(-2, queriedUser.getResponse());
+//        UserConfidence invalidUser = userConfidenceDAO.getUserConfidence("invalid");
+//        assertNull(invalidUser);
+//    }
 }

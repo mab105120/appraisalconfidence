@@ -2,10 +2,7 @@ package edu.grenoble.em.bourji.db.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by Moe on 9/11/17.
@@ -13,6 +10,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "USER_EXPERIENCE")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@IdClass(UserSubmissionIdentifier.class)
 public class UserExperience {
 
     @Id
@@ -34,6 +32,9 @@ public class UserExperience {
     private String personnelSelection;
     @Column(name = "CANDIDATES_REVIEWS", length = 64)
     private String totalCandidates;
+    @Id
+    @Column(name = "SUBMISSION_ID", nullable = false, unique = true)
+    private int submissionId;
 
     public UserExperience() {
         // no-arg constructor for hibernate
@@ -57,6 +58,14 @@ public class UserExperience {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public int getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
     }
 
     public String getTitle() {

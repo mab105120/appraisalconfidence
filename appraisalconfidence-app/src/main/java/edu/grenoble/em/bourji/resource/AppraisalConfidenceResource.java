@@ -69,7 +69,7 @@ public class AppraisalConfidenceResource {
             activities.forEach(evaluationActivityDAO::add);
             ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
             LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
-            statusDAO.add(new Status(userId, status.name()));
+            statusDAO.add(new Status(userId, status.name(), 0)); // TODO change this
         } catch (Throwable e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());

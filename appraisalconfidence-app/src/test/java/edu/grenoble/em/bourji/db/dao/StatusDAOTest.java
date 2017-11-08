@@ -22,12 +22,12 @@ public class StatusDAOTest {
     @Before
     public void setUp() {
         statusDAO = new StatusDAO(database.getSessionFactory());
-        statusDAO.add(new Status("mohd.bourji", "USER_EXPERIENCE"));
+        statusDAO.add(new Status("mohd.bourji", "USER_EXPERIENCE", 0));
     }
 
     @Test
     public void addUserConfidence() {
-        String s = statusDAO.getCurrentStatus("mohd.bourji");
+        String s = statusDAO.getCurrentStatus("mohd.bourji").name();
         System.out.println(s);
     }
 }

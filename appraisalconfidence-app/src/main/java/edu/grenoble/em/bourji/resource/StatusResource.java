@@ -4,11 +4,13 @@ import edu.grenoble.em.bourji.JwtTokenHelper;
 import edu.grenoble.em.bourji.api.Progress;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
-import edu.grenoble.em.bourji.db.pojo.Status;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.slf4j.Logger;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -30,26 +32,26 @@ public class StatusResource {
         this.tokenHelper = tokenHelper;
     }
 
-    @POST
-    @Path("/{status}")
-    @UnitOfWork
-    public Response postStatus(@PathParam("status") String status,
-                               @Context HttpHeaders httpHeaders) {
-        String access_token = httpHeaders.getHeaderString("Authorization");
-        if (access_token == null)
-            return Respond.respondWithUnauthorized();
-        access_token = access_token.substring(7);
-        try {
-            String user = tokenHelper.getUserIdFromToken(access_token);
-            LOGGER.info(String.format("Setting status of user (%s) to %s", user, status));
-            statusDAO.add(new Status(user, ProgressStatus.valueOf(status).name()));
-        } catch (Throwable e) {
-            String errorMessage = "Oops we had trouble updating your progress: " + e.getMessage();
-            LOGGER.error(errorMessage);
-            return Respond.respondWithError(errorMessage);
-        }
-        return Response.ok().build();
-    }
+//    @POST
+//    @Path("/{status}")
+//    @UnitOfWork
+//    public Response postStatus(@PathParam("status") String status,
+//                               @Context HttpHeaders httpHeaders) {
+//        String access_token = httpHeaders.getHeaderString("Authorization");
+//        if (access_token == null)
+//            return Respond.respondWithUnauthorized();
+//        access_token = access_token.substring(7);
+//        try {
+//            String user = tokenHelper.getUserIdFromToken(access_token);
+//            LOGGER.info(String.format("Setting status of user (%s) to %s", user, status));
+//            statusDAO.add(new Status(user, ProgressStatus.valueOf(status).name()));
+//        } catch (Throwable e) {
+//            String errorMessage = "Oops we had trouble updating your progress: " + e.getMessage();
+//            LOGGER.error(errorMessage);
+//            return Respond.respondWithError(errorMessage);
+//        }
+//        return Response.ok().build();
+//    }
 
     @GET
     @UnitOfWork
