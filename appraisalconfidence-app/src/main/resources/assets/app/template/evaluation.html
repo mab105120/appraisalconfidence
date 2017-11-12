@@ -3,7 +3,7 @@
 </div>
 <div class="row">
     <div class="col-sm-12" style="margin-bottom:30px;">
-        <h4>Teacher evaluation [ {{ currentEvaluation }} of 10]</h4>
+        <h4>Teacher evaluation [ {{ currentEvaluation }} of 15 ]</h4>
         <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion. To review
         each teacher on a specific job function (Teaching skills, communication, or professionalism) click on the button labeled supervisor
         next to each job function to review the supervisor's review of that teacher on the job function. You are free to read as many
@@ -30,14 +30,13 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">
                     <span class="glyphicon glyphicon-comment" style="font-size: 25px;"> </span>
-                    <strong>{{ selectedEvaluationTitle }}</strong>
+                    <strong>{{ modalTitle }}</strong>
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                {{ selectedEvaluation }}
+            <div class="modal-body" data-ng-bind-html="modalBodyTrusted">
             </div>
         </div>
     </div>

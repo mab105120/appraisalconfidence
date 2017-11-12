@@ -189,12 +189,13 @@
             '$window',
             'appcon',
             'authService',
-            'toaster'
+            'toaster',
+            '$sce'
         ];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster) {
+    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster, $sce) {
 
         function init() {
             $scope.$parent.startSpinner();
@@ -202,9 +203,14 @@
             $scope.currentEvaluation = $stateParams.id;
 
             // these vars are set by the eval directive when users click on supervisor reviews.
-            $scope.selectedEvaluationCode = '';
-            $scope.selectedEvaluation = '';
-            $scope.selectedEvaluationTitle = '';
+            $scope.modalCode = '';
+            $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
+
+            $scope.$watch('modalBody', function(val) {
+                $scope.modalBodyTrusted = $sce.trustAsHtml(val);
+            });
+
+            $scope.modalTitle = '';
 
             $('#absConfidenceSlider').slider();
             $('#absConfidenceSlider').on('slide', function(slideEvt) {
@@ -239,7 +245,7 @@
                 var closeTime = new Date().toISOString();
                 $scope.activities.push({
                     evaluationCode: $stateParams.id,
-                    selectedReview: $scope.selectedEvaluationCode,
+                    selectedReview: $scope.modalCode,
                     openTime: $scope.time_modal_open,
                     closeTime: closeTime
                 });
@@ -973,9 +979,57 @@
                     }
 
                     scope.$parent.time_modal_open = new Date().toISOString();
-                    scope.$parent.selectedEvaluationCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
-                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
-                    scope.$parent.selectedEvaluationTitle = "This is what " + supervisors[supervisor] + " had to say about " + teachers[teacher] + "'s "+scope.jobFunction+"  skills";
+                    scope.$parent.modalCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
+                    scope.$parent.modalBody = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
+                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about " + teachers[teacher] + "'s "+scope.jobFunction+"  skills";
+                }
+
+                scope.displayJobFunctionDetails = function(jobFunction, jobFunctionCode) {
+
+                    var jobFunctionDetails = {
+                        SL: {
+                                header: 'Tenure applicants must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
+                                details: [
+                                ]
+                            },
+                        IP: {
+                            header: 'Tenure applicants must provide consistent evidence indicating practice at the most effective level in the categories below:',
+                            details: [
+                                'Planning and preparation',
+                                'Classroom environment',
+                                'Instruction'
+                            ]
+                        },
+                        PF: {
+                            header: 'Tenure applicants must provide consistent evidence of high level professionalism on activities including:',
+                            details: [
+                                'Professional growth and reflection',
+                                'Collaboration and engagement with the school community',
+                                'Effective communication with students’ families',
+                                'Management of non-instructional responsibilities',
+                                'Professional conduct'
+                            ]
+                        }
+                    }
+
+                    var getModalBody = function(jobFunctionCode) {
+                        var body = '';
+                        var detailsObj =  jobFunctionDetails[jobFunctionCode];
+                        body = body + '<p>' + detailsObj['header'] + '</p>';
+                        if (detailsObj.details.length != 0) {
+                            body = body + '<ul>';
+                            angular.forEach(detailsObj.details, function(item) {
+                                body = body + '<li>' + item + '</li>';
+                            });
+                            body = body + '</ul>';
+                        }
+                        return body;
+                    }
+
+                    scope.$parent.time_modal_open = new Date().toISOString();
+                    scope.$parent.modalCode = 'D-' + jobFunctionCode;
+                    scope.$parent.modalTitle = jobFunction;
+                    scope.$parent.modalBody = getModalBody(jobFunctionCode);
                 }
             }
         };

@@ -8,12 +8,13 @@
             '$window',
             'appcon',
             'authService',
-            'toaster'
+            'toaster',
+            '$sce'
         ];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster) {
+    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster, $sce) {
 
         function init() {
             $scope.$parent.startSpinner();
@@ -21,9 +22,14 @@
             $scope.currentEvaluation = $stateParams.id;
 
             // these vars are set by the eval directive when users click on supervisor reviews.
-            $scope.selectedEvaluationCode = '';
-            $scope.selectedEvaluation = '';
-            $scope.selectedEvaluationTitle = '';
+            $scope.modalCode = '';
+            $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
+
+            $scope.$watch('modalBody', function(val) {
+                $scope.modalBodyTrusted = $sce.trustAsHtml(val);
+            });
+
+            $scope.modalTitle = '';
 
             $('#absConfidenceSlider').slider();
             $('#absConfidenceSlider').on('slide', function(slideEvt) {
@@ -58,7 +64,7 @@
                 var closeTime = new Date().toISOString();
                 $scope.activities.push({
                     evaluationCode: $stateParams.id,
-                    selectedReview: $scope.selectedEvaluationCode,
+                    selectedReview: $scope.modalCode,
                     openTime: $scope.time_modal_open,
                     closeTime: closeTime
                 });
