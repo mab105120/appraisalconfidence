@@ -7,9 +7,9 @@
             url = val;
         }
 
-        appcon_service.$inject = ['$http', 'authService'];
+        appcon_service.$inject = ['$http'];
 
-        function appcon_service($http, authService) {
+        function appcon_service($http) {
 
             function getReviews(evaluationCode) {
                 var config = {
@@ -155,6 +155,13 @@
                 });
             }
 
+            function sendEmail(from, subject, body) {
+                return $http({
+                        method: 'POST',
+                        url: url + '/api/communication/send-support-email/' + from + '/' + subject + '/' + body
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
@@ -168,7 +175,8 @@
                 stepIsCompleted: stepIsCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout,
-                getProgress: getProgress
+                getProgress: getProgress,
+                sendEmail: sendEmail
             }
         };
 

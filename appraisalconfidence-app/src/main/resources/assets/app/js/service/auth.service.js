@@ -5,10 +5,11 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$http'
+        '$http',
+        'appcon'
     ]
 
-    function authService($state, angularAuth0, $http) {
+    function authService($state, angularAuth0, $http, appcon) {
 
         function login() {
             // remember current state to reroute to after authentication
@@ -31,14 +32,9 @@
                         localStorage.removeItem('redirect_state');
                     }
 
-                    $http({
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + localStorage.getItem('id_token')
-                        },
-                        url: 'http://localhost:5000/api/activity/login' // TODO Change this base url
-                    })
+                    appcon.postLogin()
                     .then(function success(response){
+                        localStorage.setItem('userId', response.data);
                         console.log('User login recorded successfully');
                     }, function failure(response) {
                         console.log('Unable to record user login!');
@@ -64,9 +60,14 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
+            localStorage.removeItem('userId');
             $state.go('welcome');
         }
 
+
+        function getUserId() {
+            return localStorage.getItem('userId');
+        }
 
         function isAuthenticated() {
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
@@ -77,7 +78,8 @@
             login: login,
             handleAuthentication: handleAuthentication,
             logout: logout,
-            isAuthenticated: isAuthenticated
+            isAuthenticated: isAuthenticated,
+            getUserId: getUserId
         }
     };
 

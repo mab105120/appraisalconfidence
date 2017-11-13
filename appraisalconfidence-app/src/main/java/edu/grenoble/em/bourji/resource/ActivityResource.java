@@ -43,7 +43,7 @@ public class ActivityResource {
             String userId = tokenHelper.getUserIdFromToken(access_token);
             LOGGER.info(String.format("Recording user %s login", userId));
             dao.add(new Activity(userId, "IN"));
-            return Response.ok().build();
+            return Response.ok(userId).build();
         } catch (JwkException | HibernateException e) {
             e.printStackTrace();
             return Respond.respondWithError("Unable to record login. Error: " + e.getMessage());

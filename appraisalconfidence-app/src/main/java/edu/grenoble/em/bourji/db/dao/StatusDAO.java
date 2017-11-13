@@ -26,8 +26,8 @@ public class StatusDAO extends AbstractDAO<Status> {
         Criteria cr = currentSession().createCriteria(Status.class)
                 .add(Restrictions.eq("user", user))
                 .addOrder(Order.desc("time"));
-        Status status = list(cr).get(0);
-        return ProgressStatus.valueOf(status.getStatus());
+        List status = list(cr);
+        return status.size() == 0 ? ProgressStatus.NOT_STARTED : ProgressStatus.valueOf((String) status.get(0));
     }
 
     public List<ProgressStatus> getProgress(String user) {

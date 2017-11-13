@@ -5,6 +5,7 @@ package edu.grenoble.em.bourji.api;
  */
 public enum ProgressStatus {
 
+    NOT_STARTED(0),
     QUEST_DEMO(1),
     QUEST_EXP(2),
     QUEST_CON(3),

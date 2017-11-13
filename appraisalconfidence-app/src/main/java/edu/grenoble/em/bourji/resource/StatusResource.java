@@ -55,6 +55,26 @@ public class StatusResource {
 
     @GET
     @UnitOfWork
+    @Path("/user-started")
+    public Response hasUserStarted(@Context HttpHeaders httpHeaders) {
+        String access_token = httpHeaders.getHeaderString("Authorization");
+        if (access_token == null)
+            return Respond.respondWithUnauthorized();
+        access_token = access_token.substring(7);
+        try {
+            String user = tokenHelper.getUserIdFromToken(access_token);
+            LOGGER.info(String.format("Getting status for user (%s)", user));
+            ProgressStatus status = statusDAO.getCurrentStatus(user);
+            return Response.ok(status).build();
+        } catch (Throwable e) {
+            String errorMessage = String.format("Unable to get user status: %s", e.getMessage());
+            LOGGER.error(errorMessage);
+            return Respond.respondWithError(errorMessage);
+        }
+    }
+
+    @GET
+    @UnitOfWork
     public Response getStatus(@Context HttpHeaders httpHeaders) {
         String access_token = httpHeaders.getHeaderString("Authorization");
         if (access_token == null)

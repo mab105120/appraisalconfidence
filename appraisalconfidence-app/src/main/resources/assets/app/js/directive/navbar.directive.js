@@ -15,6 +15,7 @@
     function navbar_controller($scope, authService, appcon) {
         var vm = this; // why do this ?
         vm.auth = authService;
+
         $scope.login = function() {
             authService.login();
         }
@@ -29,7 +30,6 @@
             }, function failure(response) {
                 $scope.stopSpinner();
             });
-
         }
     };
 

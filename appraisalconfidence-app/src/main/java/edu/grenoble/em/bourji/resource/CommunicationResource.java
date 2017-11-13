@@ -26,8 +26,9 @@ public class CommunicationResource {
     }
 
     @POST
-    @Path("/send-support-email/{subject}/{body}")
-    public Response sendSupportEmail(@PathParam("subject") String subject,
+    @Path("/send-support-email/{from}/{subject}/{body}")
+    public Response sendSupportEmail(@PathParam("from") String from,
+                                     @PathParam("subject") String subject,
                                      @PathParam("body") String body,
                                      @Context HttpHeaders httpHeaders) {
         Properties props = new Properties();
@@ -45,10 +46,10 @@ public class CommunicationResource {
         });
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("appraisal-confidence-support@gmail.com"));
+            message.setFrom(new InternetAddress(from));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress("mohd.bourji@gmail.com"));
             message.setSubject(subject);
-            message.setText(body);
+            message.setText(body + "\n-----------\nTo reply back to this email please send a message to: " + from);
             Transport.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();

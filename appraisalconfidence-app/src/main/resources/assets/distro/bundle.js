@@ -64,6 +64,11 @@
             url: '/progress',
             controller: 'progressController',
             templateUrl: 'app/template/progress.html'
+          })
+          .state('contactus', {
+            url: '/contactus',
+            controller: 'contactUsController',
+            templateUrl: 'app/template/contactus.html'
           });
 
           // Configure auth provider
@@ -122,6 +127,7 @@
     appraisal_app.controller('questConfidenceController', require('./controller/questionnaire/confidence.controller.js'));
     appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
     appraisal_app.controller('progressController', require('./controller/progress.controller.js'));
+    appraisal_app.controller('contactUsController', require('./controller/contactus.controller.js'));
 
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
@@ -143,7 +149,7 @@
         authService.handleAuthentication();
     }
 })();
-},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/evaluation.controller.js":6,"./controller/home.controller.js":7,"./controller/main.controller.js":8,"./controller/procedure.controller.js":9,"./controller/progress.controller.js":10,"./controller/questionnaire/confidence.controller.js":11,"./controller/questionnaire/experience.controller.js":12,"./controller/questionnaire/general.controller.js":13,"./controller/tenure.controller.js":14,"./controller/welcome.controller.js":15,"./directive/eval.directive.js":16,"./directive/focusonshow.directive.js":17,"./directive/likert.directive.js":18,"./directive/navbar.directive.js":19,"./service/appcon.provider.js":20,"./service/auth.service.js":21,"@uirouter/angularjs":25,"angular":112,"angular-auth0":109,"angular-spinner":110,"angularjs-toaster":113,"bootstrap":116,"jquery":129}],4:[function(require,module,exports){
+},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/contactus.controller.js":6,"./controller/evaluation.controller.js":7,"./controller/home.controller.js":8,"./controller/main.controller.js":9,"./controller/procedure.controller.js":10,"./controller/progress.controller.js":11,"./controller/questionnaire/confidence.controller.js":12,"./controller/questionnaire/experience.controller.js":13,"./controller/questionnaire/general.controller.js":14,"./controller/tenure.controller.js":15,"./controller/welcome.controller.js":16,"./directive/eval.directive.js":17,"./directive/focusonshow.directive.js":18,"./directive/likert.directive.js":19,"./directive/navbar.directive.js":20,"./service/appcon.provider.js":21,"./service/auth.service.js":22,"@uirouter/angularjs":26,"angular":113,"angular-auth0":110,"angular-spinner":111,"angularjs-toaster":114,"bootstrap":117,"jquery":130}],4:[function(require,module,exports){
 (function() {
 
     var auth_vars = {
@@ -179,6 +185,44 @@
     module.exports = callback_controller;
 })();
 },{}],6:[function(require,module,exports){
+(function() {
+
+    contactUs_controller.$inject = [
+        '$scope',
+        'authService',
+        'appcon',
+        'toaster'
+    ]
+
+    function contactUs_controller($scope, authService, appcon, toast) {
+        init();
+        function init() {
+            $scope.subject = '';
+            $scope.body = '';
+            $scope.email = authService.getUserId();
+        }
+
+        $scope.submit = function() {
+            $scope.$parent.startSpinner();
+
+            appcon.sendEmail($scope.email, $scope.subject, $scope.body)
+            .then(function success() {
+                toast.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
+                $scope.$parent.stopSpinner();
+            }, function failure() {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we were not able to send the email: ' + error);
+                console.log('Error Object');
+                console.log(response);
+                $scope.$parent.stopSpinner();
+            });
+        }
+    }
+
+    module.exports = contactUs_controller;
+
+})();
+},{}],7:[function(require,module,exports){
 (function() {
 
     evaluation_controller.$inject = [
@@ -345,15 +389,37 @@
     module.exports = evaluation_controller;
 
 })();
-},{"bootstrap-slider":115}],7:[function(require,module,exports){
+},{"bootstrap-slider":116}],8:[function(require,module,exports){
 (function() {
 
     'use strict';
 
-    home_controller.$inject = ['$scope', '$state', 'authService'];
+    home_controller.$inject = [
+            '$scope',
+            '$state',
+            'authService',
+            'appcon'
+        ];
 
 
-    function home_controller($scope, $state, authService) {
+    function home_controller($scope, $state, authService, appcon) {
+        init();
+        function init() {
+            $scope.$parent.startSpinner();
+            $scope.showAlert = false;
+            appcon.getProgress()
+            .then(function success(response) {
+                if(response.data.completed.length !== 0)
+                    $scope.showAlert = true;
+
+                $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                console.log(response);
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
 
 //        if(!authService.isAuthenticated()) {
 //            alert('you must login to view this page!');
@@ -367,7 +433,7 @@
 
     module.exports = home_controller;
 })();
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -391,7 +457,7 @@
     module.exports = main_controller;
 
 })();
-},{"block-ui":114}],9:[function(require,module,exports){
+},{"block-ui":115}],10:[function(require,module,exports){
 (function() {
 
     procedure_controller.$inject = ['$scope', '$state', 'authService', '$window'];
@@ -419,7 +485,7 @@
     module.exports = procedure_controller;
 
 })();
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function() {
 
     progress_controller.$inject = [
@@ -503,7 +569,7 @@
 
     module.exports = progress_controller;
 })();
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function() {
 
     quest_confidence_controller.$inject = [
@@ -683,7 +749,7 @@
 
     module.exports = quest_confidence_controller;
 })();
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -813,7 +879,7 @@
 
     module.exports = ques_experience_controller;
 })();
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -916,7 +982,7 @@
 
     module.exports = questionnaire_controller;
 })();
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function(){
 
     tenure_controller.$inject = [
@@ -934,7 +1000,7 @@
 
     module.exports = tenure_controller;
 })();
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
 
     welcome_controller.$inject = [
@@ -951,7 +1017,7 @@
     module.exports = welcome_controller;
 
 })();
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -1037,7 +1103,7 @@
 
     module.exports = eval_directive;
 })();
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -1061,7 +1127,7 @@
 
     module.exports = focusonshow_directive;
 })();
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function(){
 
     'use strict';
@@ -1079,7 +1145,7 @@
 
     module.exports = likert_directive;
 })();
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -1097,6 +1163,7 @@
     function navbar_controller($scope, authService, appcon) {
         var vm = this; // why do this ?
         vm.auth = authService;
+
         $scope.login = function() {
             authService.login();
         }
@@ -1111,13 +1178,12 @@
             }, function failure(response) {
                 $scope.stopSpinner();
             });
-
         }
     };
 
     module.exports = navbar_directive;
 })();
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function() {
 
     function appcon_provider() {
@@ -1127,9 +1193,9 @@
             url = val;
         }
 
-        appcon_service.$inject = ['$http', 'authService'];
+        appcon_service.$inject = ['$http'];
 
-        function appcon_service($http, authService) {
+        function appcon_service($http) {
 
             function getReviews(evaluationCode) {
                 var config = {
@@ -1275,6 +1341,13 @@
                 });
             }
 
+            function sendEmail(from, subject, body) {
+                return $http({
+                        method: 'POST',
+                        url: url + '/api/communication/send-support-email/' + from + '/' + subject + '/' + body
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 postUserDemographic: postUserDemographic,
@@ -1288,7 +1361,8 @@
                 stepIsCompleted: stepIsCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout,
-                getProgress: getProgress
+                getProgress: getProgress,
+                sendEmail: sendEmail
             }
         };
 
@@ -1297,7 +1371,7 @@
 
     module.exports = appcon_provider;
 })();
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function() {
 
     'use-strict';
@@ -1305,10 +1379,11 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$http'
+        '$http',
+        'appcon'
     ]
 
-    function authService($state, angularAuth0, $http) {
+    function authService($state, angularAuth0, $http, appcon) {
 
         function login() {
             // remember current state to reroute to after authentication
@@ -1331,14 +1406,9 @@
                         localStorage.removeItem('redirect_state');
                     }
 
-                    $http({
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + localStorage.getItem('id_token')
-                        },
-                        url: 'http://localhost:5000/api/activity/login' // TODO Change this base url
-                    })
+                    appcon.postLogin()
                     .then(function success(response){
+                        localStorage.setItem('userId', response.data);
                         console.log('User login recorded successfully');
                     }, function failure(response) {
                         console.log('Unable to record user login!');
@@ -1364,9 +1434,14 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
+            localStorage.removeItem('userId');
             $state.go('welcome');
         }
 
+
+        function getUserId() {
+            return localStorage.getItem('userId');
+        }
 
         function isAuthenticated() {
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
@@ -1377,20 +1452,21 @@
             login: login,
             handleAuthentication: handleAuthentication,
             logout: logout,
-            isAuthenticated: isAuthenticated
+            isAuthenticated: isAuthenticated,
+            getUserId: getUserId
         }
     };
 
     module.exports = authService;
 })();
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ng_from_import = require("angular");
 var ng_from_global = angular;
 exports.ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
 
-},{"angular":112}],23:[function(require,module,exports){
+},{"angular":113}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1962,7 +2038,7 @@ angular_1.ng.module('ui.router.state')
     .directive('uiSrefActiveEq', uiSrefActive)
     .directive('uiState', uiState);
 
-},{"../angular":22,"@uirouter/core":56}],24:[function(require,module,exports){
+},{"../angular":23,"@uirouter/core":57}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -2253,7 +2329,7 @@ function registerControllerCallbacks($q, $transitions, controllerInstance, $scop
 angular_1.ng.module('ui.router.state').directive('uiView', exports.uiView);
 angular_1.ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
 
-},{"../angular":22,"../services":28,"../statebuilders/views":32,"@uirouter/core":56,"angular":112}],25:[function(require,module,exports){
+},{"../angular":23,"../services":29,"../statebuilders/views":33,"@uirouter/core":57,"angular":113}],26:[function(require,module,exports){
 "use strict";
 /**
  * Main entry point for angular 1.x build
@@ -2277,7 +2353,7 @@ require("./directives/viewDirective");
 require("./viewScroll");
 exports.default = "ui.router";
 
-},{"./directives/stateDirectives":23,"./directives/viewDirective":24,"./injectables":26,"./services":28,"./stateFilters":29,"./stateProvider":30,"./statebuilders/views":32,"./urlRouterProvider":34,"./viewScroll":35,"@uirouter/core":56}],26:[function(require,module,exports){
+},{"./directives/stateDirectives":24,"./directives/viewDirective":25,"./injectables":27,"./services":29,"./stateFilters":30,"./stateProvider":31,"./statebuilders/views":33,"./urlRouterProvider":35,"./viewScroll":36,"@uirouter/core":57}],27:[function(require,module,exports){
 "use strict";
 /**
  * # Angular 1 injectable services
@@ -2646,7 +2722,7 @@ var $urlMatcherFactory;
  */
 var $urlMatcherFactoryProvider;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -2722,7 +2798,7 @@ var Ng1LocationServices = (function () {
 }());
 exports.Ng1LocationServices = Ng1LocationServices;
 
-},{"@uirouter/core":56}],28:[function(require,module,exports){
+},{"@uirouter/core":57}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -2839,7 +2915,7 @@ exports.getLocals = function (ctx) {
     return tuples.reduce(core_1.applyPairs, {});
 };
 
-},{"./angular":22,"./locationServices":27,"./stateProvider":30,"./statebuilders/onEnterExitRetain":31,"./statebuilders/views":32,"./templateFactory":33,"./urlRouterProvider":34,"@uirouter/core":56}],29:[function(require,module,exports){
+},{"./angular":23,"./locationServices":28,"./stateProvider":31,"./statebuilders/onEnterExitRetain":32,"./statebuilders/views":33,"./templateFactory":34,"./urlRouterProvider":35,"@uirouter/core":57}],30:[function(require,module,exports){
 "use strict";
 /** @module ng1 */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2886,7 +2962,7 @@ angular_1.ng.module('ui.router.state')
     .filter('isState', $IsStateFilter)
     .filter('includedByState', $IncludedByStateFilter);
 
-},{"./angular":22}],30:[function(require,module,exports){
+},{"./angular":23}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** for typedoc */
@@ -3027,7 +3103,7 @@ var StateProvider = (function () {
 }());
 exports.StateProvider = StateProvider;
 
-},{"@uirouter/core":56}],31:[function(require,module,exports){
+},{"@uirouter/core":57}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -3053,7 +3129,7 @@ exports.getStateHookBuilder = function (hookName) {
     };
 };
 
-},{"../services":28,"@uirouter/core":56}],32:[function(require,module,exports){
+},{"../services":29,"@uirouter/core":57}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -3163,7 +3239,7 @@ var Ng1ViewConfig = (function () {
 }());
 exports.Ng1ViewConfig = Ng1ViewConfig;
 
-},{"@uirouter/core":56}],33:[function(require,module,exports){
+},{"@uirouter/core":57}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module view */
@@ -3358,7 +3434,7 @@ var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {
     .filter(function (tuple) { return core_1.isDefined(tuple) && core_1.isArray(tuple[1]); })
     .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
 
-},{"./angular":22,"@uirouter/core":56}],34:[function(require,module,exports){
+},{"./angular":23,"@uirouter/core":57}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module url */ /** */
@@ -3565,7 +3641,7 @@ var UrlRouterProvider = (function () {
 }());
 exports.UrlRouterProvider = UrlRouterProvider;
 
-},{"@uirouter/core":56}],35:[function(require,module,exports){
+},{"@uirouter/core":57}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -3589,7 +3665,7 @@ function $ViewScrollProvider() {
 }
 angular_1.ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
 
-},{"./angular":22}],36:[function(require,module,exports){
+},{"./angular":23}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4237,7 +4313,7 @@ exports.silentRejection = function (error) {
     return exports.silenceUncaughtInPromise(coreservices_1.services.$q.reject(error));
 };
 
-},{"./coreservices":37,"./hof":39,"./predicates":41}],37:[function(require,module,exports){
+},{"./coreservices":38,"./hof":40,"./predicates":42}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notImplemented = function (fnname) { return function () {
@@ -4249,7 +4325,7 @@ var services = {
 };
 exports.services = services;
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4333,7 +4409,7 @@ var Glob = (function () {
 }());
 exports.Glob = Glob;
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 "use strict";
 /**
  * Higher order functions
@@ -4579,7 +4655,7 @@ function pattern(struct) {
 }
 exports.pattern = pattern;
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4595,7 +4671,7 @@ __export(require("./queue"));
 __export(require("./strings"));
 __export(require("./trace"));
 
-},{"./common":36,"./coreservices":37,"./glob":38,"./hof":39,"./predicates":41,"./queue":42,"./strings":43,"./trace":44}],41:[function(require,module,exports){
+},{"./common":37,"./coreservices":38,"./glob":39,"./hof":40,"./predicates":42,"./queue":43,"./strings":44,"./trace":45}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** Predicates
@@ -4643,7 +4719,7 @@ exports.isInjectable = isInjectable;
  */
 exports.isPromise = hof_1.and(exports.isObject, hof_1.pipe(hof_1.prop('then'), exports.isFunction));
 
-},{"../state/stateObject":74,"./hof":39}],42:[function(require,module,exports){
+},{"../state/stateObject":75,"./hof":40}],43:[function(require,module,exports){
 "use strict";
 /**
  * @module common
@@ -4690,7 +4766,7 @@ var Queue = (function () {
 }());
 exports.Queue = Queue;
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 /**
  * Functions that manipulate strings
@@ -4843,7 +4919,7 @@ function joinNeighborsR(acc, x) {
 exports.joinNeighborsR = joinNeighborsR;
 ;
 
-},{"../resolve/resolvable":68,"../transition/rejectFactory":83,"../transition/transition":84,"./common":36,"./hof":39,"./predicates":41}],44:[function(require,module,exports){
+},{"../resolve/resolvable":69,"../transition/rejectFactory":84,"../transition/transition":85,"./common":37,"./hof":40,"./predicates":42}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5087,7 +5163,7 @@ exports.Trace = Trace;
 var trace = new Trace();
 exports.trace = trace;
 
-},{"../common/hof":39,"../common/predicates":41,"./strings":43}],45:[function(require,module,exports){
+},{"../common/hof":40,"../common/predicates":42,"./strings":44}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5126,7 +5202,7 @@ var UIRouterGlobals = (function () {
 }());
 exports.UIRouterGlobals = UIRouterGlobals;
 
-},{"./common/queue":42,"./params/stateParams":62}],46:[function(require,module,exports){
+},{"./common/queue":43,"./params/stateParams":63}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -5145,7 +5221,7 @@ exports.registerAddCoreResolvables = function (transitionService) {
     return transitionService.onCreate({}, addCoreResolvables);
 };
 
-},{"../router":70,"../transition/transition":84}],47:[function(require,module,exports){
+},{"../router":71,"../transition/transition":85}],48:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -5177,7 +5253,7 @@ exports.registerIgnoredTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
 };
 
-},{"../common/trace":44,"../transition/rejectFactory":83}],48:[function(require,module,exports){
+},{"../common/trace":45,"../transition/rejectFactory":84}],49:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -5197,7 +5273,7 @@ exports.registerInvalidTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var coreservices_1 = require("../common/coreservices");
@@ -5295,7 +5371,7 @@ function lazyLoadState(transition, state) {
 }
 exports.lazyLoadState = lazyLoadState;
 
-},{"../common/coreservices":37}],50:[function(require,module,exports){
+},{"../common/coreservices":38}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5353,7 +5429,7 @@ exports.registerOnEnterHook = function (transitionService) {
     return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
 };
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -5391,7 +5467,7 @@ exports.registerRedirectToHook = function (transitionService) {
     return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
 };
 
-},{"../common/coreservices":37,"../common/predicates":41,"../state/targetState":78}],52:[function(require,module,exports){
+},{"../common/coreservices":38,"../common/predicates":42,"../state/targetState":79}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
@@ -5435,7 +5511,7 @@ exports.registerLazyResolveState = function (transitionService) {
     return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
 };
 
-},{"../common/common":36,"../common/hof":39,"../resolve/resolveContext":69}],53:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../resolve/resolveContext":70}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -5471,7 +5547,7 @@ exports.registerUpdateGlobalState = function (transitionService) {
     return transitionService.onCreate({}, updateGlobalState);
 };
 
-},{"../common/common":36}],54:[function(require,module,exports){
+},{"../common/common":37}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5497,7 +5573,7 @@ exports.registerUpdateUrl = function (transitionService) {
     return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
 };
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** for typedoc */
@@ -5545,7 +5621,7 @@ exports.registerActivateViews = function (transitionService) {
     return transitionService.onSuccess({}, activateViews);
 };
 
-},{"../common/common":36,"../common/coreservices":37}],56:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38}],57:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -5568,7 +5644,7 @@ __export(require("./router"));
 __export(require("./vanilla"));
 __export(require("./interface"));
 
-},{"./common/index":40,"./globals":45,"./interface":57,"./params/index":58,"./path/index":63,"./resolve/index":66,"./router":70,"./state/index":71,"./transition/index":81,"./url/index":88,"./vanilla":94,"./view/index":106}],57:[function(require,module,exports){
+},{"./common/index":41,"./globals":46,"./interface":58,"./params/index":59,"./path/index":64,"./resolve/index":67,"./router":71,"./state/index":72,"./transition/index":82,"./url/index":89,"./vanilla":95,"./view/index":107}],58:[function(require,module,exports){
 "use strict";
 /**
  * # Core classes and interfaces
@@ -5590,7 +5666,7 @@ var UIRouterPluginBase = (function () {
 }());
 exports.UIRouterPluginBase = UIRouterPluginBase;
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5601,7 +5677,7 @@ __export(require("./paramTypes"));
 __export(require("./stateParams"));
 __export(require("./paramType"));
 
-},{"./param":59,"./paramType":60,"./paramTypes":61,"./stateParams":62}],59:[function(require,module,exports){
+},{"./param":60,"./paramType":61,"./paramTypes":62,"./stateParams":63}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5800,7 +5876,7 @@ var Param = (function () {
 }());
 exports.Param = Param;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/predicates":41,"./paramType":60}],60:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"./paramType":61}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5943,7 +6019,7 @@ function ArrayType(type, mode) {
     });
 }
 
-},{"../common/common":36,"../common/predicates":41}],61:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -6100,7 +6176,7 @@ function initDefaultTypes() {
 }
 initDefaultTypes();
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/predicates":41,"./paramType":60}],62:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"./paramType":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -6145,7 +6221,7 @@ var StateParams = (function () {
 }());
 exports.StateParams = StateParams;
 
-},{"../common/common":36}],63:[function(require,module,exports){
+},{"../common/common":37}],64:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -6155,7 +6231,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./pathNode"));
 __export(require("./pathFactory"));
 
-},{"./pathFactory":64,"./pathNode":65}],64:[function(require,module,exports){
+},{"./pathFactory":65,"./pathNode":66}],65:[function(require,module,exports){
 "use strict";
 /** @module path */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -6329,7 +6405,7 @@ PathUtils.paramValues = function (path) {
 };
 exports.PathUtils = PathUtils;
 
-},{"../common/common":36,"../common/hof":39,"../state/targetState":78,"./pathNode":65}],65:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../state/targetState":79,"./pathNode":66}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
@@ -6407,7 +6483,7 @@ var PathNode = (function () {
 }());
 exports.PathNode = PathNode;
 
-},{"../common/common":36,"../common/hof":39,"../params/param":59}],66:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../params/param":60}],67:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -6418,7 +6494,7 @@ __export(require("./interface"));
 __export(require("./resolvable"));
 __export(require("./resolveContext"));
 
-},{"./interface":67,"./resolvable":68,"./resolveContext":69}],67:[function(require,module,exports){
+},{"./interface":68,"./resolvable":69,"./resolveContext":70}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @internalapi */
@@ -6434,7 +6510,7 @@ exports.resolvePolicies = {
     }
 };
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -6568,7 +6644,7 @@ Resolvable.fromData = function (token, data) {
 };
 exports.Resolvable = Resolvable;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/predicates":41,"../common/strings":43,"../common/trace":44}],69:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/predicates":42,"../common/strings":44,"../common/trace":45}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */
@@ -6769,7 +6845,7 @@ var UIInjectorImpl = (function () {
     return UIInjectorImpl;
 }());
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/strings":43,"../common/trace":44,"../path/pathFactory":64,"./interface":67,"./resolvable":68}],70:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/strings":44,"../common/trace":45,"../path/pathFactory":65,"./interface":68,"./resolvable":69}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -6954,7 +7030,7 @@ var UIRouter = (function () {
 }());
 exports.UIRouter = UIRouter;
 
-},{"./common/common":36,"./common/predicates":41,"./common/trace":44,"./globals":45,"./state/stateRegistry":76,"./state/stateService":77,"./transition/transitionService":87,"./url/urlMatcherFactory":90,"./url/urlRouter":91,"./url/urlService":93,"./view/view":107}],71:[function(require,module,exports){
+},{"./common/common":37,"./common/predicates":42,"./common/trace":45,"./globals":46,"./state/stateRegistry":77,"./state/stateService":78,"./transition/transitionService":88,"./url/urlMatcherFactory":91,"./url/urlRouter":92,"./url/urlService":94,"./view/view":108}],72:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -6968,7 +7044,7 @@ __export(require("./stateRegistry"));
 __export(require("./stateService"));
 __export(require("./targetState"));
 
-},{"./stateBuilder":72,"./stateMatcher":73,"./stateObject":74,"./stateQueueManager":75,"./stateRegistry":76,"./stateService":77,"./targetState":78}],72:[function(require,module,exports){
+},{"./stateBuilder":73,"./stateMatcher":74,"./stateObject":75,"./stateQueueManager":76,"./stateRegistry":77,"./stateService":78,"./targetState":79}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -7244,7 +7320,7 @@ var StateBuilder = (function () {
 }());
 exports.StateBuilder = StateBuilder;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/predicates":41,"../common/strings":43,"../resolve/resolvable":68}],73:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../resolve/resolvable":69}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -7308,7 +7384,7 @@ var StateMatcher = (function () {
 }());
 exports.StateMatcher = StateMatcher;
 
-},{"../common/common":36,"../common/predicates":41}],74:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -7423,7 +7499,7 @@ StateObject.isState = function (obj) {
 };
 exports.StateObject = StateObject;
 
-},{"../common/common":36,"../common/glob":38,"../common/hof":39,"../common/predicates":41}],75:[function(require,module,exports){
+},{"../common/common":37,"../common/glob":39,"../common/hof":40,"../common/predicates":42}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -7516,7 +7592,7 @@ var StateQueueManager = (function () {
 }());
 exports.StateQueueManager = StateQueueManager;
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"./stateObject":74}],76:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"./stateObject":75}],77:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7673,7 +7749,7 @@ var StateRegistry = (function () {
 }());
 exports.StateRegistry = StateRegistry;
 
-},{"../common/common":36,"../common/hof":39,"./stateBuilder":72,"./stateMatcher":73,"./stateQueueManager":75}],77:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"./stateBuilder":73,"./stateMatcher":74,"./stateQueueManager":76}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8247,7 +8323,7 @@ var StateService = (function () {
 }());
 exports.StateService = StateService;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/glob":38,"../common/hof":39,"../common/predicates":41,"../common/queue":42,"../hooks/lazyLoad":49,"../params/param":59,"../path/pathFactory":64,"../path/pathNode":65,"../resolve/resolveContext":69,"../transition/rejectFactory":83,"../transition/transitionService":87,"./targetState":78}],78:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/glob":39,"../common/hof":40,"../common/predicates":42,"../common/queue":43,"../hooks/lazyLoad":50,"../params/param":60,"../path/pathFactory":65,"../path/pathNode":66,"../resolve/resolveContext":70,"../transition/rejectFactory":84,"../transition/transitionService":88,"./targetState":79}],79:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -8362,7 +8438,7 @@ TargetState.isDef = function (obj) {
 };
 exports.TargetState = TargetState;
 
-},{"../common/common":36,"../common/predicates":41}],79:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],80:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -8482,7 +8558,7 @@ function tupleSort(reverseDepthSort) {
     };
 }
 
-},{"../common/common":36,"../common/predicates":41,"./interface":82,"./transitionHook":86}],80:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"./interface":83,"./transitionHook":87}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8639,7 +8715,7 @@ function makeEvent(registry, transitionService, eventType) {
 }
 exports.makeEvent = makeEvent;
 
-},{"../common/common":36,"../common/glob":38,"../common/predicates":41,"./interface":82}],81:[function(require,module,exports){
+},{"../common/common":37,"../common/glob":39,"../common/predicates":42,"./interface":83}],82:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8668,7 +8744,7 @@ __export(require("./transitionHook"));
 __export(require("./transitionEventType"));
 __export(require("./transitionService"));
 
-},{"./hookBuilder":79,"./hookRegistry":80,"./interface":82,"./rejectFactory":83,"./transition":84,"./transitionEventType":85,"./transitionHook":86,"./transitionService":87}],82:[function(require,module,exports){
+},{"./hookBuilder":80,"./hookRegistry":81,"./interface":83,"./rejectFactory":84,"./transition":85,"./transitionEventType":86,"./transitionHook":87,"./transitionService":88}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TransitionHookPhase;
@@ -8685,7 +8761,7 @@ var TransitionHookScope;
     TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
 })(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 /**
  * @coreapi
  * @module transition
@@ -8775,7 +8851,7 @@ var Rejection = (function () {
 }());
 exports.Rejection = Rejection;
 
-},{"../common/common":36,"../common/hof":39,"../common/strings":43}],84:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/strings":44}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9403,7 +9479,7 @@ var Transition = (function () {
 Transition.diToken = Transition;
 exports.Transition = Transition;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/predicates":41,"../common/trace":44,"../params/param":59,"../path/pathFactory":64,"../resolve/resolvable":68,"../resolve/resolveContext":69,"../state/targetState":78,"./hookBuilder":79,"./hookRegistry":80,"./interface":82,"./transitionHook":86}],85:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/trace":45,"../params/param":60,"../path/pathFactory":65,"../resolve/resolvable":69,"../resolve/resolveContext":70,"../state/targetState":79,"./hookBuilder":80,"./hookRegistry":81,"./interface":83,"./transitionHook":87}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var transitionHook_1 = require("./transitionHook");
@@ -9432,7 +9508,7 @@ var TransitionEventType = (function () {
 }());
 exports.TransitionEventType = TransitionEventType;
 
-},{"./transitionHook":86}],86:[function(require,module,exports){
+},{"./transitionHook":87}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9653,7 +9729,7 @@ TransitionHook.THROW_ERROR = function (hook) { return function (error) {
 }; };
 exports.TransitionHook = TransitionHook;
 
-},{"../common/common":36,"../common/coreservices":37,"../common/hof":39,"../common/predicates":41,"../common/strings":43,"../common/trace":44,"../state/targetState":78,"./interface":82,"./rejectFactory":83}],87:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../common/trace":45,"../state/targetState":79,"./interface":83,"./rejectFactory":84}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9893,7 +9969,7 @@ var TransitionService = (function () {
 }());
 exports.TransitionService = TransitionService;
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"../hooks/coreResolvables":46,"../hooks/ignoredTransition":47,"../hooks/invalidTransition":48,"../hooks/lazyLoad":49,"../hooks/onEnterExitRetain":50,"../hooks/redirectTo":51,"../hooks/resolve":52,"../hooks/updateGlobals":53,"../hooks/url":54,"../hooks/views":55,"./hookRegistry":80,"./interface":82,"./transition":84,"./transitionEventType":85,"./transitionHook":86}],88:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../hooks/coreResolvables":47,"../hooks/ignoredTransition":48,"../hooks/invalidTransition":49,"../hooks/lazyLoad":50,"../hooks/onEnterExitRetain":51,"../hooks/redirectTo":52,"../hooks/resolve":53,"../hooks/updateGlobals":54,"../hooks/url":55,"../hooks/views":56,"./hookRegistry":81,"./interface":83,"./transition":85,"./transitionEventType":86,"./transitionHook":87}],89:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -9905,7 +9981,7 @@ __export(require("./urlRouter"));
 __export(require("./urlRule"));
 __export(require("./urlService"));
 
-},{"./urlMatcher":89,"./urlMatcherFactory":90,"./urlRouter":91,"./urlRule":92,"./urlService":93}],89:[function(require,module,exports){
+},{"./urlMatcher":90,"./urlMatcherFactory":91,"./urlRouter":92,"./urlRule":93,"./urlService":94}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10409,7 +10485,7 @@ var UrlMatcher = (function () {
 UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
 exports.UrlMatcher = UrlMatcher;
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"../common/strings":43,"../params/param":59}],90:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../params/param":60}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10537,7 +10613,7 @@ var UrlMatcherFactory = (function () {
 }());
 exports.UrlMatcherFactory = UrlMatcherFactory;
 
-},{"../common/common":36,"../common/predicates":41,"../params/param":59,"../params/paramTypes":61,"./urlMatcher":89}],91:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"../params/param":60,"../params/paramTypes":62,"./urlMatcher":90}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10811,7 +10887,7 @@ function getHandlerFn(handler) {
     return predicates_1.isFunction(handler) ? handler : hof_1.val(handler);
 }
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"../state/targetState":78,"./urlMatcher":89,"./urlRule":92}],92:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../state/targetState":79,"./urlMatcher":90,"./urlRule":93}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11021,7 +11097,7 @@ var BaseUrlRule = (function () {
 }());
 exports.BaseUrlRule = BaseUrlRule;
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"./urlMatcher":89}],93:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"./urlMatcher":90}],94:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -11102,7 +11178,7 @@ UrlService.locationServiceStub = makeStub(locationServicesFns);
 UrlService.locationConfigStub = makeStub(locationConfigFns);
 exports.UrlService = UrlService;
 
-},{"../common/common":36,"../common/coreservices":37}],94:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38}],95:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -11115,7 +11191,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** */
 __export(require("./vanilla/index"));
 
-},{"./vanilla/index":98}],95:[function(require,module,exports){
+},{"./vanilla/index":99}],96:[function(require,module,exports){
 "use strict";
 /**
  * @internalapi
@@ -11161,7 +11237,7 @@ var BaseLocationServices = (function () {
 }());
 exports.BaseLocationServices = BaseLocationServices;
 
-},{"../common/common":36,"../common/predicates":41,"./utils":105}],96:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"./utils":106}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11209,7 +11285,7 @@ var BrowserLocationConfig = (function () {
 }());
 exports.BrowserLocationConfig = BrowserLocationConfig;
 
-},{"../common/predicates":41}],97:[function(require,module,exports){
+},{"../common/predicates":42}],98:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11251,7 +11327,7 @@ var HashLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.HashLocationService = HashLocationService;
 
-},{"./baseLocationService":95,"./utils":105}],98:[function(require,module,exports){
+},{"./baseLocationService":96,"./utils":106}],99:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -11268,7 +11344,7 @@ __export(require("./browserLocationConfig"));
 __export(require("./utils"));
 __export(require("./plugins"));
 
-},{"./baseLocationService":95,"./browserLocationConfig":96,"./hashLocationService":97,"./injector":99,"./memoryLocationConfig":100,"./memoryLocationService":101,"./plugins":102,"./pushStateLocationService":103,"./q":104,"./utils":105}],99:[function(require,module,exports){
+},{"./baseLocationService":96,"./browserLocationConfig":97,"./hashLocationService":98,"./injector":100,"./memoryLocationConfig":101,"./memoryLocationService":102,"./plugins":103,"./pushStateLocationService":104,"./q":105,"./utils":106}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11369,7 +11445,7 @@ exports.$injector = {
     }
 };
 
-},{"../common/index":40}],100:[function(require,module,exports){
+},{"../common/index":41}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = require("../common/predicates");
@@ -11395,7 +11471,7 @@ var MemoryLocationConfig = (function () {
 }());
 exports.MemoryLocationConfig = MemoryLocationConfig;
 
-},{"../common/common":36,"../common/predicates":41}],101:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],102:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11430,7 +11506,7 @@ var MemoryLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.MemoryLocationService = MemoryLocationService;
 
-},{"./baseLocationService":95}],102:[function(require,module,exports){
+},{"./baseLocationService":96}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11460,7 +11536,7 @@ exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushSta
 /** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
 exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
 
-},{"../common/coreservices":37,"./browserLocationConfig":96,"./hashLocationService":97,"./injector":99,"./memoryLocationConfig":100,"./memoryLocationService":101,"./pushStateLocationService":103,"./q":104,"./utils":105}],103:[function(require,module,exports){
+},{"../common/coreservices":38,"./browserLocationConfig":97,"./hashLocationService":98,"./injector":100,"./memoryLocationConfig":101,"./memoryLocationService":102,"./pushStateLocationService":104,"./q":105,"./utils":106}],104:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11513,7 +11589,7 @@ var PushStateLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.PushStateLocationService = PushStateLocationService;
 
-},{"./baseLocationService":95,"./utils":105}],104:[function(require,module,exports){
+},{"./baseLocationService":96,"./utils":106}],105:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11569,7 +11645,7 @@ exports.$q = {
     }
 };
 
-},{"../common/index":40}],105:[function(require,module,exports){
+},{"../common/index":41}],106:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11638,7 +11714,7 @@ function locationPluginFactory(name, isHtml5, serviceClass, configurationClass) 
 }
 exports.locationPluginFactory = locationPluginFactory;
 
-},{"../common/common":36,"../common/index":40}],106:[function(require,module,exports){
+},{"../common/common":37,"../common/index":41}],107:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -11646,7 +11722,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./view"));
 
-},{"./view":107}],107:[function(require,module,exports){
+},{"./view":108}],108:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -11930,7 +12006,7 @@ ViewService.matches = function (uiViewsByFqn, uiView) { return function (viewCon
 }; };
 exports.ViewService = ViewService;
 
-},{"../common/common":36,"../common/hof":39,"../common/predicates":41,"../common/trace":44}],108:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../common/trace":45}],109:[function(require,module,exports){
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -12086,11 +12162,11 @@ module.exports = auth0;
 
 /***/ })
 /******/ ]);
-},{}],109:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 require('./dist/angular-auth0');
 module.exports = 'auth0.auth0';
 
-},{"./dist/angular-auth0":108}],110:[function(require,module,exports){
+},{"./dist/angular-auth0":109}],111:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("angular"));
@@ -12712,7 +12788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 });
 ;
 
-},{"angular":112}],111:[function(require,module,exports){
+},{"angular":113}],112:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
@@ -46544,11 +46620,11 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],112:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":111}],113:[function(require,module,exports){
+},{"./angular":112}],114:[function(require,module,exports){
 /* global angular */
 (function(window, document) {
     'use strict';
@@ -47066,7 +47142,7 @@ module.exports = angular;
         );
 })(window, document);
 
-},{}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 /*!
  * jQuery blockUI plugin
  * Version 2.70.0-2014.11.23
@@ -47693,7 +47769,7 @@ module.exports = angular;
 
 })();
 
-},{"jquery":129}],115:[function(require,module,exports){
+},{"jquery":130}],116:[function(require,module,exports){
 /*! =======================================================
                       VERSION  9.8.1              
 ========================================================= */
@@ -49600,7 +49676,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 	return Slider;
 });
 
-},{"jquery":129}],116:[function(require,module,exports){
+},{"jquery":130}],117:[function(require,module,exports){
 // This file is autogenerated via the `commonjs` Grunt task. You can require() this file in a CommonJS environment.
 require('../../js/transition.js')
 require('../../js/alert.js')
@@ -49614,7 +49690,7 @@ require('../../js/popover.js')
 require('../../js/scrollspy.js')
 require('../../js/tab.js')
 require('../../js/affix.js')
-},{"../../js/affix.js":117,"../../js/alert.js":118,"../../js/button.js":119,"../../js/carousel.js":120,"../../js/collapse.js":121,"../../js/dropdown.js":122,"../../js/modal.js":123,"../../js/popover.js":124,"../../js/scrollspy.js":125,"../../js/tab.js":126,"../../js/tooltip.js":127,"../../js/transition.js":128}],117:[function(require,module,exports){
+},{"../../js/affix.js":118,"../../js/alert.js":119,"../../js/button.js":120,"../../js/carousel.js":121,"../../js/collapse.js":122,"../../js/dropdown.js":123,"../../js/modal.js":124,"../../js/popover.js":125,"../../js/scrollspy.js":126,"../../js/tab.js":127,"../../js/tooltip.js":128,"../../js/transition.js":129}],118:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: affix.js v3.3.7
  * http://getbootstrap.com/javascript/#affix
@@ -49778,7 +49854,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: alert.js v3.3.7
  * http://getbootstrap.com/javascript/#alerts
@@ -49874,7 +49950,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],119:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.7
  * http://getbootstrap.com/javascript/#buttons
@@ -50001,7 +50077,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],120:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: carousel.js v3.3.7
  * http://getbootstrap.com/javascript/#carousel
@@ -50240,7 +50316,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],121:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: collapse.js v3.3.7
  * http://getbootstrap.com/javascript/#collapse
@@ -50454,7 +50530,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],122:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: dropdown.js v3.3.7
  * http://getbootstrap.com/javascript/#dropdowns
@@ -50621,7 +50697,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],123:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: modal.js v3.3.7
  * http://getbootstrap.com/javascript/#modals
@@ -50962,7 +51038,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],124:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: popover.js v3.3.7
  * http://getbootstrap.com/javascript/#popovers
@@ -51072,7 +51148,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],125:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: scrollspy.js v3.3.7
  * http://getbootstrap.com/javascript/#scrollspy
@@ -51246,7 +51322,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],126:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tab.js v3.3.7
  * http://getbootstrap.com/javascript/#tabs
@@ -51403,7 +51479,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],127:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tooltip.js v3.3.7
  * http://getbootstrap.com/javascript/#tooltip
@@ -51925,7 +52001,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],128:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: transition.js v3.3.7
  * http://getbootstrap.com/javascript/#transitions
@@ -51986,7 +52062,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/

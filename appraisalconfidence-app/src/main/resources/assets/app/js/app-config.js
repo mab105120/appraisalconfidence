@@ -63,6 +63,11 @@
             url: '/progress',
             controller: 'progressController',
             templateUrl: 'app/template/progress.html'
+          })
+          .state('contactus', {
+            url: '/contactus',
+            controller: 'contactUsController',
+            templateUrl: 'app/template/contactus.html'
           });
 
           // Configure auth provider
