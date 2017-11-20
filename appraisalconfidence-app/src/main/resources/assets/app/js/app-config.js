@@ -12,6 +12,8 @@
 
     function app_config($stateProvider, $locationProvider,
                         $urlRouterProvider, angularAuth0Provider, appconProvider) {
+
+        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {
@@ -76,14 +78,14 @@
               domain: auth_vars.domain,
               responseType: 'token id_token',
               audience: 'https://appraisal-grenoble-bourji.auth0.com/userinfo',
-              redirectUri: 'http://localhost:5000/#/callback',
+              redirectUri: URL + '/#/callback',
               scope: 'openid profile'
           });
 
           $urlRouterProvider.otherwise('/');
           $locationProvider.hashPrefix('');
 
-          appconProvider.setUrl('http://localhost:5000');
+          appconProvider.setUrl(URL);
           console.log('Just configured app con');
     }
 

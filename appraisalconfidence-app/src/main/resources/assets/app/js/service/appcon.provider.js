@@ -156,9 +156,15 @@
             }
 
             function sendEmail(from, subject, body) {
+                var supportMailDetails = {
+                    from: from,
+                    subject: subject,
+                    body: body
+                }
                 return $http({
                         method: 'POST',
-                        url: url + '/api/communication/send-support-email/' + from + '/' + subject + '/' + body
+                        data: supportMailDetails,
+                        url: url + '/api/communication/send-support-email'
                 });
             }
 

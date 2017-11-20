@@ -19,6 +19,11 @@
         function init() {
             $scope.$parent.startSpinner();
 
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             $scope.currentEvaluation = $stateParams.id;
 
             // these vars are set by the eval directive when users click on supervisor reviews.
@@ -148,7 +153,12 @@
                     $state.go('end');
                 var nextEvaluationCode = parseInt($stateParams.id) + 1;
                 $window.scrollTo(0, 0); // scroll to top
-                $state.go('evaluation', {id: nextEvaluationCode});
+
+                if(nextEvaluationCode > 15)
+                    $state.go('progress');
+                else
+                    $state.go('evaluation', {id: nextEvaluationCode});
+
                 $scope.$parent.stopSpinner();
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable' : response.data.message;

@@ -15,8 +15,13 @@
             // remember current state to reroute to after authentication
             if ($state.current.name === 'welcome')
                 localStorage.setItem('redirect_state', 'home');
-            else
-                localStorage.setItem('redirect_state', $state.current.name);
+            else {
+                var state = $state.current.name;
+                if(state === 'evaluation') {
+                    localStorage.setItem('redirect_state_param', $state.params.id);
+                }
+                localStorage.setItem('redirect_state', state);
+            }
 
             angularAuth0.authorize();
         }
@@ -28,7 +33,12 @@
                     if (localStorage.getItem('redirect_state') === null)
                         $state.go('home');
                     else {
-                        $state.go(localStorage.getItem('redirect_state'));
+                        var redirect_state = localStorage.getItem('redirect_state');
+                        if(redirect_state === 'evaluation') {
+                            var redirect_state_id = localStorage.getItem('redirect_state_param');
+                            $state.go('evaluation', {id: redirect_state_id});
+                        } else
+                            $state.go(localStorage.getItem('redirect_state'));
                         localStorage.removeItem('redirect_state');
                     }
 

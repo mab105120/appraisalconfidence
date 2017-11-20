@@ -3,13 +3,21 @@
     progress_controller.$inject = [
         '$scope',
         '$state',
-        'appcon'
+        'appcon',
+        'authService'
     ];
 
-    function progress_controller($scope, $state, appcon) {
+    function progress_controller($scope, $state, appcon, authService) {
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            $scope.showSubmit = false;
 
             $scope.rows = [
                 {
@@ -47,14 +55,21 @@
                     completed.set(item, item);
                 });
 
+                var allCompleted = true;
+
                 angular.forEach($scope.rows, function(item) {
                     if(completed.get(item.id) !== undefined)
                         item.status = 'Complete';
-                    else if (item.id === next)
+                    else if (item.id === next) {
                         item.status = 'Next';
-                    else item.status = 'Not Started';
+                        allCompleted = false;
+                    }
+                    else {
+                        item.status = 'Not Started';
+                        allCompleted = false;
+                    }
                 });
-
+                $scope.showSubmit = allCompleted;
                 $scope.$parent.stopSpinner();
             }, function failure(response) {
                 console.log(response);
@@ -74,7 +89,7 @@
             } else if (id === 'QUEST_CON') {
                 $state.go('confidence');
             } else if(id.startsWith('EVALUATION')) {
-                $state.go('evaluation', {id: parseInt(id.substr(id.length - 1))});
+                $state.go('evaluation', {id: parseInt(id.substr(id.indexOf('_') + 1))});
             }
         }
     }

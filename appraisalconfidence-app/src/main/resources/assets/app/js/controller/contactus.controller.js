@@ -10,6 +10,12 @@
     function contactUs_controller($scope, authService, appcon, toast) {
         init();
         function init() {
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             $scope.subject = '';
             $scope.body = '';
             $scope.email = authService.getUserId();
@@ -20,6 +26,8 @@
 
             appcon.sendEmail($scope.email, $scope.subject, $scope.body)
             .then(function success() {
+                $scope.subject = '',
+                $scope.body = '',
                 toast.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
                 $scope.$parent.stopSpinner();
             }, function failure() {

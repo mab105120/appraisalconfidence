@@ -23,7 +23,8 @@ public enum ProgressStatus {
     EVALUATION_12(15),
     EVALUATION_13(16),
     EVALUATION_14(17),
-    EVALUATION_15(18);
+    EVALUATION_15(18),
+    COMPLETE(19);
 
     private int priority;
 
@@ -32,6 +33,6 @@ public enum ProgressStatus {
     }
 
     public static ProgressStatus getNextStatus(ProgressStatus current) {
-        return ProgressStatus.values()[current.priority];
+        return ProgressStatus.values()[current.priority + 1];
     }
 }

@@ -6,14 +6,21 @@
             '$scope',
             '$state',
             'authService',
-            'appcon'
+            'appcon',
+            'toaster'
         ];
 
 
-    function home_controller($scope, $state, authService, appcon) {
+    function home_controller($scope, $state, authService, appcon, toaster) {
         init();
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             $scope.showAlert = false;
             appcon.getProgress()
             .then(function success(response) {
@@ -29,13 +36,8 @@
             });
         }
 
-//        if(!authService.isAuthenticated()) {
-//            alert('you must login to view this page!');
-//            $state.go('welcome');
-//        }
-
         $scope.start = function() {
-            $state.go('questionnaire');
+            $state.go('procedure');
         };
     };
 

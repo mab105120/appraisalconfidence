@@ -12,7 +12,14 @@
     function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
 
         function init() {
+
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             appcon.stepIsCompleted('QUEST_CON')
             .then(function success(response) {
                 if(response.data === true) {
@@ -166,7 +173,7 @@
                 console.log('POST /api/questionnaire/confidence ' + response.status);
                 $scope.$parent.stopSpinner();
                 $window.scrollTo(0, 0);
-                $state.go('procedure');
+                $state.go('evaluation', {id: 1});
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable!' : response.data.message;
                 toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);

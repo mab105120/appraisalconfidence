@@ -14,6 +14,12 @@
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             appcon.stepIsCompleted('QUEST_EXP')
             .then(function success(response) {
                 if(response.data === true) {

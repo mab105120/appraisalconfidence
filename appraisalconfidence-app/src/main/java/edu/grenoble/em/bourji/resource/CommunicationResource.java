@@ -1,11 +1,12 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.api.SupportMailDetails;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -26,10 +27,8 @@ public class CommunicationResource {
     }
 
     @POST
-    @Path("/send-support-email/{from}/{subject}/{body}")
-    public Response sendSupportEmail(@PathParam("from") String from,
-                                     @PathParam("subject") String subject,
-                                     @PathParam("body") String body,
+    @Path("/send-support-email")
+    public Response sendSupportEmail(SupportMailDetails mailDetails,
                                      @Context HttpHeaders httpHeaders) {
         Properties props = new Properties();
 
@@ -46,10 +45,10 @@ public class CommunicationResource {
         });
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));
+            message.setFrom(new InternetAddress(mailDetails.getFrom()));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress("mohd.bourji@gmail.com"));
-            message.setSubject(subject);
-            message.setText(body + "\n-----------\nTo reply back to this email please send a message to: " + from);
+            message.setSubject(mailDetails.getSubject());
+            message.setText(mailDetails.getBody() + "\n-----------\nTo reply send email to: " + mailDetails.getFrom());
             Transport.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();

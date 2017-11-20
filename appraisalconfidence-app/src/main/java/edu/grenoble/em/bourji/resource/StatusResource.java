@@ -32,27 +32,6 @@ public class StatusResource {
         this.tokenHelper = tokenHelper;
     }
 
-//    @POST
-//    @Path("/{status}")
-//    @UnitOfWork
-//    public Response postStatus(@PathParam("status") String status,
-//                               @Context HttpHeaders httpHeaders) {
-//        String access_token = httpHeaders.getHeaderString("Authorization");
-//        if (access_token == null)
-//            return Respond.respondWithUnauthorized();
-//        access_token = access_token.substring(7);
-//        try {
-//            String user = tokenHelper.getUserIdFromToken(access_token);
-//            LOGGER.info(String.format("Setting status of user (%s) to %s", user, status));
-//            statusDAO.add(new Status(user, ProgressStatus.valueOf(status).name()));
-//        } catch (Throwable e) {
-//            String errorMessage = "Oops we had trouble updating your progress: " + e.getMessage();
-//            LOGGER.error(errorMessage);
-//            return Respond.respondWithError(errorMessage);
-//        }
-//        return Response.ok().build();
-//    }
-
     @GET
     @UnitOfWork
     @Path("/user-started")

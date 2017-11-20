@@ -13,6 +13,8 @@
 
     function app_config($stateProvider, $locationProvider,
                         $urlRouterProvider, angularAuth0Provider, appconProvider) {
+
+        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {
@@ -77,14 +79,14 @@
               domain: auth_vars.domain,
               responseType: 'token id_token',
               audience: 'https://appraisal-grenoble-bourji.auth0.com/userinfo',
-              redirectUri: 'http://localhost:5000/#/callback',
+              redirectUri: URL + '/#/callback',
               scope: 'openid profile'
           });
 
           $urlRouterProvider.otherwise('/');
           $locationProvider.hashPrefix('');
 
-          appconProvider.setUrl('http://localhost:5000');
+          appconProvider.setUrl(URL);
           console.log('Just configured app con');
     }
 
@@ -197,6 +199,12 @@
     function contactUs_controller($scope, authService, appcon, toast) {
         init();
         function init() {
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             $scope.subject = '';
             $scope.body = '';
             $scope.email = authService.getUserId();
@@ -207,6 +215,8 @@
 
             appcon.sendEmail($scope.email, $scope.subject, $scope.body)
             .then(function success() {
+                $scope.subject = '',
+                $scope.body = '',
                 toast.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
                 $scope.$parent.stopSpinner();
             }, function failure() {
@@ -243,6 +253,11 @@
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
 
             $scope.currentEvaluation = $stateParams.id;
 
@@ -373,7 +388,12 @@
                     $state.go('end');
                 var nextEvaluationCode = parseInt($stateParams.id) + 1;
                 $window.scrollTo(0, 0); // scroll to top
-                $state.go('evaluation', {id: nextEvaluationCode});
+
+                if(nextEvaluationCode > 15)
+                    $state.go('progress');
+                else
+                    $state.go('evaluation', {id: nextEvaluationCode});
+
                 $scope.$parent.stopSpinner();
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
@@ -398,14 +418,21 @@
             '$scope',
             '$state',
             'authService',
-            'appcon'
+            'appcon',
+            'toaster'
         ];
 
 
-    function home_controller($scope, $state, authService, appcon) {
+    function home_controller($scope, $state, authService, appcon, toaster) {
         init();
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             $scope.showAlert = false;
             appcon.getProgress()
             .then(function success(response) {
@@ -421,13 +448,8 @@
             });
         }
 
-//        if(!authService.isAuthenticated()) {
-//            alert('you must login to view this page!');
-//            $state.go('welcome');
-//        }
-
         $scope.start = function() {
-            $state.go('questionnaire');
+            $state.go('procedure');
         };
     };
 
@@ -463,17 +485,9 @@
     procedure_controller.$inject = ['$scope', '$state', 'authService', '$window'];
 
     function procedure_controller($scope, $state, authService, $window) {
-//        if(!authService.isAuthenticated()) {
-//            alert('You are not logged in. You need to log in to view this page.');
-//            authService.login();
-//        }
-
-        console.log('the controller is also executing');
-        $scope.checkboxStatus = false;
-        // TODO replace this with angular form
-        $scope.checkBox = function (status) {
-            if(status === false) status = true;
-            else status = false;
+        if(!authService.isAuthenticated()) {
+            alert('You are not logged in. You need to log in to view this page.');
+            authService.login();
         }
 
         $scope.next = function() {
@@ -491,13 +505,21 @@
     progress_controller.$inject = [
         '$scope',
         '$state',
-        'appcon'
+        'appcon',
+        'authService'
     ];
 
-    function progress_controller($scope, $state, appcon) {
+    function progress_controller($scope, $state, appcon, authService) {
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            $scope.showSubmit = false;
 
             $scope.rows = [
                 {
@@ -535,14 +557,21 @@
                     completed.set(item, item);
                 });
 
+                var allCompleted = true;
+
                 angular.forEach($scope.rows, function(item) {
                     if(completed.get(item.id) !== undefined)
                         item.status = 'Complete';
-                    else if (item.id === next)
+                    else if (item.id === next) {
                         item.status = 'Next';
-                    else item.status = 'Not Started';
+                        allCompleted = false;
+                    }
+                    else {
+                        item.status = 'Not Started';
+                        allCompleted = false;
+                    }
                 });
-
+                $scope.showSubmit = allCompleted;
                 $scope.$parent.stopSpinner();
             }, function failure(response) {
                 console.log(response);
@@ -562,7 +591,7 @@
             } else if (id === 'QUEST_CON') {
                 $state.go('confidence');
             } else if(id.startsWith('EVALUATION')) {
-                $state.go('evaluation', {id: parseInt(id.substr(id.length - 1))});
+                $state.go('evaluation', {id: parseInt(id.substr(id.indexOf('_') + 1))});
             }
         }
     }
@@ -584,7 +613,14 @@
     function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
 
         function init() {
+
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             appcon.stepIsCompleted('QUEST_CON')
             .then(function success(response) {
                 if(response.data === true) {
@@ -738,7 +774,7 @@
                 console.log('POST /api/questionnaire/confidence ' + response.status);
                 $scope.$parent.stopSpinner();
                 $window.scrollTo(0, 0);
-                $state.go('procedure');
+                $state.go('evaluation', {id: 1});
             }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable!' : response.data.message;
                 toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
@@ -766,6 +802,12 @@
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             appcon.stepIsCompleted('QUEST_EXP')
             .then(function success(response) {
                 if(response.data === true) {
@@ -896,6 +938,12 @@
 
         function init() {
             $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
             appcon.stepIsCompleted('QUEST_DEMO')
             .then(function success(response) {
                 console.log(response);
@@ -988,13 +1036,20 @@
     tenure_controller.$inject = [
         '$scope',
         '$state',
+        'authService',
         '$window'
     ]
 
-    function tenure_controller($scope, $state, $window) {
+    function tenure_controller($scope, $state, authService, $window) {
+
+        if(!authService.isAuthenticated()) {
+            alert('You are not logged in. You need to log in to view this page.');
+            authService.login();
+        }
+
         $scope.submit = function() {
             $window.scrollTo(0, 0);
-            $state.go('evaluation', {id: 1});
+            $state.go('questionnaire');
         }
     }
 
@@ -1342,9 +1397,15 @@
             }
 
             function sendEmail(from, subject, body) {
+                var supportMailDetails = {
+                    from: from,
+                    subject: subject,
+                    body: body
+                }
                 return $http({
                         method: 'POST',
-                        url: url + '/api/communication/send-support-email/' + from + '/' + subject + '/' + body
+                        data: supportMailDetails,
+                        url: url + '/api/communication/send-support-email'
                 });
             }
 
@@ -1389,8 +1450,13 @@
             // remember current state to reroute to after authentication
             if ($state.current.name === 'welcome')
                 localStorage.setItem('redirect_state', 'home');
-            else
-                localStorage.setItem('redirect_state', $state.current.name);
+            else {
+                var state = $state.current.name;
+                if(state === 'evaluation') {
+                    localStorage.setItem('redirect_state_param', $state.params.id);
+                }
+                localStorage.setItem('redirect_state', state);
+            }
 
             angularAuth0.authorize();
         }
@@ -1402,7 +1468,12 @@
                     if (localStorage.getItem('redirect_state') === null)
                         $state.go('home');
                     else {
-                        $state.go(localStorage.getItem('redirect_state'));
+                        var redirect_state = localStorage.getItem('redirect_state');
+                        if(redirect_state === 'evaluation') {
+                            var redirect_state_id = localStorage.getItem('redirect_state_param');
+                            $state.go('evaluation', {id: redirect_state_id});
+                        } else
+                            $state.go(localStorage.getItem('redirect_state'));
                         localStorage.removeItem('redirect_state');
                     }
 
