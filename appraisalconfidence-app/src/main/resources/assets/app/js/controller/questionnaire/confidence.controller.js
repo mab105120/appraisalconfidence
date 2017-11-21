@@ -25,7 +25,7 @@
                 if(response.data === true) {
                     appcon.getUserConfidence()
                     .then(function success(response) {
-
+                        $scope.oldRes = response.data;
                         angular.forEach(response.data, function(item) {
                             if(item.itemCode.startsWith("jsd")) {
                                 angular.forEach($scope.jsdItems, function(element) {
@@ -84,7 +84,6 @@
                 value: 3
             }
         ];
-
         $scope.jsdItems = [
             {
                 item: 'Often I put off making difficult decisions',
@@ -164,22 +163,44 @@
                 return;
             }
 
-            var userConfidenceResponse = getUserResponsesForApiCall();
+            if(responseChanged) {
+                var userConfidenceResponse = getUserResponsesForApiCall();
 
-            $scope.$parent.startSpinner();
-            appcon.postUserConfidence(userConfidenceResponse)
-            .then(function success(response) {
-                toaster.pop('success', 'Saved!', 'Your response has been saved');
-                console.log('POST /api/questionnaire/confidence ' + response.status);
-                $scope.$parent.stopSpinner();
+                $scope.$parent.startSpinner();
+                appcon.postUserConfidence(userConfidenceResponse)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved');
+                    console.log('POST /api/questionnaire/confidence ' + response.status);
+                    $scope.$parent.stopSpinner();
+                    $window.scrollTo(0, 0);
+                    $state.go('evaluation', {id: 1});
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable!' : response.data.message;
+                    toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
+                    $scope.$parent.stopSpinner();
+                });
+
+            } else {
                 $window.scrollTo(0, 0);
                 $state.go('evaluation', {id: 1});
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable!' : response.data.message;
-                toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
-                $scope.$parent.stopSpinner();
-            });
+            }
         }
+    }
+
+    function responseChanged(oldRes, newRes) {
+        if(oldRes === undefined)
+            return true;
+        var oldResMap = new Map();
+        angular.forEach(oldRes, function(item) {
+            oldResMap.set(item.code, item);
+        });
+        angular.forEach($scope.jsdItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        angular.forEach($scope.pfiItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        return false;
     }
 
     module.exports = quest_confidence_controller;

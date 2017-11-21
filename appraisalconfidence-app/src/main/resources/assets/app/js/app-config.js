@@ -13,7 +13,9 @@
     function app_config($stateProvider, $locationProvider,
                         $urlRouterProvider, angularAuth0Provider, appconProvider) {
 
-        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
+//        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
+        var URL = 'http://localhost:5000';
+
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {

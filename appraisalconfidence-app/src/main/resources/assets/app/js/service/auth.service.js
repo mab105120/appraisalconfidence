@@ -71,6 +71,7 @@
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
             localStorage.removeItem('userId');
+            localStorage.removeItem('redirect_state_param');
             $state.go('welcome');
         }
 

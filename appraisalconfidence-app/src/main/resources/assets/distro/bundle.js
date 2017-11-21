@@ -14,7 +14,9 @@
     function app_config($stateProvider, $locationProvider,
                         $urlRouterProvider, angularAuth0Provider, appconProvider) {
 
-        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
+//        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
+        var URL = 'http://localhost:5000';
+
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {
@@ -951,6 +953,7 @@
                     appcon.getUserDemographics()
                     .then(function success(response) {
                         var userDemographics = response.data;
+                        $scope.oldResponse = userDemographics;
                         // populate the fields
                         $scope.age = parseInt(userDemographics.age);
                         $scope.gender = userDemographics.gender;
@@ -1008,24 +1011,40 @@
                 toaster.pop('error','Authentication Issue','You must be logged in to perform this action');
                 return;
             }
-            var user = {
+            var payload = {
                 age: $scope.age,
                 gender: $scope.gender,
                 education: $scope.education,
                 division: $scope.division
             };
-            $scope.$parent.startSpinner();
-            appcon.postUserDemographic(user)
-            .then(function success(response) {
-                $scope.$parent.stopSpinner();
-                toaster.pop('success','Saved!','Your response has been saved successfully!');
+
+            if(responseChanged($scope.oldResponse, payload)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserDemographic(payload)
+                .then(function success(response) {
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('success','Saved!','Your response has been saved successfully!');
+                    $state.go('experience');
+                }, function failure(response) {
+                    var errorMessage = (response.data === null) ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error','Error', "Sorry we were unable to save your response. Reason (" + response.status + "): " + errorMessage);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
                 $state.go('experience');
-            }, function failure(response) {
-                var errorMessage = (response.data === null) ? 'Server unreachable' : response.data.message;
-                toaster.pop('error','Error', "Sorry we were unable to save your response. Reason (" + response.status + "): " + errorMessage);
-                $scope.$parent.stopSpinner();
-            });
+            }
+
         }
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.age != newRes.age ||
+                        oldRes.gender !== newRes.gender ||
+                        oldRes.education !== newRes.education ||
+                        oldRes.division !== newRes.division;
+        }
+
     }
 
     module.exports = questionnaire_controller;

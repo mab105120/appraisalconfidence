@@ -82,6 +82,8 @@
                     .then(function success(response) {
 
                         // pre-populate fields
+                        $scope.oldRes = response.data;
+
                         $scope.selectedTeacher = response.data.recommendationPick;
                         $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
                         $scope.comment = response.data.comment;
@@ -128,12 +130,10 @@
         }
 
         $scope.saveAndContinue = function() {
-            var TOTAL_EVALUATIONS = 15;
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
-            $scope.$parent.startSpinner();
             var userEval = {
                 evaluationCode: $stateParams.id,
                 recommendationPick: $scope.selectedTeacher,
@@ -145,28 +145,42 @@
                 recommendation: userEval,
                 activities: $scope.activities
             }
-            $scope.$parent.startSpinner();
-            appcon.postUserEvaluation(payload)
-            .then(function success(response) {
-                toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
-                if($stateParams.id === TOTAL_EVALUATIONS)
-                    $state.go('end');
-                var nextEvaluationCode = parseInt($stateParams.id) + 1;
-                $window.scrollTo(0, 0); // scroll to top
+            if(responseChanged($scope.oldRes, userEval)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserEvaluation(payload)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                    $window.scrollTo(0, 0); // scroll to top
 
+                    if(nextEvaluationCode > 15)
+                        $state.go('progress');
+                    else
+                        $state.go('evaluation', {id: nextEvaluationCode});
+
+                    $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                    console.log('Error Object');
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
                 if(nextEvaluationCode > 15)
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});
+            }
+        }
 
-                $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
-                console.log('Error Object');
-                console.log(response);
-                $scope.$parent.stopSpinner();
-            });
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.selectedTeacher != newRes.recommendationPick ||
+                        oldRes.absConfidence != newRes.absConfidence ||
+                        oldRes.relConfidence != newRes.relConfidence ||
+                        oldRes.comment !== newRes.comment;
         }
 
     };
