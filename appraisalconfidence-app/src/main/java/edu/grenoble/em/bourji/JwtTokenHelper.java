@@ -7,7 +7,6 @@ import com.auth0.jwk.UrlJwkProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import java.security.interfaces.RSAPublicKey;
@@ -25,19 +24,19 @@ public class JwtTokenHelper {
         this.kid = kid;
     }
 
-    public String getUserIdFromToken(String access_id) throws JwkException {
-        JwkProvider provider = new UrlJwkProvider(String.format("https://%s/", authDomain));
-        Jwk jwk = provider.get(kid);
-        RSAPublicKey pk = (RSAPublicKey) jwk.getPublicKey();
+    String getUserIdFromToken(String access_id) throws JwkException {
         try {
+            JwkProvider provider = new UrlJwkProvider(String.format("https://%s/", authDomain));
+            Jwk jwk = provider.get(kid);
+            RSAPublicKey pk = (RSAPublicKey) jwk.getPublicKey();
             Algorithm algorithm = Algorithm.RSA256(pk, null);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer(String.format("https://%s/", authDomain))
                     .build();
             DecodedJWT decodedJWT = verifier.verify(access_id);
             return decodedJWT.getClaim("name").asString();
-        } catch (JWTVerificationException e) {
-            throw new RuntimeException("An error occurred: " + e.getMessage());
+        } catch(Throwable e) {
+            throw new JwkException(e.getMessage(), e);
         }
     }
 }

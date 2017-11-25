@@ -1,6 +1,5 @@
 package edu.grenoble.em.bourji.resource;
 
-import edu.grenoble.em.bourji.JwtTokenHelper;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
@@ -12,8 +11,8 @@ import io.dropwizard.hibernate.UnitOfWork;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -29,11 +28,9 @@ public class QuestionnaireResource {
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireResource.class);
     private final QuestionnaireDAO dao;
     private final StatusDAO statusDAO;
-    private final JwtTokenHelper tokenHelper;
 
-    public QuestionnaireResource(QuestionnaireDAO dao, JwtTokenHelper tokenHelper, StatusDAO statusDAO) {
+    public QuestionnaireResource(QuestionnaireDAO dao, StatusDAO statusDAO) {
         this.dao = dao;
-        this.tokenHelper = tokenHelper;
         this.statusDAO = statusDAO;
     }
 
@@ -41,15 +38,10 @@ public class QuestionnaireResource {
     @Path("/user-demographic")
     @UnitOfWork
     public Response addUserDemographic(UserDemographic userDemographic,
-                                       @Context HttpHeaders httpHeaders) {
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
+                                       @Context ContainerRequestContext requestContext) {
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             int submissionId = dao.getUserDemographicDAO().getNextSubmissionId(userId);
             LOGGER.info(String.format("Posting demographic questionnaire response for user %s submission id %s ", userId, submissionId));
             userDemographic.setUser(userId);
@@ -67,16 +59,10 @@ public class QuestionnaireResource {
     @Path("/user-experience")
     @UnitOfWork
     public Response addUserExperience(UserExperience userExperience,
-                                      @Context HttpHeaders httpHeaders) {
-
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
+                                      @Context ContainerRequestContext requestContext) {
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             int submissionId = dao.getUserExperienceDAO().getNextSubmissionId(userId);
             LOGGER.info(String.format("Posting experience questionnaire response for user %s submission id %s ", userId, submissionId));
             userExperience.setUser(userId);
@@ -94,16 +80,10 @@ public class QuestionnaireResource {
     @Path("/user-confidence")
     @UnitOfWork
     public Response addUserConfidence(List<UserConfidence> userConfidenceResponse,
-                                      @Context HttpHeaders httpHeaders) {
-
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
+                                      @Context ContainerRequestContext requestContext) {
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             int submissionId = dao.getUserConfidenceDAO().getNextSubmissionId(userId);
             LOGGER.info(String.format("Posting confidence questionnaire response for user %s submission id %s ", userId, submissionId));
             userConfidenceResponse.stream().forEach(res -> {
@@ -122,15 +102,10 @@ public class QuestionnaireResource {
     @GET
     @Path("/user-confidence")
     @UnitOfWork
-    public Response getUserConfidence(@Context HttpHeaders httpHeaders) {
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
+    public Response getUserConfidence(@Context ContainerRequestContext requestContext) {
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             LOGGER.info("User id: " + userId);
             List<UserConfidence> userConfidence = dao.getUserConfidenceDAO().getUserConfidence(userId);
             LOGGER.info("Retrieved user confidence response for user: " + userId);
@@ -145,16 +120,11 @@ public class QuestionnaireResource {
     @GET
     @Path("/user-demographic")
     @UnitOfWork
-    public Response getUserDemographic(@Context HttpHeaders httpHeaders) {
+    public Response getUserDemographic(@Context ContainerRequestContext requestContext) {
         LOGGER.info("Getting user demographic input to populate form");
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             UserDemographic userDemographic = dao.getUserDemographicDAO().getUserDemographics(userId);
             LOGGER.info("Retrieved user demographics for " + userId);
             return Response.ok(userDemographic).build();
@@ -168,16 +138,11 @@ public class QuestionnaireResource {
     @GET
     @Path("/user-experience")
     @UnitOfWork
-    public Response getUserExperience(@Context HttpHeaders httpHeaders) {
+    public Response getUserExperience(@Context ContainerRequestContext requestContext) {
         LOGGER.info("Getting user experience input to populate form");
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             UserExperience userExperience = dao.getUserExperienceDAO().getUserExperience(userId);
             LOGGER.info("Retrieved user experience details for " + userId);
             return Response.ok(userExperience).build();

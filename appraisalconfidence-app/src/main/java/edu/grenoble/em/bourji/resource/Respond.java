@@ -16,13 +16,4 @@ class Respond {
                 .entity(response)
                 .build();
     }
-
-    static Response respondWithUnauthorized() {
-        BadResponse response = new BadResponse().withMessage("You are not authorized to perform this operation!");
-        return Response
-                .status(403)
-                .entity(response)
-                .build();
-    }
-
 }

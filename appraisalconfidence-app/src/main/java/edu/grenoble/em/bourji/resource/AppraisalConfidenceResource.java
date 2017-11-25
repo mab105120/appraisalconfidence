@@ -1,6 +1,5 @@
 package edu.grenoble.em.bourji.resource;
 
-import edu.grenoble.em.bourji.JwtTokenHelper;
 import edu.grenoble.em.bourji.PerformanceReviewCache;
 import edu.grenoble.em.bourji.api.EvaluationPayload;
 import edu.grenoble.em.bourji.api.ProgressStatus;
@@ -14,8 +13,8 @@ import io.dropwizard.hibernate.UnitOfWork;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -29,15 +28,13 @@ import java.util.List;
 public class AppraisalConfidenceResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppraisalConfidenceResource.class);
-    private final JwtTokenHelper tokenHelper;
     private final PerformanceReviewCache performanceReviewCache;
     private final AppraisalConfidenceDAO dao;
     private final EvaluationActivityDAO evaluationActivityDAO;
     private final StatusDAO statusDAO;
 
-    public AppraisalConfidenceResource(JwtTokenHelper tokenHelper, AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO,
+    public AppraisalConfidenceResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO,
                                        StatusDAO statusDAO, PerformanceReviewCache performanceReviewCache) {
-        this.tokenHelper = tokenHelper;
         this.dao = dao;
         this.statusDAO = statusDAO;
         this.evaluationActivityDAO = evaluationActivityDAO;
@@ -47,10 +44,7 @@ public class AppraisalConfidenceResource {
     @POST
     @UnitOfWork
     public Response postTeacherEvaluation(EvaluationPayload payload,
-                                          @Context HttpHeaders httpHeaders) {
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
+                                          @Context ContainerRequestContext requestContext) {
 
         TeacherRecommendation teacherRecommendation = payload.getRecommendation();
         List<EvaluationActivity> activities = payload.getActivities();
@@ -58,10 +52,8 @@ public class AppraisalConfidenceResource {
         if (!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
             return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", teacherRecommendation.getEvaluationCode()));
 
-        String accessToken = authorizationHeader.substring(7);
-
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             LOGGER.info("Saving user teacher recommendation for user id: " + userId);
             teacherRecommendation.setUser(userId);
             dao.add(teacherRecommendation);
@@ -80,15 +72,10 @@ public class AppraisalConfidenceResource {
     @GET
     @Path("/{evalCode}")
     @UnitOfWork
-    public Response getAppraisal(@PathParam("evalCode") String evalCode, @Context HttpHeaders httpHeaders) {
-        String authorizationHeader = httpHeaders.getHeaderString("Authorization");
-        if (authorizationHeader == null)
-            return Respond.respondWithUnauthorized();
-
-        String accessToken = authorizationHeader.substring(7);
+    public Response getAppraisal(@PathParam("evalCode") String evalCode, @Context ContainerRequestContext requestContext) {
 
         try {
-            String userId = tokenHelper.getUserIdFromToken(accessToken);
+            String userId = requestContext.getProperty("user").toString();
             LOGGER.info("Getting performance appraisal recommendation for " + userId);
             TeacherRecommendation recommendation = dao.getEvaluation(userId, evalCode);
             return Response.ok(recommendation).build();

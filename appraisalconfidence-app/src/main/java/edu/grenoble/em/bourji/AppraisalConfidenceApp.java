@@ -63,18 +63,18 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
                 .withUserConfidenceDao(new UserConfidenceDAO(hibernate.getSessionFactory()));
 
         JwtTokenHelper tokenHelper = new JwtTokenHelper(config.getAuth0Domain(), config.getKid());
+        environment.jersey().register(new AuthFilter(tokenHelper));
         StatusDAO statusDAO = new StatusDAO(hibernate.getSessionFactory());
         ActivityDAO activityDAO = new ActivityDAO(hibernate.getSessionFactory());
         AppraisalConfidenceDAO confidenceDAO = new AppraisalConfidenceDAO(hibernate.getSessionFactory());
         EvaluationActivityDAO evaluationActivityDAO = new EvaluationActivityDAO(hibernate.getSessionFactory());
         // register resources
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
-        environment.jersey().register(new AppraisalConfidenceResource(tokenHelper, confidenceDAO, evaluationActivityDAO,
-                statusDAO, performanceReviewCache));
+        environment.jersey().register(new AppraisalConfidenceResource(confidenceDAO, evaluationActivityDAO, statusDAO, performanceReviewCache));
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
-        environment.jersey().register(new QuestionnaireResource(questionnaireDAO, tokenHelper, statusDAO));
-        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory()), tokenHelper));
-        environment.jersey().register(new ActivityResource(tokenHelper, activityDAO));
+        environment.jersey().register(new QuestionnaireResource(questionnaireDAO, statusDAO));
+        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory())));
+        environment.jersey().register(new ActivityResource(activityDAO));
         environment.jersey().register(new CommunicationResource(config.getEmailConfiguration().getUsername(), config.getEmailConfiguration().getPassword()));
     }
 

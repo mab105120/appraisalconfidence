@@ -319,6 +319,8 @@
                     .then(function success(response) {
 
                         // pre-populate fields
+                        $scope.oldRes = response.data;
+
                         $scope.selectedTeacher = response.data.recommendationPick;
                         $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
                         $scope.comment = response.data.comment;
@@ -365,12 +367,10 @@
         }
 
         $scope.saveAndContinue = function() {
-            var TOTAL_EVALUATIONS = 15;
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
-            $scope.$parent.startSpinner();
             var userEval = {
                 evaluationCode: $stateParams.id,
                 recommendationPick: $scope.selectedTeacher,
@@ -382,28 +382,42 @@
                 recommendation: userEval,
                 activities: $scope.activities
             }
-            $scope.$parent.startSpinner();
-            appcon.postUserEvaluation(payload)
-            .then(function success(response) {
-                toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
-                if($stateParams.id === TOTAL_EVALUATIONS)
-                    $state.go('end');
-                var nextEvaluationCode = parseInt($stateParams.id) + 1;
-                $window.scrollTo(0, 0); // scroll to top
+            if(responseChanged($scope.oldRes, userEval)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserEvaluation(payload)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                    $window.scrollTo(0, 0); // scroll to top
 
+                    if(nextEvaluationCode > 15)
+                        $state.go('progress');
+                    else
+                        $state.go('evaluation', {id: nextEvaluationCode});
+
+                    $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                    console.log('Error Object');
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
                 if(nextEvaluationCode > 15)
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});
+            }
+        }
 
-                $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
-                console.log('Error Object');
-                console.log(response);
-                $scope.$parent.stopSpinner();
-            });
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.selectedTeacher != newRes.recommendationPick ||
+                        oldRes.absConfidence != newRes.absConfidence ||
+                        oldRes.relConfidence != newRes.relConfidence ||
+                        oldRes.comment !== newRes.comment;
         }
 
     };
@@ -628,7 +642,7 @@
                 if(response.data === true) {
                     appcon.getUserConfidence()
                     .then(function success(response) {
-
+                        $scope.oldRes = response.data;
                         angular.forEach(response.data, function(item) {
                             if(item.itemCode.startsWith("jsd")) {
                                 angular.forEach($scope.jsdItems, function(element) {
@@ -687,7 +701,6 @@
                 value: 3
             }
         ];
-
         $scope.jsdItems = [
             {
                 item: 'Often I put off making difficult decisions',
@@ -767,22 +780,44 @@
                 return;
             }
 
-            var userConfidenceResponse = getUserResponsesForApiCall();
+            if(responseChanged) {
+                var userConfidenceResponse = getUserResponsesForApiCall();
 
-            $scope.$parent.startSpinner();
-            appcon.postUserConfidence(userConfidenceResponse)
-            .then(function success(response) {
-                toaster.pop('success', 'Saved!', 'Your response has been saved');
-                console.log('POST /api/questionnaire/confidence ' + response.status);
-                $scope.$parent.stopSpinner();
+                $scope.$parent.startSpinner();
+                appcon.postUserConfidence(userConfidenceResponse)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved');
+                    console.log('POST /api/questionnaire/confidence ' + response.status);
+                    $scope.$parent.stopSpinner();
+                    $window.scrollTo(0, 0);
+                    $state.go('evaluation', {id: 1});
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable!' : response.data.message;
+                    toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
+                    $scope.$parent.stopSpinner();
+                });
+
+            } else {
                 $window.scrollTo(0, 0);
                 $state.go('evaluation', {id: 1});
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable!' : response.data.message;
-                toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
-                $scope.$parent.stopSpinner();
-            });
+            }
         }
+    }
+
+    function responseChanged(oldRes, newRes) {
+        if(oldRes === undefined)
+            return true;
+        var oldResMap = new Map();
+        angular.forEach(oldRes, function(item) {
+            oldResMap.set(item.code, item);
+        });
+        angular.forEach($scope.jsdItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        angular.forEach($scope.pfiItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        return false;
     }
 
     module.exports = quest_confidence_controller;
@@ -816,6 +851,7 @@
                     appcon.getUserExperience()
                     .then(function success(response) {
                         var userExperience = response.data;
+                        $scope.oldRes = userExperience;
                         // populate form fields
                         $scope.title = userExperience.title;
                         $scope.subordinates = parseInt(userExperience.subordinates);
@@ -907,18 +943,37 @@
             if($scope.interviewees !== undefined) {
                 user.totalCandidates = $scope.interviewees;
             }
-            $scope.$parent.startSpinner();
-            appcon.postUserExperience(user)
-            .then(function success(response) {
-                $scope.$parent.stopSpinner();
-                toaster.pop('success', 'Saved!', 'Your response have been saved');
+
+            if(responseChanged($scope.oldRes, user)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserExperience(user)
+                .then(function success(response) {
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('success', 'Saved!', 'Your response have been saved');
+                    $state.go('confidence');
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                });
+            } else {
                 $state.go('confidence');
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                $scope.$parent.stopSpinner();
-                toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
-            });
+            }
         };
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.title !== newRes.title ||
+                        oldRes.subordinates != newRes.subordinates ||
+                        oldRes.professionalExperience != newRes.professionalExperience ||
+                        oldRes.paExperience != newRes.paExperience ||
+                        oldRes.reviewsUpToDate != newRes.reviewsUpToDate ||
+                        oldRes.revieweesUpToDate != newRes.revieweesUpToDate ||
+                        oldRes.personnelSelection !== newRes.personnelSelection ||
+                        oldRes.interviewees != newRes.interviewees;
+        }
+
     }
 
     module.exports = ques_experience_controller;
@@ -1525,6 +1580,7 @@
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
             localStorage.removeItem('userId');
+            localStorage.removeItem('redirect_state_param');
             $state.go('welcome');
         }
 
