@@ -25,6 +25,9 @@ public class AppraisalConfidenceConfig extends Configuration {
     @JsonProperty("database")
     private DataSourceFactory dataSourceFactory;
 
+    @JsonProperty("email")
+    private EmailConfiguration emailConfiguration;
+
     public DataSourceFactory getDataSourceFactory() {
         return dataSourceFactory;
     }
@@ -47,5 +50,9 @@ public class AppraisalConfidenceConfig extends Configuration {
 
     public void setAuthDomain(String authDomain) {
         this.authDomain = authDomain;
+    }
+
+    public EmailConfiguration getEmailConfiguration() {
+        return emailConfiguration;
     }
 }

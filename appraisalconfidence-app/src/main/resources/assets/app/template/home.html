@@ -1,1 +1,40 @@
-<div>The home page sends you the following message: {{message}}</div>
+<style>
+    p {
+        margin-bottom: 20px;
+    }
+</style>
+<div class="row">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div ng-show="showAlert" class="alert alert-info"  role="alert">
+                Looks like you have already started. To review your progress and continue where you left off please click <a ui-sref="progress">here.</a>
+            </div>
+            <h3>Hello!</h3>
+            <p>
+                Thank you for putting time aside to take part of this evaluation exercise. Completion will take
+                approximately 30-45 minutes. You will be able to save your work and come back to complete it at any
+                time. To review your progress click on <strong>My Progress</strong> above.
+                </br>
+            </p>
+            <p>
+                The exercise will proceed as follows: <strong>First,</strong> we will explain the motive behind this exercise and provide you will more details on expectations and
+                objectives. <strong>Next,</strong> we will ask you basic questions about your
+                experience with providing performance reviews <strong>Then,</strong> we will ask you to make tenure promotion recommendations for teachers
+                based on your appraisal of the teachers' relative performance.
+                </br>
+            </p>
+            <p>
+                We, again, would like to thank you for your time. To show our appreciation, at the end of this exercise you will automatically enter a draw for a chance to win
+                a $100 Amazon gift card.
+                </br>
+            </p>
+                <p>Please click the start button below when ready.</p>
+        </div>
+    </div>
+    <div class="row" style="margin-top:20px;">
+        <div class="col-sm-6 text-center col-sm-offset-3">
+            <button style="height:50px;width:90px;" class="btn btn-success" type="button" ng-click="start()">Start
+            </button>
+        </div>
+    </div>
+</div>

@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Web application for experiments related to research on confidence in performance appraisal judgments",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "bourji",
   "license": "ISC",
   "dependencies": {
@@ -13,6 +10,15 @@
     "angular": "1.6.5",
     "angular-auth0": "2.0.0",
     "auth0-js": "^8.9.2",
-    "bootstrap": "3.3.7"
+    "bootstrap": "3.3.7",
+    "jquery": "3.2.1",
+    "bootstrap-slider": "9.8.1",
+    "angular-spinner": "1.0.1",
+    "block-ui": "2.70.1",
+    "angularjs-toaster": "2.2.0"
+  },
+  "devDependencies": {
+    "beefy": "^2.1.8",
+    "browserify-livereload": "^1.0.10"
   }
 }

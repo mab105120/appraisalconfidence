@@ -1,0 +1,25 @@
+<div>
+    <style>
+    .spBtn {
+        height: 70px;
+        background-color: #F8F8F8
+    }
+    </style>
+    <div class="row" style="margin-bottom:40px;">
+        <div class="col-md-2" style="padding-top:20px;">
+            <h5>{{jobFunction}} <a ng-click="displayJobFunctionDetails(jobFunction, jobFunctionCode)" data-toggle="modal" data-target="#reviewModal">More</a></h5>
+        </div>
+        <!--Teacher 1-->
+        <div class="col-md-5 text-center" style="border-right:1px dashed gray;">
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP1')" data-toggle="modal" data-target="#reviewModal">Supervisor 1</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP2')" data-toggle="modal" data-target="#reviewModal">Supervisor 2</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP3')" data-toggle="modal" data-target="#reviewModal">Supervisor 3</button>
+        </div>
+        <!--Teacher 2-->
+        <div class="col-md-5 text-center">
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP1')" data-toggle="modal" data-target="#reviewModal">Supervisor 1</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP2')" data-toggle="modal" data-target="#reviewModal">Supervisor 2</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP3')" data-toggle="modal" data-target="#reviewModal">Supervisor 3</button>
+        </div>
+    </div>
+</div>

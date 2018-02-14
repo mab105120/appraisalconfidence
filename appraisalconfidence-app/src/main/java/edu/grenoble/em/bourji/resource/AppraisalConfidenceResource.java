@@ -1,67 +1,88 @@
 package edu.grenoble.em.bourji.resource;
 
-import com.auth0.jwk.Jwk;
-import com.auth0.jwk.JwkException;
-import com.auth0.jwk.JwkProvider;
-import com.auth0.jwk.UrlJwkProvider;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import edu.grenoble.em.bourji.db.AppraisalConfidenceDAO;
+import edu.grenoble.em.bourji.PerformanceReviewCache;
+import edu.grenoble.em.bourji.api.EvaluationPayload;
+import edu.grenoble.em.bourji.api.ProgressStatus;
+import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
+import edu.grenoble.em.bourji.db.dao.EvaluationActivityDAO;
+import edu.grenoble.em.bourji.db.dao.StatusDAO;
+import edu.grenoble.em.bourji.db.pojo.EvaluationActivity;
+import edu.grenoble.em.bourji.db.pojo.Status;
+import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import io.dropwizard.hibernate.UnitOfWork;
+import org.slf4j.Logger;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.security.interfaces.RSAPublicKey;
-import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by Moe on 8/16/2017.
  */
 @Path("/appraisal")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class AppraisalConfidenceResource {
 
-    private final String authDomain;
-    private final String kid;
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppraisalConfidenceResource.class);
+    private final PerformanceReviewCache performanceReviewCache;
     private final AppraisalConfidenceDAO dao;
+    private final EvaluationActivityDAO evaluationActivityDAO;
+    private final StatusDAO statusDAO;
 
-    public AppraisalConfidenceResource(String authDomain, String kid, AppraisalConfidenceDAO dao) {
-        this.authDomain = authDomain;
-        this.kid = kid;
+    public AppraisalConfidenceResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO,
+                                       StatusDAO statusDAO, PerformanceReviewCache performanceReviewCache) {
         this.dao = dao;
+        this.statusDAO = statusDAO;
+        this.evaluationActivityDAO = evaluationActivityDAO;
+        this.performanceReviewCache = performanceReviewCache;
     }
 
-    @GET
-    @Path("/test")
-    public Response test() throws SQLException {
-        dao.createTable();
-        return Response.ok("Table is created").build();
-    }
+    @POST
+    @UnitOfWork
+    public Response postTeacherEvaluation(EvaluationPayload payload,
+                                          @Context ContainerRequestContext requestContext) {
 
-    @GET
-    @Path("/whoami")
-    public Response whoami(@Context HttpHeaders headers) throws JwkException {
-        return Response.ok(getUserIdFromToken(headers.getHeaderString("Authorization").substring(7))).build();
-    }
+        TeacherRecommendation teacherRecommendation = payload.getRecommendation();
+        List<EvaluationActivity> activities = payload.getActivities();
 
-    private String getUserIdFromToken(String access_id) throws JwkException {
-        JwkProvider provider = new UrlJwkProvider(String.format("https://%s/", authDomain));
-        Jwk jwk = provider.get(kid);
-        RSAPublicKey pk = (RSAPublicKey) jwk.getPublicKey();
+        if (!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
+            return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", teacherRecommendation.getEvaluationCode()));
+
         try {
-            Algorithm algorithm = Algorithm.RSA256(pk, null);
-            JWTVerifier verifier = JWT.require(algorithm)
-                    .withIssuer(String.format("https://%s/", authDomain))
-                    .build();
-            DecodedJWT decodedJWT = verifier.verify(access_id);
-            return decodedJWT.getClaim("nickname").asString();
-        } catch (JWTVerificationException e) {
-            throw new RuntimeException("An error occurred: " + e.getMessage());
+            String userId = requestContext.getProperty("user").toString();
+            LOGGER.info("Saving user teacher recommendation for user id: " + userId);
+            teacherRecommendation.setUser(userId);
+            dao.add(teacherRecommendation);
+            activities.forEach(e -> e.setUser(userId));
+            activities.forEach(evaluationActivityDAO::add);
+            ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
+            LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
+            statusDAO.add(new Status(userId, status.name(), 0)); // TODO change this
+        } catch (Throwable e) {
+            LOGGER.error("Error: " + e.getMessage());
+            return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());
+        }
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/{evalCode}")
+    @UnitOfWork
+    public Response getAppraisal(@PathParam("evalCode") String evalCode, @Context ContainerRequestContext requestContext) {
+
+        try {
+            String userId = requestContext.getProperty("user").toString();
+            LOGGER.info("Getting performance appraisal recommendation for " + userId);
+            TeacherRecommendation recommendation = dao.getEvaluation(userId, evalCode);
+            return Response.ok(recommendation).build();
+        } catch (Throwable e) {
+            String message = "Unable to retrieve user performance appraisal report. Details: " + e.getMessage();
+            LOGGER.error(message);
+            return Respond.respondWithError(message);
         }
     }
-
 }
