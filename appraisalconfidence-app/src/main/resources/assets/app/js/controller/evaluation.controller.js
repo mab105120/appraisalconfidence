@@ -25,6 +25,7 @@
             }
 
             $scope.currentEvaluation = $stateParams.id;
+            $scope.totalEvaluations = $scope.$parent.totalEvaluations;
 
             // these vars are set by the eval directive when users click on supervisor reviews.
             $scope.modalCode = '';

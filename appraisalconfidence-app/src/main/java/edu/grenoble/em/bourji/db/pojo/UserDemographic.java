@@ -33,6 +33,14 @@ public class UserDemographic {
         // no-arg constructor for hibernate
     }
 
+    public UserDemographic(String user, String age, String gender, String education, String division) {
+        this.user = user;
+        this.age = age;
+        this.gender = gender;
+        this.education = education;
+        this.division = division;
+    }
+
     public String getAge() {
         return age;
     }

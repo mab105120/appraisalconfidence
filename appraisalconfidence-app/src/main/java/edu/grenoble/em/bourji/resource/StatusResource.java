@@ -47,9 +47,10 @@ public class StatusResource {
 
     @GET
     @UnitOfWork
+    // TODO: Be careful! This does not return highest completed step. It returned the last completed step
     public Response getStatus(@Context ContainerRequestContext requestContext) {
         try {
-            String user = requestContext.getProperty("name").toString();
+            String user = requestContext.getProperty("user").toString();
             LOGGER.info(String.format("Getting status for user (%s)", user));
             ProgressStatus status = statusDAO.getCurrentStatus(user);
             return Response.ok(status).build();
@@ -65,7 +66,7 @@ public class StatusResource {
     @UnitOfWork
     public Response getProgressStatus(@Context ContainerRequestContext requestContext) {
         try {
-            String user = requestContext.getProperty("name").toString();
+            String user = requestContext.getProperty("user").toString();
             LOGGER.info(String.format("Getting progress for user (%s)", user));
             return Response.ok(new Progress(statusDAO.getProgress(user))).build();
         } catch (Throwable e) {
