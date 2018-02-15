@@ -1,24 +1,22 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
 
-    $ = jQuery = require('jquery');
-    require('bootstrap');
-    var angular = require('angular');
     var auth_vars = require('./auth0-vars.js');
-    require('@uirouter/angularjs');
-    require('angular-auth0');
-    var appraisal_app = angular.module('appraisal_app', ['auth0.auth0','ui.router']);
-    // Configure app
-    appraisal_app.config(app_config);
 
     app_config.$inject = [
         '$stateProvider',
         '$locationProvider',
         '$urlRouterProvider',
-        'angularAuth0Provider'
+        'angularAuth0Provider',
+        'appconProvider'
     ];
 
-    function app_config($stateProvider, $locationProvider, $urlRouterProvider, angularAuth0Provider) {
+    function app_config($stateProvider, $locationProvider,
+                        $urlRouterProvider, angularAuth0Provider, appconProvider) {
+
+//        var URL = 'http://ec2-52-33-234-35.us-west-2.compute.amazonaws.com:5000';
+        var URL = 'http://localhost:5000';
+
         // Configure state provider for UI routes
         $stateProvider
           .state('welcome', {
@@ -41,39 +39,110 @@
             controller: 'procedureController',
             templateUrl: 'app/template/procedure.html'
           })
+          .state('tenure', {
+            url: '/tenure',
+            controller: 'tenureController',
+            templateUrl: 'app/template/tenure.html'
+          })
+          .state('questionnaire', {
+            url:'/questionnaire',
+            controller: 'quesGeneralController',
+            templateUrl:  'app/template/questionnaire/general.html'
+          })
+          .state('experience', {
+            url: '/questionnaire/experience',
+            controller: 'quesExperienceController',
+            templateUrl: 'app/template/questionnaire/experience.html'
+          })
+          .state('confidence', {
+            url: '/questionnaire/confidence',
+            controller: 'questConfidenceController',
+            templateUrl: 'app/template/questionnaire/confidence.html'
+          })
           .state('evaluation', {
             url: '/evaluation/:id',
             controller: 'evaluationController',
             templateUrl: 'app/template/evaluation.html'
+          })
+          .state('progress', {
+            url: '/progress',
+            controller: 'progressController',
+            templateUrl: 'app/template/progress.html'
+          })
+          .state('contactus', {
+            url: '/contactus',
+            controller: 'contactUsController',
+            templateUrl: 'app/template/contactus.html'
           });
 
-//           Configure auth provider
+          // Configure auth provider
           angularAuth0Provider.init({
               clientID: auth_vars.clientID,
               domain: auth_vars.domain,
               responseType: 'token id_token',
               audience: 'https://appraisal-grenoble-bourji.auth0.com/userinfo',
-              redirectUri: 'http://localhost:5000/#/callback',
+              redirectUri: URL + '/#/callback',
               scope: 'openid profile'
           });
 
-//          $locationProvider.html5Mode(true);
           $urlRouterProvider.otherwise('/');
           $locationProvider.hashPrefix('');
+
+          appconProvider.setUrl(URL);
+          console.log('Just configured app con');
     }
 
+    module.exports = app_config;
+})();
+},{"./auth0-vars.js":4}],2:[function(require,module,exports){
+(function() {
+
+    module.exports = [
+        'auth0.auth0',
+        'ui.router',
+        'angularSpinner',
+        'toaster'
+    ];
+})();
+},{}],3:[function(require,module,exports){
+(function() {
+
+    $ = jQuery = require('jquery');
+    require('bootstrap');
+    var angular = require('angular');
+    require('@uirouter/angularjs');
+    require('angular-auth0');
+    require('angular-spinner');
+    require('angularjs-toaster');
+
+    var appraisal_app = angular.module('appraisal_app', require('./app-modules.js'));
+    // Configure app
+    appraisal_app.config(require('./app-config'));
+
     // Register app controller
+    appraisal_app.controller('mainController', require('./controller/main.controller.js'));
     appraisal_app.controller('homeController', require('./controller/home.controller.js'));
     appraisal_app.controller('callbackController', require('./controller/callback.controller.js'));
-    appraisal_app.controller('aboutController', require('./controller/about.controller.js'));
     appraisal_app.controller('welcomeController', require('./controller/welcome.controller.js'));
     appraisal_app.controller('procedureController', require('./controller/procedure.controller.js'));
+    appraisal_app.controller('tenureController', require('./controller/tenure.controller.js'));
+    appraisal_app.controller('quesGeneralController', require('./controller/questionnaire/general.controller.js'));
+    appraisal_app.controller('quesExperienceController', require('./controller/questionnaire/experience.controller.js'));
+    appraisal_app.controller('questConfidenceController', require('./controller/questionnaire/confidence.controller.js'));
     appraisal_app.controller('evaluationController', require('./controller/evaluation.controller.js'));
+    appraisal_app.controller('progressController', require('./controller/progress.controller.js'));
+    appraisal_app.controller('contactUsController', require('./controller/contactus.controller.js'));
+
     // Register app services
     appraisal_app.service('authService', require('./service/auth.service.js'));
+    appraisal_app.provider('appcon', require('./service/appcon.provider.js'));
+
     // Register app directives
     appraisal_app.directive('navbar', require('./directive/navbar.directive.js'));
     appraisal_app.directive('eval', require('./directive/eval.directive.js'));
+    appraisal_app.directive('focusOnShow', require('./directive/focusonshow.directive.js'));
+    appraisal_app.directive('likert', require('./directive/likert.directive.js'));
+
     // Handle authentication when application runs
     appraisal_app.run(run);
 
@@ -84,7 +153,7 @@
         authService.handleAuthentication();
     }
 })();
-},{"./auth0-vars.js":2,"./controller/about.controller.js":3,"./controller/callback.controller.js":4,"./controller/evaluation.controller.js":5,"./controller/home.controller.js":6,"./controller/procedure.controller.js":7,"./controller/welcome.controller.js":8,"./directive/eval.directive.js":9,"./directive/navbar.directive.js":10,"./service/auth.service.js":11,"@uirouter/angularjs":15,"angular":101,"angular-auth0":99,"bootstrap":103,"jquery":116}],2:[function(require,module,exports){
+},{"./app-config":1,"./app-modules.js":2,"./controller/callback.controller.js":5,"./controller/contactus.controller.js":6,"./controller/evaluation.controller.js":7,"./controller/home.controller.js":8,"./controller/main.controller.js":9,"./controller/procedure.controller.js":10,"./controller/progress.controller.js":11,"./controller/questionnaire/confidence.controller.js":12,"./controller/questionnaire/experience.controller.js":13,"./controller/questionnaire/general.controller.js":14,"./controller/tenure.controller.js":15,"./controller/welcome.controller.js":16,"./directive/eval.directive.js":17,"./directive/focusonshow.directive.js":18,"./directive/likert.directive.js":19,"./directive/navbar.directive.js":20,"./service/appcon.provider.js":21,"./service/auth.service.js":22,"@uirouter/angularjs":26,"angular":113,"angular-auth0":110,"angular-spinner":111,"angularjs-toaster":114,"bootstrap":117,"jquery":130}],4:[function(require,module,exports){
 (function() {
 
     var auth_vars = {
@@ -94,112 +163,319 @@
 
     module.exports = auth_vars;
 })();
-},{}],3:[function(require,module,exports){
-(function() {
-
-    about_controller.$inject = [
-        '$scope',
-        'authService',
-        '$state'
-    ];
-
-    function about_controller($scope, authService, $state) {
-
-        // check if user is authenticated
-        if(!authService.isAuthenticated()) {
-            alert('You are not logged in! please log in to access this page.');
-            $state.go('home');
-        }
-
-        $scope.aboutUs = 'here is some information about us!';
-    };
-
-    module.exports = about_controller;
-
-})();
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
 
     'use-strict';
 
-    function callback_controller() {
+    callback_controller.$inject = [
+            '$scope',
+            '$state',
+            'toaster',
+            'appcon'
+        ]
+
+    function callback_controller($scope, $state, toaster, appcon) {
+        console.log('This is not running!');
         // implement controller
+        if(localStorage.getItem('redirect_state') === null)
+            $state.go('home');
+        else {
+            $state.go(localStorage.getItem('redirect_state'));
+            localStorage.removeItem('redirect_url');
+        }
     };
 
     module.exports = callback_controller;
 })();
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function() {
 
-    evaluation_controller.$inject = ['$scope', '$stateParams', '$http'];
+    contactUs_controller.$inject = [
+        '$scope',
+        'authService',
+        'appcon',
+        'toaster'
+    ]
+
+    function contactUs_controller($scope, authService, appcon, toast) {
+        init();
+        function init() {
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            $scope.subject = '';
+            $scope.body = '';
+            $scope.email = authService.getUserId();
+        }
+
+        $scope.submit = function() {
+            $scope.$parent.startSpinner();
+
+            appcon.sendEmail($scope.email, $scope.subject, $scope.body)
+            .then(function success() {
+                $scope.subject = '',
+                $scope.body = '',
+                toast.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
+                $scope.$parent.stopSpinner();
+            }, function failure() {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we were not able to send the email: ' + error);
+                console.log('Error Object');
+                console.log(response);
+                $scope.$parent.stopSpinner();
+            });
+        }
+    }
+
+    module.exports = contactUs_controller;
+
+})();
+},{}],7:[function(require,module,exports){
+(function() {
+
+    evaluation_controller.$inject = [
+            '$scope',
+            '$state',
+            '$stateParams',
+            '$http',
+            '$window',
+            'appcon',
+            'authService',
+            'toaster',
+            '$sce'
+        ];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $stateParams, $http) {
-        $('#slider1').slider();
-        $('#slider1').on('slide', function(slideEvt) {
-            var val = slideEvt.value;
-            $scope.absConfidence = val;
-            $('#slider1Val').text(val);
-        });
+    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster, $sce) {
 
-        $('#slider2').slider();
-        $('#slider2').on('slide', function(slideEvt) {
-            var val = slideEvt.value;
-            $scope.relConfidence = val;
-            $('#slider2Val').text(val);
-        });
+        function init() {
+            $scope.$parent.startSpinner();
 
-        $scope.selectedEvaluation = '';
-
-        $http.get('http://localhost:5000/api/appraisal/evaluations/' + $stateParams.id)
-        .then(
-            function(response) {
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                $scope.evaluations = response.data;
-            },
-            function(response) {
-//                alert('Unable to contact the server for reviews');
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                console.log(response);
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
             }
-        );
 
-        // Comment control
-        var comment_max_length = 200;
-        $scope.comment = '';
-        $scope.remainingChars = 200;
-        $scope.calculateRemainingChars = function() {
-            $scope.remainingChars = comment_max_length - $scope.comment.length;
+            $scope.currentEvaluation = $stateParams.id;
+            $scope.totalEvaluations = $scope.$parent.totalEvaluations;
+
+            // these vars are set by the eval directive when users click on supervisor reviews.
+            $scope.modalCode = '';
+            $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
+
+            $scope.$watch('modalBody', function(val) {
+                $scope.modalBodyTrusted = $sce.trustAsHtml(val);
+            });
+
+            $scope.modalTitle = '';
+
+            $('#absConfidenceSlider').slider();
+            $('#absConfidenceSlider').on('slide', function(slideEvt) {
+                $scope.absConfidence = slideEvt.value;
+            });
+            $scope.$watch('absConfidence', function(value) {
+                $('#absConfidenceSliderVal').text(value);
+            });
+
+            $('#relConfidenceSlider').slider();
+            $('#relConfidenceSlider').on('slide', function(slideEvt) {
+                $scope.relConfidence = slideEvt.value;
+            });
+            $scope.$watch('relConfidence', function(value) {
+                $('#relConfidenceSliderVal').text(value);
+            });
+
+            // comment control
+            $scope.comment = '';
+            $scope.$watch('comment', function() {
+                $scope.calculateRemainingChars();
+            });
+            $scope.remainingChars = 200;
+            $scope.calculateRemainingChars = function() {
+                $scope.remainingChars = 200 - $scope.comment.length;
+            }
+
+            // evaluation activity
+            $scope.activities = [];
+            $scope.time_modal_open;
+            $('#reviewModal').on('hidden.bs.modal', function() {
+                var closeTime = new Date().toISOString();
+                $scope.activities.push({
+                    evaluationCode: $stateParams.id,
+                    selectedReview: $scope.modalCode,
+                    openTime: $scope.time_modal_open,
+                    closeTime: closeTime
+                });
+            });
+
+            appcon.stepIsCompleted('EVALUATION_' + $stateParams.id)
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserEvaluation($stateParams.id)
+                    .then(function success(response) {
+
+                        // pre-populate fields
+                        $scope.oldRes = response.data;
+
+                        $scope.selectedTeacher = response.data.recommendationPick;
+                        $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
+                        $scope.comment = response.data.comment;
+                        $scope.absConfidence = response.data.absConfidence;
+                        $('#absConfidenceSlider').slider().slider('setValue', response.data.absConfidence);
+                        $scope.relConfidence = response.data.relConfidence;
+                        $('#relConfidenceSlider').slider().slider('setValue', response.data.relConfidence);
+                        $('#continueBtn').prop('disabled', false);
+
+                        $scope.getTeacherPerformanceReviews();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else {
+                    $scope.getTeacherPerformanceReviews();
+                }
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
         }
 
-        // Continue button
-        $scope.continueBtnDisabled = function() {
-            if($scope.comment.length === 0) return true;
-            else
-            return true;
-        };
-    };
+        init();
 
+        $scope.getTeacherPerformanceReviews = function() {
+            appcon.getReviews($stateParams.id).then(
+                function(response) {
+                    console.log('GET /api/performance-review/ ' + response.status);
+                    $scope.evaluations = response.data;
+                    $scope.$parent.stopSpinner();
+                },
+                function(response) {
+                    var errorMessage = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Unable to get teacher reviews: ' + errorMessage);
+                    console.log('GET /api/performance-review/ ' + response.status);
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                }
+            );
+        }
+
+        $scope.saveAndContinue = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                return;
+            }
+            var userEval = {
+                evaluationCode: $stateParams.id,
+                recommendationPick: $scope.selectedTeacher,
+                relConfidence: $scope.relConfidence,
+                absConfidence: $scope.absConfidence,
+                comment: $scope.comment
+            };
+            var payload = {
+                recommendation: userEval,
+                activities: $scope.activities
+            }
+            if(responseChanged($scope.oldRes, userEval)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserEvaluation(payload)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                    $window.scrollTo(0, 0); // scroll to top
+
+                    if(nextEvaluationCode > 15)
+                        $state.go('progress');
+                    else
+                        $state.go('evaluation', {id: nextEvaluationCode});
+
+                    $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                    console.log('Error Object');
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
+                if(nextEvaluationCode > 15)
+                    $state.go('progress');
+                else
+                    $state.go('evaluation', {id: nextEvaluationCode});
+            }
+        }
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.selectedTeacher != newRes.recommendationPick ||
+                        oldRes.absConfidence != newRes.absConfidence ||
+                        oldRes.relConfidence != newRes.relConfidence ||
+                        oldRes.comment !== newRes.comment;
+        }
+
+    };
 
     module.exports = evaluation_controller;
 
 })();
-},{"bootstrap-slider":102}],6:[function(require,module,exports){
+},{"bootstrap-slider":116}],8:[function(require,module,exports){
 (function() {
 
     'use strict';
 
-    home_controller.$inject = ['$scope', '$state', 'authService'];
+    home_controller.$inject = [
+            '$scope',
+            '$state',
+            'authService',
+            'appcon',
+            'toaster'
+        ];
 
 
-    function home_controller($scope, $state, authService) {
+    function home_controller($scope, $state, authService, appcon, toaster) {
+        init();
+        function init() {
+            $scope.$parent.startSpinner();
 
-        if(!authService.isAuthenticated()) {
-            alert('you must login to view this page!');
-            $state.go('welcome');
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            $scope.showAlert = false;
+            $scope.$parent.startSpinner();
+            appcon.getExperimentSettings()
+            .then(function success(response) {
+                var data = response.data;
+                console.log(data);
+                $scope.$parent.totalEvaluations = data.totalEvaluations;
+                $scope.$parent.duration = data.duration;
+                $scope.duration = data.duration;
+                appcon.getProgress()
+                .then(function success(response) {
+                    if(response.data.completed.length !== 0)
+                        $scope.showAlert = true;
+                        $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    console.log(response);
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                    $scope.$parent.stopSpinner();
+                });
+            }, function failure(response){
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
         }
-
         $scope.start = function() {
             $state.go('procedure');
         };
@@ -207,34 +483,666 @@
 
     module.exports = home_controller;
 })();
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function() {
 
-    procedure_controller.$inject = ['$scope', '$state', 'authService'];
+    'use strict';
 
-    function procedure_controller($scope, $state, authService) {
+    main_controller.$inject = ['$scope', 'usSpinnerService'];
 
-        if(!authService.isAuthenticated()) {
-            alert('you must login to view this page!');
-            $state.go('welcome');
+    function main_controller($scope, usSpinnerService) {
+
+        require('block-ui');
+
+        $scope.startSpinner = function() {
+            $.blockUI({ message: null });
+            usSpinnerService.spin('main-spinner');
         }
+        $scope.stopSpinner = function() {
+            $.unblockUI();
+            usSpinnerService.stop('main-spinner');
+        }
+    }
 
-        $scope.checkboxStatus = false;
+    module.exports = main_controller;
 
-        $scope.checkBox = function (status) {
-            if(status === false) status = true;
-            else status = false;
+})();
+},{"block-ui":115}],10:[function(require,module,exports){
+(function() {
+
+    procedure_controller.$inject = ['$scope', '$state', 'authService', '$window'];
+
+    function procedure_controller($scope, $state, authService, $window) {
+        if(!authService.isAuthenticated()) {
+            alert('You are not logged in. You need to log in to view this page.');
+            authService.login();
         }
 
         $scope.next = function() {
-            $state.go('evaluation', { id: 1 });
+            $window.scrollTo(0, 0);
+            $state.go('tenure');
         }
-    };
+    }
 
     module.exports = procedure_controller;
 
 })();
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+(function() {
+
+    progress_controller.$inject = [
+        '$scope',
+        '$state',
+        'appcon',
+        'authService'
+    ];
+
+    function progress_controller($scope, $state, appcon, authService) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            $scope.showSubmit = false;
+
+            $scope.rows = [
+                {
+                    id: 'QUEST_DEMO',
+                    display: 'General questionnaire'
+                },
+                {
+                    id: 'QUEST_EXP',
+                    display: 'Professional experience questionnaire'
+                },
+                {
+                    id: 'QUEST_CON',
+                    display: 'Judgment confidence questionnaire'
+                }
+            ];
+
+            function addEvaluationsToRows() {
+                var totalEvaluations = $scope.$parent.totalEvaluations;
+                for(i = 1; i <= totalEvaluations; i++) {
+                    $scope.rows.push(
+                        {
+                            id: 'EVALUATION_' + i,
+                            display: 'Teacher Evaluation ' + i + ' / ' + totalEvaluations
+                        }
+                    );
+                }
+            }
+
+            addEvaluationsToRows();
+
+            appcon.getProgress()
+            .then(function success(response) {
+                var completed = new Map();
+                var next = response.data.next;
+                angular.forEach(response.data.completed, function(item) {
+                    completed.set(item, item);
+                });
+
+                var allCompleted = true;
+
+                angular.forEach($scope.rows, function(item) {
+                    if(completed.get(item.id) !== undefined)
+                        item.status = 'Complete';
+                    else if (item.id === next) {
+                        item.status = 'Next';
+                        allCompleted = false;
+                    }
+                    else {
+                        item.status = 'Not Started';
+                        allCompleted = false;
+                    }
+                });
+                $scope.showSubmit = allCompleted;
+                $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                console.log(response);
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+        init();
+
+        $scope.edit = function(id) {
+            if(id === 'QUEST_DEMO') {
+                $state.go('questionnaire');
+            } else if (id === 'QUEST_EXP') {
+                $state.go('experience');
+            } else if (id === 'QUEST_CON') {
+                $state.go('confidence');
+            } else if(id.startsWith('EVALUATION')) {
+                $state.go('evaluation', {id: parseInt(id.substr(id.indexOf('_') + 1))});
+            }
+        }
+    }
+
+    module.exports = progress_controller;
+})();
+},{}],12:[function(require,module,exports){
+(function() {
+
+    quest_confidence_controller.$inject = [
+        '$scope',
+        '$state',
+        'authService',
+        'toaster',
+        'appcon',
+        '$window'
+    ];
+
+    function quest_confidence_controller($scope, $state, authService, toaster, appcon, $window) {
+
+        function init() {
+
+            $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            appcon.stepIsCompleted('QUEST_CON')
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserConfidence()
+                    .then(function success(response) {
+                        $scope.oldRes = response.data;
+                        angular.forEach(response.data, function(item) {
+                            if(item.itemCode.startsWith("jsd")) {
+                                angular.forEach($scope.jsdItems, function(element) {
+                                    if(element.code === item.itemCode) element.answer = item.response;
+                                });
+                            } else if(item.itemCode.startsWith("pfi")) {
+                                angular.forEach($scope.pfiItems, function(element) {
+                                    if(element.code === item.itemCode) element.answer = item.response;
+                                });
+                            }
+                        });
+                        // enable submit
+                        $('#submitBtn').prop('disabled', false);
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+         init();
+
+
+        $scope.choices = [
+            {
+                choice: 'Strongly Disagree',
+                value: -3
+            },
+            {
+                choice: 'Disagree',
+                value: -2
+            },
+            {
+                choice: 'Somewhat Disagree',
+                value: -1
+            },
+            {
+                choice: 'Somewhat Agree',
+                value: 1
+            },
+            {
+                choice: 'Agree',
+                value: 2
+            },
+            {
+                choice: 'Strongly Agree',
+                value: 3
+            }
+        ];
+        $scope.jsdItems = [
+            {
+                item: 'Often I put off making difficult decisions',
+                code: 'jsd1'
+            },
+            {
+                item: "I often don't trust myself to make the right decision",
+                code: 'jsd2'
+            },
+            {
+                item: "I often trust the judgment of others more than my own",
+                code: 'jsd3'
+            },
+            {
+                item: "In almost all situations I am confident of my ability to make the right choices",
+                code: 'jsd4'
+            },
+            {
+                item: "Frequently, I doubt my ability to make sound judgments",
+                code: 'jsd5'
+            },
+            {
+                item: "I often worry about whether a decision I made will have bad consequences",
+                code: 'jsd6'
+            },
+            {
+                item: "When making a decision, I often feel confused because I have trouble keeping all relevant factors in mind",
+                code: 'jsd7'
+            },
+            {
+                item: "I have a great deal of confidence in my opinions",
+                code: 'jsd8'
+            }
+        ];
+        $scope.pfiItems = [
+            {
+                item: 'I tend to struggle with most decisions',
+                code: 'pfi1'
+            },
+            {
+                item: 'Even after making an important decision I tend to continue to think about the pros and cons to make sure that I am not wrong',
+                code: 'pfi2'
+            },
+            {
+                item: 'I rarely doubt that the course of action I have selected be correct',
+                code: 'pfi3'
+            },
+            {
+                item: 'I tend to continue to evaluate recently made decisions',
+                code: 'pfi4'
+            },
+            {
+                item: 'Decisions rarely weigh heavily on my shoulders',
+                code: 'pfi5'
+            },
+        ];
+
+        function getUserResponsesForApiCall() {
+            var userResponses = [];
+
+            function formatItems(item) {
+                userResponses.push({
+                    itemCode: item.code,
+                    response: item.answer
+                });
+            }
+
+            angular.forEach($scope.jsdItems, formatItems);
+            angular.forEach($scope.pfiItems, formatItems);
+
+            return userResponses;
+        }
+
+        $scope.submit = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error', 'Error', 'You need to be logged in to perform this operation!');
+                return;
+            }
+
+            if(responseChanged) {
+                var userConfidenceResponse = getUserResponsesForApiCall();
+
+                $scope.$parent.startSpinner();
+                appcon.postUserConfidence(userConfidenceResponse)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved');
+                    console.log('POST /api/questionnaire/confidence ' + response.status);
+                    $scope.$parent.stopSpinner();
+                    $window.scrollTo(0, 0);
+                    $state.go('evaluation', {id: 1});
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable!' : response.data.message;
+                    toaster.pop('error', 'Error', "Sorry we weren't able to save your response. Reason: " + error);
+                    $scope.$parent.stopSpinner();
+                });
+
+            } else {
+                $window.scrollTo(0, 0);
+                $state.go('evaluation', {id: 1});
+            }
+        }
+    }
+
+    function responseChanged(oldRes, newRes) {
+        if(oldRes === undefined)
+            return true;
+        var oldResMap = new Map();
+        angular.forEach(oldRes, function(item) {
+            oldResMap.set(item.code, item);
+        });
+        angular.forEach($scope.jsdItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        angular.forEach($scope.pfiItems, function(item) {
+            if(oldResMap.get(item.code).response != item.answer) return true;
+        });
+        return false;
+    }
+
+    module.exports = quest_confidence_controller;
+})();
+},{}],13:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+    ques_experience_controller.$inject = [
+        '$scope',
+        '$state',
+        'appcon',
+        'toaster',
+        'authService'
+    ];
+
+    function ques_experience_controller($scope, $state, appcon, toaster, authService) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            appcon.stepIsCompleted('QUEST_EXP')
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserExperience()
+                    .then(function success(response) {
+                        var userExperience = response.data;
+                        $scope.oldRes = userExperience;
+                        // populate form fields
+                        $scope.title = userExperience.title;
+                        $scope.subordinates = parseInt(userExperience.subordinates);
+                        $scope.professionalExperience = parseInt(userExperience.professionalExperience);
+                        $scope.paExperience = parseInt(userExperience.appraisalExperience);
+                        $scope.reviewsUpToDate = parseInt(userExperience.totalReviews);
+                        $scope.revieweesUpToDate = parseInt(userExperience.totalReviewees);
+                        $scope.personnelSelection = userExperience.personnelSelection;
+                        if(userExperience.personnelSelection === 'Yes')
+                            $scope.interviewees = parseInt(userExperience.totalCandidates);
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+        init();
+
+        $scope.titleGroup = [
+            'Contingent Worker',
+            'Analyst',
+            'Associate',
+            'Vice President',
+            'Managing Director',
+            'Partner',
+            'Other'
+        ];
+
+        $scope.fiveScaleGroup = [
+            '[0-5]',
+            '[5-10]',
+            '[10-15]',
+            '[15-20]',
+            '20+'
+        ];
+
+        $scope.twentyScaleGroup = [
+            '[0-20]',
+            '[20-40]',
+            '[40-60]',
+            '[60-80]',
+            '80+',
+        ];
+
+        $scope.binaryGroup = [
+            'Yes',
+            'No'
+        ];
+
+        $scope.fiftyScaleGroup = [
+            '[0-50]',
+            '[50-100]',
+            '[100-150]',
+            '[150-200]',
+            '[200-250]',
+            '250+'
+        ];
+
+        $scope.$watch('personnelSelection', function() {
+            if($scope.personnelSelection === 'Yes') $scope.personnelSelectionBool = true;
+            else $scope.personnelSelectionBool = false;
+        })
+
+        $scope.submit = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                return;
+            }
+            var user = {
+                title: $scope.title,
+                subordinates: $scope.subordinates,
+                professionalExperience: $scope.professionalExperience,
+                appraisalExperience: $scope.paExperience,
+                totalReviews: $scope.reviewsUpToDate,
+                totalReviewees: $scope.revieweesUpToDate,
+                personnelSelection: $scope.personnelSelection
+            };
+            if($scope.interviewees !== undefined) {
+                user.totalCandidates = $scope.interviewees;
+            }
+
+            if(responseChanged($scope.oldRes, user)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserExperience(user)
+                .then(function success(response) {
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('success', 'Saved!', 'Your response have been saved');
+                    $state.go('confidence');
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                });
+            } else {
+                $state.go('confidence');
+            }
+        };
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.title !== newRes.title ||
+                        oldRes.subordinates != newRes.subordinates ||
+                        oldRes.professionalExperience != newRes.professionalExperience ||
+                        oldRes.paExperience != newRes.paExperience ||
+                        oldRes.reviewsUpToDate != newRes.reviewsUpToDate ||
+                        oldRes.revieweesUpToDate != newRes.revieweesUpToDate ||
+                        oldRes.personnelSelection !== newRes.personnelSelection ||
+                        oldRes.interviewees != newRes.interviewees;
+        }
+
+    }
+
+    module.exports = ques_experience_controller;
+})();
+},{}],14:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+    questionnaire_controller.$inject = [
+            '$scope',
+            '$state',
+            'appcon',
+            'authService',
+            'toaster'
+        ];
+
+    function questionnaire_controller($scope, $state, appcon, authService, toaster) {
+
+        function init() {
+            $scope.$parent.startSpinner();
+
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
+            }
+
+            appcon.stepIsCompleted('QUEST_DEMO')
+            .then(function success(response) {
+                console.log(response);
+                if(response.data === true) {
+                    appcon.getUserDemographics()
+                    .then(function success(response) {
+                        var userDemographics = response.data;
+                        $scope.oldResponse = userDemographics;
+                        // populate the fields
+                        $scope.age = parseInt(userDemographics.age);
+                        $scope.gender = userDemographics.gender;
+                        $scope.education = userDemographics.education;
+                        $scope.division = userDemographics.division;
+
+                        $scope.$parent.stopSpinner();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else
+                    $scope.$parent.stopSpinner();
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
+        }
+
+        init();
+
+        $scope.ageGroup = [
+            '[20-30]',
+            '[30-40]',
+            '[40-50]',
+            '[50-60]',
+            '60+'
+        ];
+
+        $scope.genderGroup = ['Male', 'Female'];
+
+        $scope.eductionGroup = [
+            'No degree',
+            'Associate degree',
+            'Bachelor degree',
+            'Master degree',
+            'Doctorate degree'
+        ];
+
+        $scope.divisionGroup = [
+            'Technology',
+            'Finance',
+            'Operations',
+            'Real Estate',
+            'Investment Banking',
+            'Securities',
+            'Other'
+        ];
+
+        $scope.submit = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error','Authentication Issue','You must be logged in to perform this action');
+                return;
+            }
+            var payload = {
+                age: $scope.age,
+                gender: $scope.gender,
+                education: $scope.education,
+                division: $scope.division
+            };
+
+            if(responseChanged($scope.oldResponse, payload)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserDemographic(payload)
+                .then(function success(response) {
+                    $scope.$parent.stopSpinner();
+                    toaster.pop('success','Saved!','Your response has been saved successfully!');
+                    $state.go('experience');
+                }, function failure(response) {
+                    var errorMessage = (response.data === null) ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error','Error', "Sorry we were unable to save your response. Reason (" + response.status + "): " + errorMessage);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
+                $state.go('experience');
+            }
+
+        }
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.age != newRes.age ||
+                        oldRes.gender !== newRes.gender ||
+                        oldRes.education !== newRes.education ||
+                        oldRes.division !== newRes.division;
+        }
+
+    }
+
+    module.exports = questionnaire_controller;
+})();
+},{}],15:[function(require,module,exports){
+(function(){
+
+    tenure_controller.$inject = [
+        '$scope',
+        '$state',
+        'authService',
+        '$window'
+    ]
+
+    function tenure_controller($scope, $state, authService, $window) {
+
+        if(!authService.isAuthenticated()) {
+            alert('You are not logged in. You need to log in to view this page.');
+            authService.login();
+        }
+
+        $scope.submit = function() {
+            $window.scrollTo(0, 0);
+            $state.go('questionnaire');
+        }
+    }
+
+    module.exports = tenure_controller;
+})();
+},{}],16:[function(require,module,exports){
 (function() {
 
     welcome_controller.$inject = [
@@ -251,22 +1159,85 @@
     module.exports = welcome_controller;
 
 })();
-},{}],9:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
 
     'use strict';
 
     function eval_directive() {
         return {
-            restrict: 'EAC',
+            restrict: 'E',
             scope: {
-                jobFunction: '@'
+                jobFunction: '@',
+                jobFunctionCode: '@'
             },
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
                 scope.displayEvaluation = function(teacher, supervisor) {
-                    console.log(scope);
-                    scope.$parent.selectedEvaluation = scope.$parent.evaluations[teacher][scope.jobFunction][supervisor];
+
+                    var teachers = {
+                        T1: 'Teacher 1',
+                        T2: 'Teacher 2'
+                    }
+
+                    var supervisors = {
+                        SP1: 'Supervisor 1',
+                        SP2: 'Supervisor 2',
+                        SP3: 'Supervisor 3'
+                    }
+
+                    scope.$parent.time_modal_open = new Date().toISOString();
+                    scope.$parent.modalCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
+                    scope.$parent.modalBody = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
+                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about " + teachers[teacher] + "'s "+scope.jobFunction+"  skills";
+                }
+
+                scope.displayJobFunctionDetails = function(jobFunction, jobFunctionCode) {
+
+                    var jobFunctionDetails = {
+                        SL: {
+                                header: 'Tenure applicants must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
+                                details: [
+                                ]
+                            },
+                        IP: {
+                            header: 'Tenure applicants must provide consistent evidence indicating practice at the most effective level in the categories below:',
+                            details: [
+                                'Planning and preparation',
+                                'Classroom environment',
+                                'Instruction'
+                            ]
+                        },
+                        PF: {
+                            header: 'Tenure applicants must provide consistent evidence of high level professionalism on activities including:',
+                            details: [
+                                'Professional growth and reflection',
+                                'Collaboration and engagement with the school community',
+                                'Effective communication with students’ families',
+                                'Management of non-instructional responsibilities',
+                                'Professional conduct'
+                            ]
+                        }
+                    }
+
+                    var getModalBody = function(jobFunctionCode) {
+                        var body = '';
+                        var detailsObj =  jobFunctionDetails[jobFunctionCode];
+                        body = body + '<p>' + detailsObj['header'] + '</p>';
+                        if (detailsObj.details.length != 0) {
+                            body = body + '<ul>';
+                            angular.forEach(detailsObj.details, function(item) {
+                                body = body + '<li>' + item + '</li>';
+                            });
+                            body = body + '</ul>';
+                        }
+                        return body;
+                    }
+
+                    scope.$parent.time_modal_open = new Date().toISOString();
+                    scope.$parent.modalCode = 'D-' + jobFunctionCode;
+                    scope.$parent.modalTitle = jobFunction;
+                    scope.$parent.modalBody = getModalBody(jobFunctionCode);
                 }
             }
         };
@@ -274,7 +1245,49 @@
 
     module.exports = eval_directive;
 })();
-},{}],10:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+(function() {
+
+    'use strict';
+
+   function focusonshow_directive() {
+            console.log('Registering directive');
+           return {
+               restrict: 'A',
+               link: function($scope, $element, $attr) {
+                    console.log('focusOnShow directive fired.');
+                   if ($attr.ngShow){
+                       $scope.$watch($attr.ngShow, function(newValue){
+                           if(newValue){ // scroll up to the alert div only when the div appears
+                               $('html, body').animate({ scrollTop: $('#alert').offset().top }, 'slow');
+                           }
+                       });
+                   }
+               }
+           }
+       }
+
+    module.exports = focusonshow_directive;
+})();
+},{}],19:[function(require,module,exports){
+(function(){
+
+    'use strict';
+
+    function likert_directive() {
+        return {
+            restrict: 'E',
+            scope: {
+                'items': '=',
+                'choices': '='
+            },
+            templateUrl: 'app/template/likert.html'
+        }
+    }
+
+    module.exports = likert_directive;
+})();
+},{}],20:[function(require,module,exports){
 (function() {
 
     'use strict';
@@ -287,23 +1300,242 @@
         };
     }
 
-    navbar_controller.$inject = ['$scope', 'authService'];
+    navbar_controller.$inject = ['$scope', 'authService', 'appcon'];
 
-    function navbar_controller($scope, authService) {
+    function navbar_controller($scope, authService, appcon) {
         var vm = this; // why do this ?
         vm.auth = authService;
+
         $scope.login = function() {
             authService.login();
         }
 
         $scope.logout = function() {
-            authService.logout();
+            $scope.startSpinner();
+            appcon.postLogout()
+            .then(function success(response) {
+                console.log('User successfully logged out!');
+                authService.logout();
+                $scope.stopSpinner();
+            }, function failure(response) {
+                $scope.stopSpinner();
+            });
         }
     };
 
     module.exports = navbar_directive;
 })();
-},{}],11:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
+(function() {
+
+    function appcon_provider() {
+        var url;
+
+        this.setUrl = function(val) {
+            url = val;
+        }
+
+        appcon_service.$inject = ['$http'];
+
+        function appcon_service($http) {
+
+            function getReviews(evaluationCode) {
+                var id_token = localStorage.getItem("id_token");
+                var config = {
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url:  url + '/api/performance-review/' + evaluationCode
+                };
+                return $http(config);
+            }
+
+            function getExperimentSettings() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/performance-review/settings'
+                });
+            }
+
+            function postUserDemographic(user) {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'POST',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    data: user,
+                    url: url + '/api/questionnaire/user-demographic'
+                });
+            }
+
+            function stepIsCompleted(step) {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/status/step-is-completed/' + step
+                });
+            }
+
+            function getUserDemographics() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-demographic'
+                })
+            }
+
+            function postUserExperience(user) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + id_token
+                    },
+                    data: user,
+                    url: url + '/api/questionnaire/user-experience'
+                });
+            }
+
+            function getUserExperience() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-experience'
+                })
+            }
+
+            function getUserConfidence() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/questionnaire/user-confidence'
+                })
+            }
+
+            function postUserConfidence(payload) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        data: payload,
+                        url: url + '/api/questionnaire/user-confidence'
+                });
+            }
+
+            function postUserEvaluation(userEvaluation) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        data: userEvaluation,
+                        url: url + '/api/appraisal'
+                });
+            }
+
+            function getUserEvaluation(evalCode) {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/appraisal/' + evalCode
+                });
+            }
+
+            function postLogin() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/login'
+                });
+            }
+
+            function postLogout() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/activity/logout'
+                });
+            }
+
+            function getProgress() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/status/progress'
+                });
+            }
+
+            function sendEmail(from, subject, body) {
+                var supportMailDetails = {
+                    from: from,
+                    subject: subject,
+                    body: body
+                }
+                return $http({
+                        method: 'POST',
+                        data: supportMailDetails,
+                        url: url + '/api/communication/send-support-email'
+                });
+            }
+
+            return {
+                getReviews: getReviews,
+                getExperimentSettings: getExperimentSettings,
+                postUserDemographic: postUserDemographic,
+                getUserDemographics: getUserDemographics,
+                postUserExperience: postUserExperience,
+                postUserConfidence: postUserConfidence,
+                getUserConfidence: getUserConfidence,
+                getUserExperience: getUserExperience,
+                postUserEvaluation: postUserEvaluation,
+                getUserEvaluation: getUserEvaluation,
+                stepIsCompleted: stepIsCompleted,
+                postLogin: postLogin,
+                postLogout: postLogout,
+                getProgress: getProgress,
+                sendEmail: sendEmail
+            }
+        };
+
+        this.$get = appcon_service;
+    }
+
+    module.exports = appcon_provider;
+})();
+},{}],22:[function(require,module,exports){
 (function() {
 
     'use-strict';
@@ -311,12 +1543,24 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$timeout'
+        '$http',
+        'appcon'
     ]
 
-    function authService($state, angularAuth0, $timeout) {
+    function authService($state, angularAuth0, $http, appcon) {
 
         function login() {
+            // remember current state to reroute to after authentication
+            if ($state.current.name === 'welcome')
+                localStorage.setItem('redirect_state', 'home');
+            else {
+                var state = $state.current.name;
+                if(state === 'evaluation') {
+                    localStorage.setItem('redirect_state_param', $state.params.id);
+                }
+                localStorage.setItem('redirect_state', state);
+            }
+
             angularAuth0.authorize();
         }
 
@@ -324,9 +1568,28 @@
             angularAuth0.parseHash(function(err, authResult) {
                if(authResult && authResult.accessToken && authResult.idToken) {
                     setSession(authResult);
-                    $state.go('home');
+                    if (localStorage.getItem('redirect_state') === null)
+                        $state.go('home');
+                    else {
+                        var redirect_state = localStorage.getItem('redirect_state');
+                        if(redirect_state === 'evaluation') {
+                            var redirect_state_id = localStorage.getItem('redirect_state_param');
+                            $state.go('evaluation', {id: redirect_state_id});
+                        } else
+                            $state.go(localStorage.getItem('redirect_state'));
+                        localStorage.removeItem('redirect_state');
+                    }
+
+                    appcon.postLogin()
+                    .then(function success(response){
+                        localStorage.setItem('userId', response.data);
+                        console.log('User login recorded successfully');
+                    }, function failure(response) {
+                        console.log('Unable to record user login!');
+                    });
+
                } else if (err) {
-                    alert('An error occured while trying to parse the URL has. Please see console for more details!');
+                    alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);
                }
             });
@@ -345,9 +1608,15 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('redirect_state_param');
             $state.go('welcome');
         }
 
+
+        function getUserId() {
+            return localStorage.getItem('userId');
+        }
 
         function isAuthenticated() {
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
@@ -358,20 +1627,21 @@
             login: login,
             handleAuthentication: handleAuthentication,
             logout: logout,
-            isAuthenticated: isAuthenticated
+            isAuthenticated: isAuthenticated,
+            getUserId: getUserId
         }
     };
 
     module.exports = authService;
 })();
-},{}],12:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ng_from_import = require("angular");
 var ng_from_global = angular;
 exports.ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
 
-},{"angular":101}],13:[function(require,module,exports){
+},{"angular":113}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -943,7 +2213,7 @@ angular_1.ng.module('ui.router.state')
     .directive('uiSrefActiveEq', uiSrefActive)
     .directive('uiState', uiState);
 
-},{"../angular":12,"@uirouter/core":46}],14:[function(require,module,exports){
+},{"../angular":23,"@uirouter/core":57}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1234,7 +2504,7 @@ function registerControllerCallbacks($q, $transitions, controllerInstance, $scop
 angular_1.ng.module('ui.router.state').directive('uiView', exports.uiView);
 angular_1.ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
 
-},{"../angular":12,"../services":18,"../statebuilders/views":22,"@uirouter/core":46,"angular":101}],15:[function(require,module,exports){
+},{"../angular":23,"../services":29,"../statebuilders/views":33,"@uirouter/core":57,"angular":113}],26:[function(require,module,exports){
 "use strict";
 /**
  * Main entry point for angular 1.x build
@@ -1258,7 +2528,7 @@ require("./directives/viewDirective");
 require("./viewScroll");
 exports.default = "ui.router";
 
-},{"./directives/stateDirectives":13,"./directives/viewDirective":14,"./injectables":16,"./services":18,"./stateFilters":19,"./stateProvider":20,"./statebuilders/views":22,"./urlRouterProvider":24,"./viewScroll":25,"@uirouter/core":46}],16:[function(require,module,exports){
+},{"./directives/stateDirectives":24,"./directives/viewDirective":25,"./injectables":27,"./services":29,"./stateFilters":30,"./stateProvider":31,"./statebuilders/views":33,"./urlRouterProvider":35,"./viewScroll":36,"@uirouter/core":57}],27:[function(require,module,exports){
 "use strict";
 /**
  * # Angular 1 injectable services
@@ -1627,7 +2897,7 @@ var $urlMatcherFactory;
  */
 var $urlMatcherFactoryProvider;
 
-},{}],17:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -1703,7 +2973,7 @@ var Ng1LocationServices = (function () {
 }());
 exports.Ng1LocationServices = Ng1LocationServices;
 
-},{"@uirouter/core":46}],18:[function(require,module,exports){
+},{"@uirouter/core":57}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -1820,7 +3090,7 @@ exports.getLocals = function (ctx) {
     return tuples.reduce(core_1.applyPairs, {});
 };
 
-},{"./angular":12,"./locationServices":17,"./stateProvider":20,"./statebuilders/onEnterExitRetain":21,"./statebuilders/views":22,"./templateFactory":23,"./urlRouterProvider":24,"@uirouter/core":46}],19:[function(require,module,exports){
+},{"./angular":23,"./locationServices":28,"./stateProvider":31,"./statebuilders/onEnterExitRetain":32,"./statebuilders/views":33,"./templateFactory":34,"./urlRouterProvider":35,"@uirouter/core":57}],30:[function(require,module,exports){
 "use strict";
 /** @module ng1 */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1867,7 +3137,7 @@ angular_1.ng.module('ui.router.state')
     .filter('isState', $IsStateFilter)
     .filter('includedByState', $IncludedByStateFilter);
 
-},{"./angular":12}],20:[function(require,module,exports){
+},{"./angular":23}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** for typedoc */
@@ -2008,7 +3278,7 @@ var StateProvider = (function () {
 }());
 exports.StateProvider = StateProvider;
 
-},{"@uirouter/core":46}],21:[function(require,module,exports){
+},{"@uirouter/core":57}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2034,7 +3304,7 @@ exports.getStateHookBuilder = function (hookName) {
     };
 };
 
-},{"../services":18,"@uirouter/core":46}],22:[function(require,module,exports){
+},{"../services":29,"@uirouter/core":57}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@uirouter/core");
@@ -2144,7 +3414,7 @@ var Ng1ViewConfig = (function () {
 }());
 exports.Ng1ViewConfig = Ng1ViewConfig;
 
-},{"@uirouter/core":46}],23:[function(require,module,exports){
+},{"@uirouter/core":57}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module view */
@@ -2339,7 +3609,7 @@ var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {
     .filter(function (tuple) { return core_1.isDefined(tuple) && core_1.isArray(tuple[1]); })
     .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
 
-},{"./angular":12,"@uirouter/core":46}],24:[function(require,module,exports){
+},{"./angular":23,"@uirouter/core":57}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module url */ /** */
@@ -2546,7 +3816,7 @@ var UrlRouterProvider = (function () {
 }());
 exports.UrlRouterProvider = UrlRouterProvider;
 
-},{"@uirouter/core":46}],25:[function(require,module,exports){
+},{"@uirouter/core":57}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module ng1 */ /** */
@@ -2570,7 +3840,7 @@ function $ViewScrollProvider() {
 }
 angular_1.ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
 
-},{"./angular":12}],26:[function(require,module,exports){
+},{"./angular":23}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3218,7 +4488,7 @@ exports.silentRejection = function (error) {
     return exports.silenceUncaughtInPromise(coreservices_1.services.$q.reject(error));
 };
 
-},{"./coreservices":27,"./hof":29,"./predicates":31}],27:[function(require,module,exports){
+},{"./coreservices":38,"./hof":40,"./predicates":42}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notImplemented = function (fnname) { return function () {
@@ -3230,7 +4500,7 @@ var services = {
 };
 exports.services = services;
 
-},{}],28:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -3314,7 +4584,7 @@ var Glob = (function () {
 }());
 exports.Glob = Glob;
 
-},{}],29:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 "use strict";
 /**
  * Higher order functions
@@ -3560,7 +4830,7 @@ function pattern(struct) {
 }
 exports.pattern = pattern;
 
-},{}],30:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -3576,7 +4846,7 @@ __export(require("./queue"));
 __export(require("./strings"));
 __export(require("./trace"));
 
-},{"./common":26,"./coreservices":27,"./glob":28,"./hof":29,"./predicates":31,"./queue":32,"./strings":33,"./trace":34}],31:[function(require,module,exports){
+},{"./common":37,"./coreservices":38,"./glob":39,"./hof":40,"./predicates":42,"./queue":43,"./strings":44,"./trace":45}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** Predicates
@@ -3624,7 +4894,7 @@ exports.isInjectable = isInjectable;
  */
 exports.isPromise = hof_1.and(exports.isObject, hof_1.pipe(hof_1.prop('then'), exports.isFunction));
 
-},{"../state/stateObject":64,"./hof":29}],32:[function(require,module,exports){
+},{"../state/stateObject":75,"./hof":40}],43:[function(require,module,exports){
 "use strict";
 /**
  * @module common
@@ -3671,7 +4941,7 @@ var Queue = (function () {
 }());
 exports.Queue = Queue;
 
-},{}],33:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 /**
  * Functions that manipulate strings
@@ -3824,7 +5094,7 @@ function joinNeighborsR(acc, x) {
 exports.joinNeighborsR = joinNeighborsR;
 ;
 
-},{"../resolve/resolvable":58,"../transition/rejectFactory":73,"../transition/transition":74,"./common":26,"./hof":29,"./predicates":31}],34:[function(require,module,exports){
+},{"../resolve/resolvable":69,"../transition/rejectFactory":84,"../transition/transition":85,"./common":37,"./hof":40,"./predicates":42}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4068,7 +5338,7 @@ exports.Trace = Trace;
 var trace = new Trace();
 exports.trace = trace;
 
-},{"../common/hof":29,"../common/predicates":31,"./strings":33}],35:[function(require,module,exports){
+},{"../common/hof":40,"../common/predicates":42,"./strings":44}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4107,7 +5377,7 @@ var UIRouterGlobals = (function () {
 }());
 exports.UIRouterGlobals = UIRouterGlobals;
 
-},{"./common/queue":32,"./params/stateParams":52}],36:[function(require,module,exports){
+},{"./common/queue":43,"./params/stateParams":63}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4126,7 +5396,7 @@ exports.registerAddCoreResolvables = function (transitionService) {
     return transitionService.onCreate({}, addCoreResolvables);
 };
 
-},{"../router":60,"../transition/transition":74}],37:[function(require,module,exports){
+},{"../router":71,"../transition/transition":85}],48:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4158,7 +5428,7 @@ exports.registerIgnoredTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
 };
 
-},{"../common/trace":34,"../transition/rejectFactory":73}],38:[function(require,module,exports){
+},{"../common/trace":45,"../transition/rejectFactory":84}],49:[function(require,module,exports){
 "use strict";
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4178,7 +5448,7 @@ exports.registerInvalidTransitionHook = function (transitionService) {
     return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
 };
 
-},{}],39:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var coreservices_1 = require("../common/coreservices");
@@ -4276,7 +5546,7 @@ function lazyLoadState(transition, state) {
 }
 exports.lazyLoadState = lazyLoadState;
 
-},{"../common/coreservices":27}],40:[function(require,module,exports){
+},{"../common/coreservices":38}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4334,7 +5604,7 @@ exports.registerOnEnterHook = function (transitionService) {
     return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
 };
 
-},{}],41:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
@@ -4372,7 +5642,7 @@ exports.registerRedirectToHook = function (transitionService) {
     return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
 };
 
-},{"../common/coreservices":27,"../common/predicates":31,"../state/targetState":68}],42:[function(require,module,exports){
+},{"../common/coreservices":38,"../common/predicates":42,"../state/targetState":79}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
@@ -4416,7 +5686,7 @@ exports.registerLazyResolveState = function (transitionService) {
     return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
 };
 
-},{"../common/common":26,"../common/hof":29,"../resolve/resolveContext":59}],43:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../resolve/resolveContext":70}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -4452,7 +5722,7 @@ exports.registerUpdateGlobalState = function (transitionService) {
     return transitionService.onCreate({}, updateGlobalState);
 };
 
-},{"../common/common":26}],44:[function(require,module,exports){
+},{"../common/common":37}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4478,7 +5748,7 @@ exports.registerUpdateUrl = function (transitionService) {
     return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
 };
 
-},{}],45:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** for typedoc */
@@ -4526,7 +5796,7 @@ exports.registerActivateViews = function (transitionService) {
     return transitionService.onSuccess({}, activateViews);
 };
 
-},{"../common/common":26,"../common/coreservices":27}],46:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38}],57:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -4549,7 +5819,7 @@ __export(require("./router"));
 __export(require("./vanilla"));
 __export(require("./interface"));
 
-},{"./common/index":30,"./globals":35,"./interface":47,"./params/index":48,"./path/index":53,"./resolve/index":56,"./router":60,"./state/index":61,"./transition/index":71,"./url/index":78,"./vanilla":84,"./view/index":96}],47:[function(require,module,exports){
+},{"./common/index":41,"./globals":46,"./interface":58,"./params/index":59,"./path/index":64,"./resolve/index":67,"./router":71,"./state/index":72,"./transition/index":82,"./url/index":89,"./vanilla":95,"./view/index":107}],58:[function(require,module,exports){
 "use strict";
 /**
  * # Core classes and interfaces
@@ -4571,7 +5841,7 @@ var UIRouterPluginBase = (function () {
 }());
 exports.UIRouterPluginBase = UIRouterPluginBase;
 
-},{}],48:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4582,7 +5852,7 @@ __export(require("./paramTypes"));
 __export(require("./stateParams"));
 __export(require("./paramType"));
 
-},{"./param":49,"./paramType":50,"./paramTypes":51,"./stateParams":52}],49:[function(require,module,exports){
+},{"./param":60,"./paramType":61,"./paramTypes":62,"./stateParams":63}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4781,7 +6051,7 @@ var Param = (function () {
 }());
 exports.Param = Param;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"./paramType":50}],50:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"./paramType":61}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -4924,7 +6194,7 @@ function ArrayType(type, mode) {
     });
 }
 
-},{"../common/common":26,"../common/predicates":31}],51:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5081,7 +6351,7 @@ function initDefaultTypes() {
 }
 initDefaultTypes();
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"./paramType":50}],52:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"./paramType":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5126,7 +6396,7 @@ var StateParams = (function () {
 }());
 exports.StateParams = StateParams;
 
-},{"../common/common":26}],53:[function(require,module,exports){
+},{"../common/common":37}],64:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5136,7 +6406,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./pathNode"));
 __export(require("./pathFactory"));
 
-},{"./pathFactory":54,"./pathNode":55}],54:[function(require,module,exports){
+},{"./pathFactory":65,"./pathNode":66}],65:[function(require,module,exports){
 "use strict";
 /** @module path */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -5310,7 +6580,7 @@ PathUtils.paramValues = function (path) {
 };
 exports.PathUtils = PathUtils;
 
-},{"../common/common":26,"../common/hof":29,"../state/targetState":68,"./pathNode":55}],55:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../state/targetState":79,"./pathNode":66}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
@@ -5388,7 +6658,7 @@ var PathNode = (function () {
 }());
 exports.PathNode = PathNode;
 
-},{"../common/common":26,"../common/hof":29,"../params/param":49}],56:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../params/param":60}],67:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5399,7 +6669,7 @@ __export(require("./interface"));
 __export(require("./resolvable"));
 __export(require("./resolveContext"));
 
-},{"./interface":57,"./resolvable":58,"./resolveContext":59}],57:[function(require,module,exports){
+},{"./interface":68,"./resolvable":69,"./resolveContext":70}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @internalapi */
@@ -5415,7 +6685,7 @@ exports.resolvePolicies = {
     }
 };
 
-},{}],58:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5549,7 +6819,7 @@ Resolvable.fromData = function (token, data) {
 };
 exports.Resolvable = Resolvable;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/predicates":31,"../common/strings":33,"../common/trace":34}],59:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/predicates":42,"../common/strings":44,"../common/trace":45}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */
@@ -5750,7 +7020,7 @@ var UIInjectorImpl = (function () {
     return UIInjectorImpl;
 }());
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/strings":33,"../common/trace":34,"../path/pathFactory":54,"./interface":57,"./resolvable":58}],60:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/strings":44,"../common/trace":45,"../path/pathFactory":65,"./interface":68,"./resolvable":69}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -5935,7 +7205,7 @@ var UIRouter = (function () {
 }());
 exports.UIRouter = UIRouter;
 
-},{"./common/common":26,"./common/predicates":31,"./common/trace":34,"./globals":35,"./state/stateRegistry":66,"./state/stateService":67,"./transition/transitionService":77,"./url/urlMatcherFactory":80,"./url/urlRouter":81,"./url/urlService":83,"./view/view":97}],61:[function(require,module,exports){
+},{"./common/common":37,"./common/predicates":42,"./common/trace":45,"./globals":46,"./state/stateRegistry":77,"./state/stateService":78,"./transition/transitionService":88,"./url/urlMatcherFactory":91,"./url/urlRouter":92,"./url/urlService":94,"./view/view":108}],72:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5949,7 +7219,7 @@ __export(require("./stateRegistry"));
 __export(require("./stateService"));
 __export(require("./targetState"));
 
-},{"./stateBuilder":62,"./stateMatcher":63,"./stateObject":64,"./stateQueueManager":65,"./stateRegistry":66,"./stateService":67,"./targetState":68}],62:[function(require,module,exports){
+},{"./stateBuilder":73,"./stateMatcher":74,"./stateObject":75,"./stateQueueManager":76,"./stateRegistry":77,"./stateService":78,"./targetState":79}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6225,7 +7495,7 @@ var StateBuilder = (function () {
 }());
 exports.StateBuilder = StateBuilder;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../resolve/resolvable":58}],63:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../resolve/resolvable":69}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6289,7 +7559,7 @@ var StateMatcher = (function () {
 }());
 exports.StateMatcher = StateMatcher;
 
-},{"../common/common":26,"../common/predicates":31}],64:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = require("../common/common");
@@ -6404,7 +7674,7 @@ StateObject.isState = function (obj) {
 };
 exports.StateObject = StateObject;
 
-},{"../common/common":26,"../common/glob":28,"../common/hof":29,"../common/predicates":31}],65:[function(require,module,exports){
+},{"../common/common":37,"../common/glob":39,"../common/hof":40,"../common/predicates":42}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
@@ -6497,7 +7767,7 @@ var StateQueueManager = (function () {
 }());
 exports.StateQueueManager = StateQueueManager;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"./stateObject":64}],66:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"./stateObject":75}],77:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -6654,7 +7924,7 @@ var StateRegistry = (function () {
 }());
 exports.StateRegistry = StateRegistry;
 
-},{"../common/common":26,"../common/hof":29,"./stateBuilder":62,"./stateMatcher":63,"./stateQueueManager":65}],67:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"./stateBuilder":73,"./stateMatcher":74,"./stateQueueManager":76}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7228,7 +8498,7 @@ var StateService = (function () {
 }());
 exports.StateService = StateService;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/glob":28,"../common/hof":29,"../common/predicates":31,"../common/queue":32,"../hooks/lazyLoad":39,"../params/param":49,"../path/pathFactory":54,"../path/pathNode":55,"../resolve/resolveContext":59,"../transition/rejectFactory":73,"../transition/transitionService":77,"./targetState":68}],68:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/glob":39,"../common/hof":40,"../common/predicates":42,"../common/queue":43,"../hooks/lazyLoad":50,"../params/param":60,"../path/pathFactory":65,"../path/pathNode":66,"../resolve/resolveContext":70,"../transition/rejectFactory":84,"../transition/transitionService":88,"./targetState":79}],79:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7343,7 +8613,7 @@ TargetState.isDef = function (obj) {
 };
 exports.TargetState = TargetState;
 
-},{"../common/common":26,"../common/predicates":31}],69:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],80:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -7463,7 +8733,7 @@ function tupleSort(reverseDepthSort) {
     };
 }
 
-},{"../common/common":26,"../common/predicates":31,"./interface":72,"./transitionHook":76}],70:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"./interface":83,"./transitionHook":87}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -7620,7 +8890,7 @@ function makeEvent(registry, transitionService, eventType) {
 }
 exports.makeEvent = makeEvent;
 
-},{"../common/common":26,"../common/glob":28,"../common/predicates":31,"./interface":72}],71:[function(require,module,exports){
+},{"../common/common":37,"../common/glob":39,"../common/predicates":42,"./interface":83}],82:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -7649,7 +8919,7 @@ __export(require("./transitionHook"));
 __export(require("./transitionEventType"));
 __export(require("./transitionService"));
 
-},{"./hookBuilder":69,"./hookRegistry":70,"./interface":72,"./rejectFactory":73,"./transition":74,"./transitionEventType":75,"./transitionHook":76,"./transitionService":77}],72:[function(require,module,exports){
+},{"./hookBuilder":80,"./hookRegistry":81,"./interface":83,"./rejectFactory":84,"./transition":85,"./transitionEventType":86,"./transitionHook":87,"./transitionService":88}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TransitionHookPhase;
@@ -7666,7 +8936,7 @@ var TransitionHookScope;
     TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
 })(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
 
-},{}],73:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 /**
  * @coreapi
  * @module transition
@@ -7756,7 +9026,7 @@ var Rejection = (function () {
 }());
 exports.Rejection = Rejection;
 
-},{"../common/common":26,"../common/hof":29,"../common/strings":33}],74:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/strings":44}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8384,7 +9654,7 @@ var Transition = (function () {
 Transition.diToken = Transition;
 exports.Transition = Transition;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/trace":34,"../params/param":49,"../path/pathFactory":54,"../resolve/resolvable":58,"../resolve/resolveContext":59,"../state/targetState":68,"./hookBuilder":69,"./hookRegistry":70,"./interface":72,"./transitionHook":76}],75:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/trace":45,"../params/param":60,"../path/pathFactory":65,"../resolve/resolvable":69,"../resolve/resolveContext":70,"../state/targetState":79,"./hookBuilder":80,"./hookRegistry":81,"./interface":83,"./transitionHook":87}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var transitionHook_1 = require("./transitionHook");
@@ -8413,7 +9683,7 @@ var TransitionEventType = (function () {
 }());
 exports.TransitionEventType = TransitionEventType;
 
-},{"./transitionHook":76}],76:[function(require,module,exports){
+},{"./transitionHook":87}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8634,7 +9904,7 @@ TransitionHook.THROW_ERROR = function (hook) { return function (error) {
 }; };
 exports.TransitionHook = TransitionHook;
 
-},{"../common/common":26,"../common/coreservices":27,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../common/trace":34,"../state/targetState":68,"./interface":72,"./rejectFactory":73}],77:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../common/trace":45,"../state/targetState":79,"./interface":83,"./rejectFactory":84}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -8874,7 +10144,7 @@ var TransitionService = (function () {
 }());
 exports.TransitionService = TransitionService;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../hooks/coreResolvables":36,"../hooks/ignoredTransition":37,"../hooks/invalidTransition":38,"../hooks/lazyLoad":39,"../hooks/onEnterExitRetain":40,"../hooks/redirectTo":41,"../hooks/resolve":42,"../hooks/updateGlobals":43,"../hooks/url":44,"../hooks/views":45,"./hookRegistry":70,"./interface":72,"./transition":74,"./transitionEventType":75,"./transitionHook":76}],78:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../hooks/coreResolvables":47,"../hooks/ignoredTransition":48,"../hooks/invalidTransition":49,"../hooks/lazyLoad":50,"../hooks/onEnterExitRetain":51,"../hooks/redirectTo":52,"../hooks/resolve":53,"../hooks/updateGlobals":54,"../hooks/url":55,"../hooks/views":56,"./hookRegistry":81,"./interface":83,"./transition":85,"./transitionEventType":86,"./transitionHook":87}],89:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8886,7 +10156,7 @@ __export(require("./urlRouter"));
 __export(require("./urlRule"));
 __export(require("./urlService"));
 
-},{"./urlMatcher":79,"./urlMatcherFactory":80,"./urlRouter":81,"./urlRule":82,"./urlService":83}],79:[function(require,module,exports){
+},{"./urlMatcher":90,"./urlMatcherFactory":91,"./urlRouter":92,"./urlRule":93,"./urlService":94}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9390,7 +10660,7 @@ var UrlMatcher = (function () {
 UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
 exports.UrlMatcher = UrlMatcher;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../common/strings":33,"../params/param":49}],80:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../common/strings":44,"../params/param":60}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9518,7 +10788,7 @@ var UrlMatcherFactory = (function () {
 }());
 exports.UrlMatcherFactory = UrlMatcherFactory;
 
-},{"../common/common":26,"../common/predicates":31,"../params/param":49,"../params/paramTypes":51,"./urlMatcher":79}],81:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"../params/param":60,"../params/paramTypes":62,"./urlMatcher":90}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9792,7 +11062,7 @@ function getHandlerFn(handler) {
     return predicates_1.isFunction(handler) ? handler : hof_1.val(handler);
 }
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../state/targetState":68,"./urlMatcher":79,"./urlRule":82}],82:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../state/targetState":79,"./urlMatcher":90,"./urlRule":93}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10002,7 +11272,7 @@ var BaseUrlRule = (function () {
 }());
 exports.BaseUrlRule = BaseUrlRule;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"./urlMatcher":79}],83:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"./urlMatcher":90}],94:[function(require,module,exports){
 "use strict";
 /**
  * @coreapi
@@ -10083,7 +11353,7 @@ UrlService.locationServiceStub = makeStub(locationServicesFns);
 UrlService.locationConfigStub = makeStub(locationConfigFns);
 exports.UrlService = UrlService;
 
-},{"../common/common":26,"../common/coreservices":27}],84:[function(require,module,exports){
+},{"../common/common":37,"../common/coreservices":38}],95:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10096,7 +11366,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** */
 __export(require("./vanilla/index"));
 
-},{"./vanilla/index":88}],85:[function(require,module,exports){
+},{"./vanilla/index":99}],96:[function(require,module,exports){
 "use strict";
 /**
  * @internalapi
@@ -10142,7 +11412,7 @@ var BaseLocationServices = (function () {
 }());
 exports.BaseLocationServices = BaseLocationServices;
 
-},{"../common/common":26,"../common/predicates":31,"./utils":95}],86:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42,"./utils":106}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10190,7 +11460,7 @@ var BrowserLocationConfig = (function () {
 }());
 exports.BrowserLocationConfig = BrowserLocationConfig;
 
-},{"../common/predicates":31}],87:[function(require,module,exports){
+},{"../common/predicates":42}],98:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10232,7 +11502,7 @@ var HashLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.HashLocationService = HashLocationService;
 
-},{"./baseLocationService":85,"./utils":95}],88:[function(require,module,exports){
+},{"./baseLocationService":96,"./utils":106}],99:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10249,7 +11519,7 @@ __export(require("./browserLocationConfig"));
 __export(require("./utils"));
 __export(require("./plugins"));
 
-},{"./baseLocationService":85,"./browserLocationConfig":86,"./hashLocationService":87,"./injector":89,"./memoryLocationConfig":90,"./memoryLocationService":91,"./plugins":92,"./pushStateLocationService":93,"./q":94,"./utils":95}],89:[function(require,module,exports){
+},{"./baseLocationService":96,"./browserLocationConfig":97,"./hashLocationService":98,"./injector":100,"./memoryLocationConfig":101,"./memoryLocationService":102,"./plugins":103,"./pushStateLocationService":104,"./q":105,"./utils":106}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10350,7 +11620,7 @@ exports.$injector = {
     }
 };
 
-},{"../common/index":30}],90:[function(require,module,exports){
+},{"../common/index":41}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = require("../common/predicates");
@@ -10376,7 +11646,7 @@ var MemoryLocationConfig = (function () {
 }());
 exports.MemoryLocationConfig = MemoryLocationConfig;
 
-},{"../common/common":26,"../common/predicates":31}],91:[function(require,module,exports){
+},{"../common/common":37,"../common/predicates":42}],102:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10411,7 +11681,7 @@ var MemoryLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.MemoryLocationService = MemoryLocationService;
 
-},{"./baseLocationService":85}],92:[function(require,module,exports){
+},{"./baseLocationService":96}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10441,7 +11711,7 @@ exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushSta
 /** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
 exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
 
-},{"../common/coreservices":27,"./browserLocationConfig":86,"./hashLocationService":87,"./injector":89,"./memoryLocationConfig":90,"./memoryLocationService":91,"./pushStateLocationService":93,"./q":94,"./utils":95}],93:[function(require,module,exports){
+},{"../common/coreservices":38,"./browserLocationConfig":97,"./hashLocationService":98,"./injector":100,"./memoryLocationConfig":101,"./memoryLocationService":102,"./pushStateLocationService":104,"./q":105,"./utils":106}],104:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10494,7 +11764,7 @@ var PushStateLocationService = (function (_super) {
 }(baseLocationService_1.BaseLocationServices));
 exports.PushStateLocationService = PushStateLocationService;
 
-},{"./baseLocationService":85,"./utils":95}],94:[function(require,module,exports){
+},{"./baseLocationService":96,"./utils":106}],105:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10550,7 +11820,7 @@ exports.$q = {
     }
 };
 
-},{"../common/index":30}],95:[function(require,module,exports){
+},{"../common/index":41}],106:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10619,7 +11889,7 @@ function locationPluginFactory(name, isHtml5, serviceClass, configurationClass) 
 }
 exports.locationPluginFactory = locationPluginFactory;
 
-},{"../common/common":26,"../common/index":30}],96:[function(require,module,exports){
+},{"../common/common":37,"../common/index":41}],107:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10627,7 +11897,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./view"));
 
-},{"./view":97}],97:[function(require,module,exports){
+},{"./view":108}],108:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -10911,7 +12181,7 @@ ViewService.matches = function (uiViewsByFqn, uiView) { return function (viewCon
 }; };
 exports.ViewService = ViewService;
 
-},{"../common/common":26,"../common/hof":29,"../common/predicates":31,"../common/trace":34}],98:[function(require,module,exports){
+},{"../common/common":37,"../common/hof":40,"../common/predicates":42,"../common/trace":45}],109:[function(require,module,exports){
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -11067,11 +12337,633 @@ module.exports = auth0;
 
 /***/ })
 /******/ ]);
-},{}],99:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 require('./dist/angular-auth0');
 module.exports = 'auth0.auth0';
 
-},{"./dist/angular-auth0":98}],100:[function(require,module,exports){
+},{"./dist/angular-auth0":109}],111:[function(require,module,exports){
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("angular"));
+	else if(typeof define === 'function' && define.amd)
+		define(["angular"], factory);
+	else {
+		var a = typeof exports === 'object' ? factory(require("angular")) : factory(root["angular"]);
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(this, function(__WEBPACK_EXTERNAL_MODULE_5__) {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/*!********************************!*\
+  !*** ./src/angular-spinner.ts ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var SpinJSSpinner_1 = __webpack_require__(/*! ./Constants/SpinJSSpinner */ 1);
+	var UsSpinnerService_1 = __webpack_require__(/*! ./Services/UsSpinnerService */ 3);
+	var AngularSpinner_1 = __webpack_require__(/*! ./Directives/AngularSpinner */ 4);
+	var UsSpinnerConfig_1 = __webpack_require__(/*! ./Config/UsSpinnerConfig */ 6);
+	var angular = __webpack_require__(/*! angular */ 5);
+	exports.angularSpinner = angular
+	    .module('angularSpinner', [])
+	    .provider('usSpinnerConfig', UsSpinnerConfig_1.UsSpinnerConfig)
+	    .constant('SpinJSSpinner', SpinJSSpinner_1.SpinJSSpinner)
+	    .service('usSpinnerService', UsSpinnerService_1.UsSpinnerService)
+	    .directive('usSpinner', AngularSpinner_1.usSpinner);
+
+
+/***/ },
+/* 1 */
+/*!****************************************!*\
+  !*** ./src/Constants/SpinJSSpinner.ts ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var Spinner = __webpack_require__(/*! spin.js */ 2);
+	/**
+	 * Exporting the Spinner prototype from spin.js library
+	 */
+	exports.SpinJSSpinner = Spinner;
+
+
+/***/ },
+/* 2 */
+/*!***************************!*\
+  !*** ./~/spin.js/spin.js ***!
+  \***************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+	 * Copyright (c) 2011-2014 Felix Gnass
+	 * Licensed under the MIT license
+	 * http://spin.js.org/
+	 *
+	 * Example:
+	    var opts = {
+	      lines: 12             // The number of lines to draw
+	    , length: 7             // The length of each line
+	    , width: 5              // The line thickness
+	    , radius: 10            // The radius of the inner circle
+	    , scale: 1.0            // Scales overall size of the spinner
+	    , corners: 1            // Roundness (0..1)
+	    , color: '#000'         // #rgb or #rrggbb
+	    , opacity: 1/4          // Opacity of the lines
+	    , rotate: 0             // Rotation offset
+	    , direction: 1          // 1: clockwise, -1: counterclockwise
+	    , speed: 1              // Rounds per second
+	    , trail: 100            // Afterglow percentage
+	    , fps: 20               // Frames per second when using setTimeout()
+	    , zIndex: 2e9           // Use a high z-index by default
+	    , className: 'spinner'  // CSS class to assign to the element
+	    , top: '50%'            // center vertically
+	    , left: '50%'           // center horizontally
+	    , shadow: false         // Whether to render a shadow
+	    , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+	    , position: 'absolute'  // Element positioning
+	    }
+	    var target = document.getElementById('foo')
+	    var spinner = new Spinner(opts).spin(target)
+	 */
+	;(function (root, factory) {
+	
+	  /* CommonJS */
+	  if (typeof module == 'object' && module.exports) module.exports = factory()
+	
+	  /* AMD module */
+	  else if (true) !(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))
+	
+	  /* Browser global */
+	  else root.Spinner = factory()
+	}(this, function () {
+	  "use strict"
+	
+	  var prefixes = ['webkit', 'Moz', 'ms', 'O'] /* Vendor prefixes */
+	    , animations = {} /* Animation rules keyed by their name */
+	    , useCssAnimations /* Whether to use CSS animations or setTimeout */
+	    , sheet /* A stylesheet to hold the @keyframe or VML rules. */
+	
+	  /**
+	   * Utility function to create elements. If no tag name is given,
+	   * a DIV is created. Optionally properties can be passed.
+	   */
+	  function createEl (tag, prop) {
+	    var el = document.createElement(tag || 'div')
+	      , n
+	
+	    for (n in prop) el[n] = prop[n]
+	    return el
+	  }
+	
+	  /**
+	   * Appends children and returns the parent.
+	   */
+	  function ins (parent /* child1, child2, ...*/) {
+	    for (var i = 1, n = arguments.length; i < n; i++) {
+	      parent.appendChild(arguments[i])
+	    }
+	
+	    return parent
+	  }
+	
+	  /**
+	   * Creates an opacity keyframe animation rule and returns its name.
+	   * Since most mobile Webkits have timing issues with animation-delay,
+	   * we create separate rules for each line/segment.
+	   */
+	  function addAnimation (alpha, trail, i, lines) {
+	    var name = ['opacity', trail, ~~(alpha * 100), i, lines].join('-')
+	      , start = 0.01 + i/lines * 100
+	      , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
+	      , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()
+	      , pre = prefix && '-' + prefix + '-' || ''
+	
+	    if (!animations[name]) {
+	      sheet.insertRule(
+	        '@' + pre + 'keyframes ' + name + '{' +
+	        '0%{opacity:' + z + '}' +
+	        start + '%{opacity:' + alpha + '}' +
+	        (start+0.01) + '%{opacity:1}' +
+	        (start+trail) % 100 + '%{opacity:' + alpha + '}' +
+	        '100%{opacity:' + z + '}' +
+	        '}', sheet.cssRules.length)
+	
+	      animations[name] = 1
+	    }
+	
+	    return name
+	  }
+	
+	  /**
+	   * Tries various vendor prefixes and returns the first supported property.
+	   */
+	  function vendor (el, prop) {
+	    var s = el.style
+	      , pp
+	      , i
+	
+	    prop = prop.charAt(0).toUpperCase() + prop.slice(1)
+	    if (s[prop] !== undefined) return prop
+	    for (i = 0; i < prefixes.length; i++) {
+	      pp = prefixes[i]+prop
+	      if (s[pp] !== undefined) return pp
+	    }
+	  }
+	
+	  /**
+	   * Sets multiple style properties at once.
+	   */
+	  function css (el, prop) {
+	    for (var n in prop) {
+	      el.style[vendor(el, n) || n] = prop[n]
+	    }
+	
+	    return el
+	  }
+	
+	  /**
+	   * Fills in default values.
+	   */
+	  function merge (obj) {
+	    for (var i = 1; i < arguments.length; i++) {
+	      var def = arguments[i]
+	      for (var n in def) {
+	        if (obj[n] === undefined) obj[n] = def[n]
+	      }
+	    }
+	    return obj
+	  }
+	
+	  /**
+	   * Returns the line color from the given string or array.
+	   */
+	  function getColor (color, idx) {
+	    return typeof color == 'string' ? color : color[idx % color.length]
+	  }
+	
+	  // Built-in defaults
+	
+	  var defaults = {
+	    lines: 12             // The number of lines to draw
+	  , length: 7             // The length of each line
+	  , width: 5              // The line thickness
+	  , radius: 10            // The radius of the inner circle
+	  , scale: 1.0            // Scales overall size of the spinner
+	  , corners: 1            // Roundness (0..1)
+	  , color: '#000'         // #rgb or #rrggbb
+	  , opacity: 1/4          // Opacity of the lines
+	  , rotate: 0             // Rotation offset
+	  , direction: 1          // 1: clockwise, -1: counterclockwise
+	  , speed: 1              // Rounds per second
+	  , trail: 100            // Afterglow percentage
+	  , fps: 20               // Frames per second when using setTimeout()
+	  , zIndex: 2e9           // Use a high z-index by default
+	  , className: 'spinner'  // CSS class to assign to the element
+	  , top: '50%'            // center vertically
+	  , left: '50%'           // center horizontally
+	  , shadow: false         // Whether to render a shadow
+	  , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+	  , position: 'absolute'  // Element positioning
+	  }
+	
+	  /** The constructor */
+	  function Spinner (o) {
+	    this.opts = merge(o || {}, Spinner.defaults, defaults)
+	  }
+	
+	  // Global defaults that override the built-ins:
+	  Spinner.defaults = {}
+	
+	  merge(Spinner.prototype, {
+	    /**
+	     * Adds the spinner to the given target element. If this instance is already
+	     * spinning, it is automatically removed from its previous target b calling
+	     * stop() internally.
+	     */
+	    spin: function (target) {
+	      this.stop()
+	
+	      var self = this
+	        , o = self.opts
+	        , el = self.el = createEl(null, {className: o.className})
+	
+	      css(el, {
+	        position: o.position
+	      , width: 0
+	      , zIndex: o.zIndex
+	      , left: o.left
+	      , top: o.top
+	      })
+	
+	      if (target) {
+	        target.insertBefore(el, target.firstChild || null)
+	      }
+	
+	      el.setAttribute('role', 'progressbar')
+	      self.lines(el, self.opts)
+	
+	      if (!useCssAnimations) {
+	        // No CSS animation support, use setTimeout() instead
+	        var i = 0
+	          , start = (o.lines - 1) * (1 - o.direction) / 2
+	          , alpha
+	          , fps = o.fps
+	          , f = fps / o.speed
+	          , ostep = (1 - o.opacity) / (f * o.trail / 100)
+	          , astep = f / o.lines
+	
+	        ;(function anim () {
+	          i++
+	          for (var j = 0; j < o.lines; j++) {
+	            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity)
+	
+	            self.opacity(el, j * o.direction + start, alpha, o)
+	          }
+	          self.timeout = self.el && setTimeout(anim, ~~(1000 / fps))
+	        })()
+	      }
+	      return self
+	    }
+	
+	    /**
+	     * Stops and removes the Spinner.
+	     */
+	  , stop: function () {
+	      var el = this.el
+	      if (el) {
+	        clearTimeout(this.timeout)
+	        if (el.parentNode) el.parentNode.removeChild(el)
+	        this.el = undefined
+	      }
+	      return this
+	    }
+	
+	    /**
+	     * Internal method that draws the individual lines. Will be overwritten
+	     * in VML fallback mode below.
+	     */
+	  , lines: function (el, o) {
+	      var i = 0
+	        , start = (o.lines - 1) * (1 - o.direction) / 2
+	        , seg
+	
+	      function fill (color, shadow) {
+	        return css(createEl(), {
+	          position: 'absolute'
+	        , width: o.scale * (o.length + o.width) + 'px'
+	        , height: o.scale * o.width + 'px'
+	        , background: color
+	        , boxShadow: shadow
+	        , transformOrigin: 'left'
+	        , transform: 'rotate(' + ~~(360/o.lines*i + o.rotate) + 'deg) translate(' + o.scale*o.radius + 'px' + ',0)'
+	        , borderRadius: (o.corners * o.scale * o.width >> 1) + 'px'
+	        })
+	      }
+	
+	      for (; i < o.lines; i++) {
+	        seg = css(createEl(), {
+	          position: 'absolute'
+	        , top: 1 + ~(o.scale * o.width / 2) + 'px'
+	        , transform: o.hwaccel ? 'translate3d(0,0,0)' : ''
+	        , opacity: o.opacity
+	        , animation: useCssAnimations && addAnimation(o.opacity, o.trail, start + i * o.direction, o.lines) + ' ' + 1 / o.speed + 's linear infinite'
+	        })
+	
+	        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px #000'), {top: '2px'}))
+	        ins(el, ins(seg, fill(getColor(o.color, i), '0 0 1px rgba(0,0,0,.1)')))
+	      }
+	      return el
+	    }
+	
+	    /**
+	     * Internal method that adjusts the opacity of a single line.
+	     * Will be overwritten in VML fallback mode below.
+	     */
+	  , opacity: function (el, i, val) {
+	      if (i < el.childNodes.length) el.childNodes[i].style.opacity = val
+	    }
+	
+	  })
+	
+	
+	  function initVML () {
+	
+	    /* Utility function to create a VML tag */
+	    function vml (tag, attr) {
+	      return createEl('<' + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr)
+	    }
+	
+	    // No CSS transforms but VML support, add a CSS rule for VML elements:
+	    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)')
+	
+	    Spinner.prototype.lines = function (el, o) {
+	      var r = o.scale * (o.length + o.width)
+	        , s = o.scale * 2 * r
+	
+	      function grp () {
+	        return css(
+	          vml('group', {
+	            coordsize: s + ' ' + s
+	          , coordorigin: -r + ' ' + -r
+	          })
+	        , { width: s, height: s }
+	        )
+	      }
+	
+	      var margin = -(o.width + o.length) * o.scale * 2 + 'px'
+	        , g = css(grp(), {position: 'absolute', top: margin, left: margin})
+	        , i
+	
+	      function seg (i, dx, filter) {
+	        ins(
+	          g
+	        , ins(
+	            css(grp(), {rotation: 360 / o.lines * i + 'deg', left: ~~dx})
+	          , ins(
+	              css(
+	                vml('roundrect', {arcsize: o.corners})
+	              , { width: r
+	                , height: o.scale * o.width
+	                , left: o.scale * o.radius
+	                , top: -o.scale * o.width >> 1
+	                , filter: filter
+	                }
+	              )
+	            , vml('fill', {color: getColor(o.color, i), opacity: o.opacity})
+	            , vml('stroke', {opacity: 0}) // transparent stroke to fix color bleeding upon opacity change
+	            )
+	          )
+	        )
+	      }
+	
+	      if (o.shadow)
+	        for (i = 1; i <= o.lines; i++) {
+	          seg(i, -2, 'progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)')
+	        }
+	
+	      for (i = 1; i <= o.lines; i++) seg(i)
+	      return ins(el, g)
+	    }
+	
+	    Spinner.prototype.opacity = function (el, i, val, o) {
+	      var c = el.firstChild
+	      o = o.shadow && o.lines || 0
+	      if (c && i + o < c.childNodes.length) {
+	        c = c.childNodes[i + o]; c = c && c.firstChild; c = c && c.firstChild
+	        if (c) c.opacity = val
+	      }
+	    }
+	  }
+	
+	  if (typeof document !== 'undefined') {
+	    sheet = (function () {
+	      var el = createEl('style', {type : 'text/css'})
+	      ins(document.getElementsByTagName('head')[0], el)
+	      return el.sheet || el.styleSheet
+	    }())
+	
+	    var probe = css(createEl('group'), {behavior: 'url(#default#VML)'})
+	
+	    if (!vendor(probe, 'transform') && probe.adj) initVML()
+	    else useCssAnimations = vendor(probe, 'animation')
+	  }
+	
+	  return Spinner
+	
+	}));
+
+
+/***/ },
+/* 3 */
+/*!******************************************!*\
+  !*** ./src/Services/UsSpinnerService.ts ***!
+  \******************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * UsSpinnerService
+	 * This service let you control spin, start and stop
+	 */
+	var UsSpinnerService = (function () {
+	    function UsSpinnerService($rootScope) {
+	        this.$rootScope = $rootScope;
+	    }
+	    UsSpinnerService.prototype.spin = function (key) {
+	        this.$rootScope.$broadcast('us-spinner:spin', key);
+	    };
+	    UsSpinnerService.prototype.stop = function (key) {
+	        this.$rootScope.$broadcast('us-spinner:stop', key);
+	    };
+	    return UsSpinnerService;
+	}());
+	UsSpinnerService.$inject = ['$rootScope'];
+	exports.UsSpinnerService = UsSpinnerService;
+
+
+/***/ },
+/* 4 */
+/*!******************************************!*\
+  !*** ./src/Directives/AngularSpinner.ts ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var angular = __webpack_require__(/*! angular */ 5);
+	exports.usSpinner = function (SpinJSSpinner, usSpinnerConfig) {
+	    return {
+	        scope: true,
+	        link: function (scope, element, attr) {
+	            scope.spinner = null;
+	            scope.key = angular.isDefined(attr.spinnerKey) ? attr.spinnerKey : false;
+	            scope.startActive = (attr.spinnerStartActive) ?
+	                scope.$eval(attr.spinnerStartActive) : scope.key ?
+	                false : true;
+	            function stopSpinner() {
+	                if (scope.spinner) {
+	                    scope.spinner.stop();
+	                }
+	            }
+	            scope.spin = function () {
+	                if (scope.spinner) {
+	                    scope.spinner.spin(element[0]);
+	                }
+	            };
+	            scope.stop = function () {
+	                scope.startActive = false;
+	                stopSpinner();
+	            };
+	            scope.$watch(attr.usSpinner, function (options) {
+	                stopSpinner();
+	                // order of precedence: element options, theme, defaults.
+	                options = angular.extend({}, usSpinnerConfig.config, attr.spinnerTheme ? usSpinnerConfig.themes[attr.spinnerTheme] : undefined, options);
+	                scope.spinner = new SpinJSSpinner(options);
+	                if ((!scope.key || scope.startActive) && !attr.spinnerOn) {
+	                    scope.spinner.spin(element[0]);
+	                }
+	            }, true);
+	            if (attr.spinnerOn) {
+	                scope.$watch(attr.spinnerOn, function (spin) {
+	                    if (spin) {
+	                        scope.spin();
+	                    }
+	                    else {
+	                        scope.stop();
+	                    }
+	                });
+	            }
+	            scope.$on('us-spinner:spin', function (event, key) {
+	                if (!key || key === scope.key) {
+	                    scope.spin();
+	                }
+	            });
+	            scope.$on('us-spinner:stop', function (event, key) {
+	                if (!key || key === scope.key) {
+	                    scope.stop();
+	                }
+	            });
+	            scope.$on('$destroy', function () {
+	                scope.stop();
+	                scope.spinner = null;
+	            });
+	        }
+	    };
+	};
+	exports.usSpinner.$inject = ['SpinJSSpinner', 'usSpinnerConfig'];
+
+
+/***/ },
+/* 5 */
+/*!**************************!*\
+  !*** external "angular" ***!
+  \**************************/
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
+
+/***/ },
+/* 6 */
+/*!***************************************!*\
+  !*** ./src/Config/UsSpinnerConfig.ts ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * UsSpinnerConfig
+	 */
+	var UsSpinnerConfig = (function () {
+	    function UsSpinnerConfig() {
+	        this.config = {};
+	        this.themes = {};
+	    }
+	    UsSpinnerConfig.prototype.setDefaults = function (config) {
+	        this.config = config || this.config;
+	    };
+	    UsSpinnerConfig.prototype.setTheme = function (name, config) {
+	        this.themes[name] = config;
+	    };
+	    UsSpinnerConfig.prototype.$get = function () {
+	        var _a = this, config = _a.config, themes = _a.themes;
+	        return {
+	            config: config,
+	            themes: themes
+	        };
+	    };
+	    return UsSpinnerConfig;
+	}());
+	exports.UsSpinnerConfig = UsSpinnerConfig;
+
+
+/***/ }
+/******/ ])
+});
+;
+
+},{"angular":113}],112:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.5
  * (c) 2010-2017 Google, Inc. http://angularjs.org
@@ -44903,11 +46795,1156 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],101:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":100}],102:[function(require,module,exports){
+},{"./angular":112}],114:[function(require,module,exports){
+/* global angular */
+(function(window, document) {
+    'use strict';
+
+    /*
+     * AngularJS Toaster
+     * Version: 2.2.0
+     *
+     * Copyright 2013-2016 Jiri Kavulak.
+     * All Rights Reserved.
+     * Use, reproduction, distribution, and modification of this code is subject to the terms and
+     * conditions of the MIT license, available at http://www.opensource.org/licenses/mit-license.php
+     *
+     * Author: Jiri Kavulak
+     * Related to project of John Papa, Hans Fjällemark and Nguyễn Thiện Hùng (thienhung1989)
+     */
+
+    angular.module('toaster', []).constant(
+        'toasterConfig', {
+            'limit': 0,                   // limits max number of toasts
+            'tap-to-dismiss': true,
+            'close-button': false,
+            'close-html': '<button class="toast-close-button" type="button">&times;</button>',
+            'newest-on-top': true,
+            'time-out': 5000,
+            'icon-classes': {
+                error: 'toast-error',
+                info: 'toast-info',
+                wait: 'toast-wait',
+                success: 'toast-success',
+                warning: 'toast-warning'
+            },
+            'body-output-type': '', // Options: '', 'trustedHtml', 'template', 'templateWithData', 'directive'
+            'body-template': 'toasterBodyTmpl.html',
+            'icon-class': 'toast-info',
+            'position-class': 'toast-top-right', // Options (see CSS):
+            // 'toast-top-full-width', 'toast-bottom-full-width', 'toast-center',
+            // 'toast-top-left', 'toast-top-center', 'toast-top-right',
+            // 'toast-bottom-left', 'toast-bottom-center', 'toast-bottom-right',
+            'title-class': 'toast-title',
+            'message-class': 'toast-message',
+            'prevent-duplicates': false,
+            'mouseover-timer-stop': true // stop timeout on mouseover and restart timer on mouseout
+        }
+    ).run(['$templateCache', function($templateCache) {
+            $templateCache.put('angularjs-toaster/toast.html',
+                '<div id="toast-container" ng-class="[config.position, config.animation]">' +
+                    '<div ng-repeat="toaster in toasters" class="toast" ng-class="toaster.type" ng-click="click($event, toaster)" ng-mouseover="stopTimer(toaster)" ng-mouseout="restartTimer(toaster)">' +
+                        '<div ng-if="toaster.showCloseButton" ng-click="click($event, toaster, true)" ng-bind-html="toaster.closeHtml"></div>' +
+                        '<div ng-class="config.title">{{toaster.title}}</div>' +
+                        '<div ng-class="config.message" ng-switch on="toaster.bodyOutputType">' +
+                        '<div ng-switch-when="trustedHtml" ng-bind-html="toaster.html"></div>' +
+                        '<div ng-switch-when="template"><div ng-include="toaster.bodyTemplate"></div></div>' +
+                        '<div ng-switch-when="templateWithData"><div ng-include="toaster.bodyTemplate"></div></div>' +
+                        '<div ng-switch-when="directive"><div directive-template directive-name="{{toaster.html}}" directive-data="{{toaster.directiveData}}"></div></div>' +
+                        '<div ng-switch-default >{{toaster.body}}</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>');
+        }
+    ]).service(
+        'toaster', [
+            '$rootScope', 'toasterConfig', function($rootScope, toasterConfig) {
+                // http://stackoverflow.com/questions/26501688/a-typescript-guid-class
+                var Guid = (function() {
+                    var Guid = {};
+                    Guid.newGuid = function() {
+                        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+                    };
+                    return Guid;
+                }());
+
+                this.pop = function(type, title, body, timeout, bodyOutputType, clickHandler, toasterId, showCloseButton, toastId, onHideCallback) {
+                    if (angular.isObject(type)) {
+                        var params = type; // Enable named parameters as pop argument
+                        this.toast = {
+                            type: params.type,
+                            title: params.title,
+                            body: params.body,
+                            timeout: params.timeout,
+                            bodyOutputType: params.bodyOutputType,
+                            clickHandler: params.clickHandler,
+                            showCloseButton: params.showCloseButton,
+                            closeHtml: params.closeHtml,
+                            toastId: params.toastId,
+                            onShowCallback: params.onShowCallback,
+                            onHideCallback: params.onHideCallback,
+                            directiveData: params.directiveData,
+                            tapToDismiss: params.tapToDismiss
+                        };
+                        toasterId = params.toasterId;
+                    } else {
+                        this.toast = {
+                            type: type,
+                            title: title,
+                            body: body,
+                            timeout: timeout,
+                            bodyOutputType: bodyOutputType,
+                            clickHandler: clickHandler,
+                            showCloseButton: showCloseButton,
+                            toastId: toastId,
+                            onHideCallback: onHideCallback
+                        };
+                    }
+
+                    if (!this.toast.toastId || !this.toast.toastId.length) {
+                        this.toast.toastId = Guid.newGuid();
+                    }
+
+                    $rootScope.$emit('toaster-newToast', toasterId, this.toast.toastId);
+                    
+                    return {
+                        toasterId: toasterId,
+                        toastId: this.toast.toastId
+                    };
+                };
+
+                this.clear = function(toasterId, toastId) {
+                    if (angular.isObject(toasterId)) {
+                        $rootScope.$emit('toaster-clearToasts', toasterId.toasterId, toasterId.toastId);
+                    } else {
+                        $rootScope.$emit('toaster-clearToasts', toasterId, toastId);
+                    }
+                };
+
+                // Create one method per icon class, to allow to call toaster.info() and similar
+                for (var type in toasterConfig['icon-classes']) {
+                    this[type] = createTypeMethod(type);
+                }
+
+                function createTypeMethod(toasterType) {
+                    return function(title, body, timeout, bodyOutputType, clickHandler, toasterId, showCloseButton, toastId, onHideCallback) {
+                        if (angular.isString(title)) {
+                            return this.pop(
+                                toasterType,
+                                title,
+                                body,
+                                timeout,
+                                bodyOutputType,
+                                clickHandler,
+                                toasterId,
+                                showCloseButton,
+                                toastId,
+                                onHideCallback);
+                        } else { // 'title' is actually an object with options
+                            return this.pop(angular.extend(title, { type: toasterType }));
+                        }
+                    };
+                }
+            }]
+        ).factory(
+        'toasterEventRegistry', [
+            '$rootScope', function($rootScope) {
+                var deregisterNewToast = null, deregisterClearToasts = null, newToastEventSubscribers = [], clearToastsEventSubscribers = [], toasterFactory;
+
+                toasterFactory = {
+                    setup: function() {
+                        if (!deregisterNewToast) {
+                            deregisterNewToast = $rootScope.$on(
+                                'toaster-newToast', function(event, toasterId, toastId) {
+                                    for (var i = 0, len = newToastEventSubscribers.length; i < len; i++) {
+                                        newToastEventSubscribers[i](event, toasterId, toastId);
+                                    }
+                                });
+                        }
+
+                        if (!deregisterClearToasts) {
+                            deregisterClearToasts = $rootScope.$on(
+                                'toaster-clearToasts', function(event, toasterId, toastId) {
+                                    for (var i = 0, len = clearToastsEventSubscribers.length; i < len; i++) {
+                                        clearToastsEventSubscribers[i](event, toasterId, toastId);
+                                    }
+                                });
+                        }
+                    },
+
+                    subscribeToNewToastEvent: function(onNewToast) {
+                        newToastEventSubscribers.push(onNewToast);
+                    },
+                    subscribeToClearToastsEvent: function(onClearToasts) {
+                        clearToastsEventSubscribers.push(onClearToasts);
+                    },
+                    unsubscribeToNewToastEvent: function(onNewToast) {
+                        var index = newToastEventSubscribers.indexOf(onNewToast);
+                        if (index >= 0) {
+                            newToastEventSubscribers.splice(index, 1);
+                        }
+
+                        if (newToastEventSubscribers.length === 0) {
+                            deregisterNewToast();
+                            deregisterNewToast = null;
+                        }
+                    },
+                    unsubscribeToClearToastsEvent: function(onClearToasts) {
+                        var index = clearToastsEventSubscribers.indexOf(onClearToasts);
+                        if (index >= 0) {
+                            clearToastsEventSubscribers.splice(index, 1);
+                        }
+
+                        if (clearToastsEventSubscribers.length === 0) {
+                            deregisterClearToasts();
+                            deregisterClearToasts = null;
+                        }
+                    }
+                };
+                return {
+                    setup: toasterFactory.setup,
+                    subscribeToNewToastEvent: toasterFactory.subscribeToNewToastEvent,
+                    subscribeToClearToastsEvent: toasterFactory.subscribeToClearToastsEvent,
+                    unsubscribeToNewToastEvent: toasterFactory.unsubscribeToNewToastEvent,
+                    unsubscribeToClearToastsEvent: toasterFactory.unsubscribeToClearToastsEvent
+                };
+            }]
+        )
+        .directive('directiveTemplate', ['$compile', '$injector', function($compile, $injector) {
+            return {
+                restrict: 'A',
+                scope: {
+                    directiveName: '@directiveName',
+                    directiveData: '@directiveData'
+                },
+                replace: true,
+                link: function(scope, elm, attrs) {
+                    scope.$watch('directiveName', function(directiveName) {
+                        if (angular.isUndefined(directiveName) || directiveName.length <= 0)
+                            throw new Error('A valid directive name must be provided via the toast body argument when using bodyOutputType: directive');
+
+                        var directive;
+
+                        try {
+                            directive = $injector.get(attrs.$normalize(directiveName) + 'Directive');
+                        } catch (e) {
+                            throw new Error(directiveName + ' could not be found. ' +
+                                'The name should appear as it exists in the markup, not camelCased as it would appear in the directive declaration,' +
+                                ' e.g. directive-name not directiveName.');
+                        }
+
+
+                        var directiveDetails = directive[0];
+
+                        if (directiveDetails.scope !== true && directiveDetails.scope) {
+                            throw new Error('Cannot use a directive with an isolated scope. ' +
+                                'The scope must be either true or falsy (e.g. false/null/undefined). ' +
+                                'Occurred for directive ' + directiveName + '.');
+                        }
+
+                        if (directiveDetails.restrict.indexOf('A') < 0) {
+                            throw new Error('Directives must be usable as attributes. ' +
+                                'Add "A" to the restrict option (or remove the option entirely). Occurred for directive ' +
+                                directiveName + '.');
+                        }
+
+                        if (scope.directiveData)
+                            scope.directiveData = angular.fromJson(scope.directiveData);
+
+                        var template = $compile('<div ' + directiveName + '></div>')(scope);
+
+                        elm.append(template);
+                    });
+                }
+            };
+        }])
+        .directive(
+        'toasterContainer', [
+            '$parse', '$rootScope', '$interval', '$sce', 'toasterConfig', 'toaster', 'toasterEventRegistry',
+            function($parse, $rootScope, $interval, $sce, toasterConfig, toaster, toasterEventRegistry) {
+                return {
+                    replace: true,
+                    restrict: 'EA',
+                    scope: true, // creates an internal scope for this directive (one per directive instance)
+                    link: function(scope, elm, attrs) {
+                        var mergedConfig;
+
+                        // Merges configuration set in directive with default one
+                        mergedConfig = angular.extend({}, toasterConfig, scope.$eval(attrs.toasterOptions));
+
+                        scope.config = {
+                            toasterId: mergedConfig['toaster-id'],
+                            position: mergedConfig['position-class'],
+                            title: mergedConfig['title-class'],
+                            message: mergedConfig['message-class'],
+                            tap: mergedConfig['tap-to-dismiss'],
+                            closeButton: mergedConfig['close-button'],
+                            closeHtml: mergedConfig['close-html'],
+                            animation: mergedConfig['animation-class'],
+                            mouseoverTimer: mergedConfig['mouseover-timer-stop']
+                        };
+
+                        scope.$on(
+                            "$destroy", function() {
+                                toasterEventRegistry.unsubscribeToNewToastEvent(scope._onNewToast);
+                                toasterEventRegistry.unsubscribeToClearToastsEvent(scope._onClearToasts);
+                            }
+                        );
+
+                        function setTimeout(toast, time) {
+                            toast.timeoutPromise = $interval(
+                                function() {
+                                    scope.removeToast(toast.toastId);
+                                }, time, 1
+                            );
+                        }
+
+                        scope.configureTimer = function(toast) {
+                            var timeout = angular.isNumber(toast.timeout) ? toast.timeout : mergedConfig['time-out'];
+                            if (typeof timeout === "object") timeout = timeout[toast.type];
+                            if (timeout > 0) {
+                                setTimeout(toast, timeout);
+                            }
+                        };
+
+                        function addToast(toast, toastId) {
+                            toast.type = mergedConfig['icon-classes'][toast.type];
+                            if (!toast.type) {
+                                toast.type = mergedConfig['icon-class'];
+                            }
+
+                            if (mergedConfig['prevent-duplicates'] === true && scope.toasters.length) {
+                                if (scope.toasters[scope.toasters.length - 1].body === toast.body) {
+                                    return;
+                                } else {
+                                    var i, len, dupFound = false;
+                                    for (i = 0, len = scope.toasters.length; i < len; i++) {
+                                        if (scope.toasters[i].toastId === toastId) {
+                                            dupFound = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (dupFound) return;
+                                }
+                            }
+
+
+                            // set the showCloseButton property on the toast so that
+                            // each template can bind directly to the property to show/hide
+                            // the close button
+                            var closeButton = mergedConfig['close-button'];
+
+                            // if toast.showCloseButton is a boolean value,
+                            // it was specifically overriden in the pop arguments
+                            if (typeof toast.showCloseButton === "boolean") {
+
+                            } else if (typeof closeButton === "boolean") {
+                                toast.showCloseButton = closeButton;
+                            } else if (typeof closeButton === "object") {
+                                var closeButtonForType = closeButton[toast.type];
+
+                                if (typeof closeButtonForType !== "undefined" && closeButtonForType !== null) {
+                                    toast.showCloseButton = closeButtonForType;
+                                }
+                            } else {
+                                // if an option was not set, default to false.
+                                toast.showCloseButton = false;
+                            }
+
+                            if (toast.showCloseButton) {
+                                toast.closeHtml = $sce.trustAsHtml(toast.closeHtml || scope.config.closeHtml);
+                            }
+
+                            // Set the toast.bodyOutputType to the default if it isn't set
+                            toast.bodyOutputType = toast.bodyOutputType || mergedConfig['body-output-type'];
+                            switch (toast.bodyOutputType) {
+                                case 'trustedHtml':
+                                    toast.html = $sce.trustAsHtml(toast.body);
+                                    break;
+                                case 'template':
+                                    toast.bodyTemplate = toast.body || mergedConfig['body-template'];
+                                    break;
+                                case 'templateWithData':
+                                    var fcGet = $parse(toast.body || mergedConfig['body-template']);
+                                    var templateWithData = fcGet(scope);
+                                    toast.bodyTemplate = templateWithData.template;
+                                    toast.data = templateWithData.data;
+                                    break;
+                                case 'directive':
+                                    toast.html = toast.body;
+                                    break;
+                            }
+
+                            scope.configureTimer(toast);
+
+                            if (mergedConfig['newest-on-top'] === true) {
+                                scope.toasters.unshift(toast);
+                                if (mergedConfig['limit'] > 0 && scope.toasters.length > mergedConfig['limit']) {
+                                    scope.toasters.pop();
+                                }
+                            } else {
+                                scope.toasters.push(toast);
+                                if (mergedConfig['limit'] > 0 && scope.toasters.length > mergedConfig['limit']) {
+                                    scope.toasters.shift();
+                                }
+                            }
+
+                            if (angular.isFunction(toast.onShowCallback)) {
+                                toast.onShowCallback(toast);
+                            }
+                        }
+
+                        scope.removeToast = function(toastId) {
+                            var i, len;
+                            for (i = 0, len = scope.toasters.length; i < len; i++) {
+                                if (scope.toasters[i].toastId === toastId) {
+                                    removeToast(i);
+                                    break;
+                                }
+                            }
+                        };
+
+                        function removeToast(toastIndex) {
+                            var toast = scope.toasters[toastIndex];
+
+                            // toast is always defined since the index always has a match
+                            if (toast.timeoutPromise) {
+                                $interval.cancel(toast.timeoutPromise);
+                            }
+                            scope.toasters.splice(toastIndex, 1);
+
+                            if (angular.isFunction(toast.onHideCallback)) {
+                                toast.onHideCallback(toast);
+                            }
+                        }
+
+                        function removeAllToasts(toastId) {
+                            for (var i = scope.toasters.length - 1; i >= 0; i--) {
+                                if (isUndefinedOrNull(toastId)) {
+                                    removeToast(i);
+                                } else {
+                                    if (scope.toasters[i].toastId == toastId) {
+                                        removeToast(i);
+                                    }
+                                }
+                            }
+                        }
+
+                        scope.toasters = [];
+
+                        function isUndefinedOrNull(val) {
+                            return angular.isUndefined(val) || val === null;
+                        }
+
+                        scope._onNewToast = function(event, toasterId, toastId) {
+                            // Compatibility: if toaster has no toasterId defined, and if call to display
+                            // hasn't either, then the request is for us
+
+                            if ((isUndefinedOrNull(scope.config.toasterId) && isUndefinedOrNull(toasterId)) || (!isUndefinedOrNull(scope.config.toasterId) && !isUndefinedOrNull(toasterId) && scope.config.toasterId == toasterId)) {
+                                addToast(toaster.toast, toastId);
+                            }
+                        };
+                        scope._onClearToasts = function(event, toasterId, toastId) {
+                            // Compatibility: if toaster has no toasterId defined, and if call to display
+                            // hasn't either, then the request is for us
+                            if (toasterId == '*' || (isUndefinedOrNull(scope.config.toasterId) && isUndefinedOrNull(toasterId)) || (!isUndefinedOrNull(scope.config.toasterId) && !isUndefinedOrNull(toasterId) && scope.config.toasterId == toasterId)) {
+                                removeAllToasts(toastId);
+                            }
+                        };
+
+                        toasterEventRegistry.setup();
+
+                        toasterEventRegistry.subscribeToNewToastEvent(scope._onNewToast);
+                        toasterEventRegistry.subscribeToClearToastsEvent(scope._onClearToasts);
+                    },
+                    controller: [
+                        '$scope', '$element', '$attrs', function($scope, $element, $attrs) {
+                            // Called on mouseover
+                            $scope.stopTimer = function(toast) {
+                                if ($scope.config.mouseoverTimer === true) {
+                                    if (toast.timeoutPromise) {
+                                        $interval.cancel(toast.timeoutPromise);
+                                        toast.timeoutPromise = null;
+                                    }
+                                }
+                            };
+
+                            // Called on mouseout
+                            $scope.restartTimer = function(toast) {
+                                if ($scope.config.mouseoverTimer === true) {
+                                    if (!toast.timeoutPromise) {
+                                        $scope.configureTimer(toast);
+                                    }
+                                } else if (toast.timeoutPromise === null) {
+                                    $scope.removeToast(toast.toastId);
+                                }
+                            };
+
+                            $scope.click = function(event, toast, isCloseButton) {
+                                event.stopPropagation();
+
+                                var tapToDismiss = typeof toast.tapToDismiss === "boolean" 
+                                                        ? toast.tapToDismiss 
+                                                        : $scope.config.tap;
+                                if (tapToDismiss === true || (toast.showCloseButton === true && isCloseButton === true)) {
+                                    var removeToast = true;
+                                    if (toast.clickHandler) {
+                                        if (angular.isFunction(toast.clickHandler)) {
+                                            removeToast = toast.clickHandler(toast, isCloseButton);
+                                        } else if (angular.isFunction($scope.$parent.$eval(toast.clickHandler))) {
+                                            removeToast = $scope.$parent.$eval(toast.clickHandler)(toast, isCloseButton);
+                                        } else {
+                                            console.log("TOAST-NOTE: Your click handler is not inside a parent scope of toaster-container.");
+                                        }
+                                    }
+                                    if (removeToast) {
+                                        $scope.removeToast(toast.toastId);
+                                    }
+                                }
+                            };
+                        }],
+                    templateUrl: 'angularjs-toaster/toast.html'
+                };
+            }]
+        );
+})(window, document);
+
+},{}],115:[function(require,module,exports){
+/*!
+ * jQuery blockUI plugin
+ * Version 2.70.0-2014.11.23
+ * Requires jQuery v1.7 or later
+ *
+ * Examples at: http://malsup.com/jquery/block/
+ * Copyright (c) 2007-2013 M. Alsup
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Thanks to Amir-Hossein Sobhi for some excellent contributions!
+ */
+
+;(function() {
+/*jshint eqeqeq:false curly:false latedef:false */
+"use strict";
+
+	function setup($) {
+		$.fn._fadeIn = $.fn.fadeIn;
+
+		var noOp = $.noop || function() {};
+
+		// this bit is to ensure we don't call setExpression when we shouldn't (with extra muscle to handle
+		// confusing userAgent strings on Vista)
+		var msie = /MSIE/.test(navigator.userAgent);
+		var ie6  = /MSIE 6.0/.test(navigator.userAgent) && ! /MSIE 8.0/.test(navigator.userAgent);
+		var mode = document.documentMode || 0;
+		var setExpr = $.isFunction( document.createElement('div').style.setExpression );
+
+		// global $ methods for blocking/unblocking the entire page
+		$.blockUI   = function(opts) { install(window, opts); };
+		$.unblockUI = function(opts) { remove(window, opts); };
+
+		// convenience method for quick growl-like notifications  (http://www.google.com/search?q=growl)
+		$.growlUI = function(title, message, timeout, onClose) {
+			var $m = $('<div class="growlUI"></div>');
+			if (title) $m.append('<h1>'+title+'</h1>');
+			if (message) $m.append('<h2>'+message+'</h2>');
+			if (timeout === undefined) timeout = 3000;
+
+			// Added by konapun: Set timeout to 30 seconds if this growl is moused over, like normal toast notifications
+			var callBlock = function(opts) {
+				opts = opts || {};
+
+				$.blockUI({
+					message: $m,
+					fadeIn : typeof opts.fadeIn  !== 'undefined' ? opts.fadeIn  : 700,
+					fadeOut: typeof opts.fadeOut !== 'undefined' ? opts.fadeOut : 1000,
+					timeout: typeof opts.timeout !== 'undefined' ? opts.timeout : timeout,
+					centerY: false,
+					showOverlay: false,
+					onUnblock: onClose,
+					css: $.blockUI.defaults.growlCSS
+				});
+			};
+
+			callBlock();
+			var nonmousedOpacity = $m.css('opacity');
+			$m.mouseover(function() {
+				callBlock({
+					fadeIn: 0,
+					timeout: 30000
+				});
+
+				var displayBlock = $('.blockMsg');
+				displayBlock.stop(); // cancel fadeout if it has started
+				displayBlock.fadeTo(300, 1); // make it easier to read the message by removing transparency
+			}).mouseout(function() {
+				$('.blockMsg').fadeOut(1000);
+			});
+			// End konapun additions
+		};
+
+		// plugin method for blocking element content
+		$.fn.block = function(opts) {
+			if ( this[0] === window ) {
+				$.blockUI( opts );
+				return this;
+			}
+			var fullOpts = $.extend({}, $.blockUI.defaults, opts || {});
+			this.each(function() {
+				var $el = $(this);
+				if (fullOpts.ignoreIfBlocked && $el.data('blockUI.isBlocked'))
+					return;
+				$el.unblock({ fadeOut: 0 });
+			});
+
+			return this.each(function() {
+				if ($.css(this,'position') == 'static') {
+					this.style.position = 'relative';
+					$(this).data('blockUI.static', true);
+				}
+				this.style.zoom = 1; // force 'hasLayout' in ie
+				install(this, opts);
+			});
+		};
+
+		// plugin method for unblocking element content
+		$.fn.unblock = function(opts) {
+			if ( this[0] === window ) {
+				$.unblockUI( opts );
+				return this;
+			}
+			return this.each(function() {
+				remove(this, opts);
+			});
+		};
+
+		$.blockUI.version = 2.70; // 2nd generation blocking at no extra cost!
+
+		// override these in your code to change the default behavior and style
+		$.blockUI.defaults = {
+			// message displayed when blocking (use null for no message)
+			message:  '<h1>Please wait...</h1>',
+
+			title: null,		// title string; only used when theme == true
+			draggable: true,	// only used when theme == true (requires jquery-ui.js to be loaded)
+
+			theme: false, // set to true to use with jQuery UI themes
+
+			// styles for the message when blocking; if you wish to disable
+			// these and use an external stylesheet then do this in your code:
+			// $.blockUI.defaults.css = {};
+			css: {
+				padding:	0,
+				margin:		0,
+				width:		'30%',
+				top:		'40%',
+				left:		'35%',
+				textAlign:	'center',
+				color:		'#000',
+				border:		'3px solid #aaa',
+				backgroundColor:'#fff',
+				cursor:		'wait'
+			},
+
+			// minimal style set used when themes are used
+			themedCSS: {
+				width:	'30%',
+				top:	'40%',
+				left:	'35%'
+			},
+
+			// styles for the overlay
+			overlayCSS:  {
+				backgroundColor:	'#000',
+				opacity:			0.6,
+				cursor:				'wait'
+			},
+
+			// style to replace wait cursor before unblocking to correct issue
+			// of lingering wait cursor
+			cursorReset: 'default',
+
+			// styles applied when using $.growlUI
+			growlCSS: {
+				width:		'350px',
+				top:		'10px',
+				left:		'',
+				right:		'10px',
+				border:		'none',
+				padding:	'5px',
+				opacity:	0.6,
+				cursor:		'default',
+				color:		'#fff',
+				backgroundColor: '#000',
+				'-webkit-border-radius':'10px',
+				'-moz-border-radius':	'10px',
+				'border-radius':		'10px'
+			},
+
+			// IE issues: 'about:blank' fails on HTTPS and javascript:false is s-l-o-w
+			// (hat tip to Jorge H. N. de Vasconcelos)
+			/*jshint scripturl:true */
+			iframeSrc: /^https/i.test(window.location.href || '') ? 'javascript:false' : 'about:blank',
+
+			// force usage of iframe in non-IE browsers (handy for blocking applets)
+			forceIframe: false,
+
+			// z-index for the blocking overlay
+			baseZ: 1000,
+
+			// set these to true to have the message automatically centered
+			centerX: true, // <-- only effects element blocking (page block controlled via css above)
+			centerY: true,
+
+			// allow body element to be stetched in ie6; this makes blocking look better
+			// on "short" pages.  disable if you wish to prevent changes to the body height
+			allowBodyStretch: true,
+
+			// enable if you want key and mouse events to be disabled for content that is blocked
+			bindEvents: true,
+
+			// be default blockUI will supress tab navigation from leaving blocking content
+			// (if bindEvents is true)
+			constrainTabKey: true,
+
+			// fadeIn time in millis; set to 0 to disable fadeIn on block
+			fadeIn:  200,
+
+			// fadeOut time in millis; set to 0 to disable fadeOut on unblock
+			fadeOut:  400,
+
+			// time in millis to wait before auto-unblocking; set to 0 to disable auto-unblock
+			timeout: 0,
+
+			// disable if you don't want to show the overlay
+			showOverlay: true,
+
+			// if true, focus will be placed in the first available input field when
+			// page blocking
+			focusInput: true,
+
+            // elements that can receive focus
+            focusableElements: ':input:enabled:visible',
+
+			// suppresses the use of overlay styles on FF/Linux (due to performance issues with opacity)
+			// no longer needed in 2012
+			// applyPlatformOpacityRules: true,
+
+			// callback method invoked when fadeIn has completed and blocking message is visible
+			onBlock: null,
+
+			// callback method invoked when unblocking has completed; the callback is
+			// passed the element that has been unblocked (which is the window object for page
+			// blocks) and the options that were passed to the unblock call:
+			//	onUnblock(element, options)
+			onUnblock: null,
+
+			// callback method invoked when the overlay area is clicked.
+			// setting this will turn the cursor to a pointer, otherwise cursor defined in overlayCss will be used.
+			onOverlayClick: null,
+
+			// don't ask; if you really must know: http://groups.google.com/group/jquery-en/browse_thread/thread/36640a8730503595/2f6a79a77a78e493#2f6a79a77a78e493
+			quirksmodeOffsetHack: 4,
+
+			// class name of the message block
+			blockMsgClass: 'blockMsg',
+
+			// if it is already blocked, then ignore it (don't unblock and reblock)
+			ignoreIfBlocked: false
+		};
+
+		// private data and functions follow...
+
+		var pageBlock = null;
+		var pageBlockEls = [];
+
+		function install(el, opts) {
+			var css, themedCSS;
+			var full = (el == window);
+			var msg = (opts && opts.message !== undefined ? opts.message : undefined);
+			opts = $.extend({}, $.blockUI.defaults, opts || {});
+
+			if (opts.ignoreIfBlocked && $(el).data('blockUI.isBlocked'))
+				return;
+
+			opts.overlayCSS = $.extend({}, $.blockUI.defaults.overlayCSS, opts.overlayCSS || {});
+			css = $.extend({}, $.blockUI.defaults.css, opts.css || {});
+			if (opts.onOverlayClick)
+				opts.overlayCSS.cursor = 'pointer';
+
+			themedCSS = $.extend({}, $.blockUI.defaults.themedCSS, opts.themedCSS || {});
+			msg = msg === undefined ? opts.message : msg;
+
+			// remove the current block (if there is one)
+			if (full && pageBlock)
+				remove(window, {fadeOut:0});
+
+			// if an existing element is being used as the blocking content then we capture
+			// its current place in the DOM (and current display style) so we can restore
+			// it when we unblock
+			if (msg && typeof msg != 'string' && (msg.parentNode || msg.jquery)) {
+				var node = msg.jquery ? msg[0] : msg;
+				var data = {};
+				$(el).data('blockUI.history', data);
+				data.el = node;
+				data.parent = node.parentNode;
+				data.display = node.style.display;
+				data.position = node.style.position;
+				if (data.parent)
+					data.parent.removeChild(node);
+			}
+
+			$(el).data('blockUI.onUnblock', opts.onUnblock);
+			var z = opts.baseZ;
+
+			// blockUI uses 3 layers for blocking, for simplicity they are all used on every platform;
+			// layer1 is the iframe layer which is used to supress bleed through of underlying content
+			// layer2 is the overlay layer which has opacity and a wait cursor (by default)
+			// layer3 is the message content that is displayed while blocking
+			var lyr1, lyr2, lyr3, s;
+			if (msie || opts.forceIframe)
+				lyr1 = $('<iframe class="blockUI" style="z-index:'+ (z++) +';display:none;border:none;margin:0;padding:0;position:absolute;width:100%;height:100%;top:0;left:0" src="'+opts.iframeSrc+'"></iframe>');
+			else
+				lyr1 = $('<div class="blockUI" style="display:none"></div>');
+
+			if (opts.theme)
+				lyr2 = $('<div class="blockUI blockOverlay ui-widget-overlay" style="z-index:'+ (z++) +';display:none"></div>');
+			else
+				lyr2 = $('<div class="blockUI blockOverlay" style="z-index:'+ (z++) +';display:none;border:none;margin:0;padding:0;width:100%;height:100%;top:0;left:0"></div>');
+
+			if (opts.theme && full) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage ui-dialog ui-widget ui-corner-all" style="z-index:'+(z+10)+';display:none;position:fixed">';
+				if ( opts.title ) {
+					s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">'+(opts.title || '&nbsp;')+'</div>';
+				}
+				s += '<div class="ui-widget-content ui-dialog-content"></div>';
+				s += '</div>';
+			}
+			else if (opts.theme) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement ui-dialog ui-widget ui-corner-all" style="z-index:'+(z+10)+';display:none;position:absolute">';
+				if ( opts.title ) {
+					s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">'+(opts.title || '&nbsp;')+'</div>';
+				}
+				s += '<div class="ui-widget-content ui-dialog-content"></div>';
+				s += '</div>';
+			}
+			else if (full) {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage" style="z-index:'+(z+10)+';display:none;position:fixed"></div>';
+			}
+			else {
+				s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement" style="z-index:'+(z+10)+';display:none;position:absolute"></div>';
+			}
+			lyr3 = $(s);
+
+			// if we have a message, style it
+			if (msg) {
+				if (opts.theme) {
+					lyr3.css(themedCSS);
+					lyr3.addClass('ui-widget-content');
+				}
+				else
+					lyr3.css(css);
+			}
+
+			// style the overlay
+			if (!opts.theme /*&& (!opts.applyPlatformOpacityRules)*/)
+				lyr2.css(opts.overlayCSS);
+			lyr2.css('position', full ? 'fixed' : 'absolute');
+
+			// make iframe layer transparent in IE
+			if (msie || opts.forceIframe)
+				lyr1.css('opacity',0.0);
+
+			//$([lyr1[0],lyr2[0],lyr3[0]]).appendTo(full ? 'body' : el);
+			var layers = [lyr1,lyr2,lyr3], $par = full ? $('body') : $(el);
+			$.each(layers, function() {
+				this.appendTo($par);
+			});
+
+			if (opts.theme && opts.draggable && $.fn.draggable) {
+				lyr3.draggable({
+					handle: '.ui-dialog-titlebar',
+					cancel: 'li'
+				});
+			}
+
+			// ie7 must use absolute positioning in quirks mode and to account for activex issues (when scrolling)
+			var expr = setExpr && (!$.support.boxModel || $('object,embed', full ? null : el).length > 0);
+			if (ie6 || expr) {
+				// give body 100% height
+				if (full && opts.allowBodyStretch && $.support.boxModel)
+					$('html,body').css('height','100%');
+
+				// fix ie6 issue when blocked element has a border width
+				if ((ie6 || !$.support.boxModel) && !full) {
+					var t = sz(el,'borderTopWidth'), l = sz(el,'borderLeftWidth');
+					var fixT = t ? '(0 - '+t+')' : 0;
+					var fixL = l ? '(0 - '+l+')' : 0;
+				}
+
+				// simulate fixed position
+				$.each(layers, function(i,o) {
+					var s = o[0].style;
+					s.position = 'absolute';
+					if (i < 2) {
+						if (full)
+							s.setExpression('height','Math.max(document.body.scrollHeight, document.body.offsetHeight) - (jQuery.support.boxModel?0:'+opts.quirksmodeOffsetHack+') + "px"');
+						else
+							s.setExpression('height','this.parentNode.offsetHeight + "px"');
+						if (full)
+							s.setExpression('width','jQuery.support.boxModel && document.documentElement.clientWidth || document.body.clientWidth + "px"');
+						else
+							s.setExpression('width','this.parentNode.offsetWidth + "px"');
+						if (fixL) s.setExpression('left', fixL);
+						if (fixT) s.setExpression('top', fixT);
+					}
+					else if (opts.centerY) {
+						if (full) s.setExpression('top','(document.documentElement.clientHeight || document.body.clientHeight) / 2 - (this.offsetHeight / 2) + (blah = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + "px"');
+						s.marginTop = 0;
+					}
+					else if (!opts.centerY && full) {
+						var top = (opts.css && opts.css.top) ? parseInt(opts.css.top, 10) : 0;
+						var expression = '((document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + '+top+') + "px"';
+						s.setExpression('top',expression);
+					}
+				});
+			}
+
+			// show the message
+			if (msg) {
+				if (opts.theme)
+					lyr3.find('.ui-widget-content').append(msg);
+				else
+					lyr3.append(msg);
+				if (msg.jquery || msg.nodeType)
+					$(msg).show();
+			}
+
+			if ((msie || opts.forceIframe) && opts.showOverlay)
+				lyr1.show(); // opacity is zero
+			if (opts.fadeIn) {
+				var cb = opts.onBlock ? opts.onBlock : noOp;
+				var cb1 = (opts.showOverlay && !msg) ? cb : noOp;
+				var cb2 = msg ? cb : noOp;
+				if (opts.showOverlay)
+					lyr2._fadeIn(opts.fadeIn, cb1);
+				if (msg)
+					lyr3._fadeIn(opts.fadeIn, cb2);
+			}
+			else {
+				if (opts.showOverlay)
+					lyr2.show();
+				if (msg)
+					lyr3.show();
+				if (opts.onBlock)
+					opts.onBlock.bind(lyr3)();
+			}
+
+			// bind key and mouse events
+			bind(1, el, opts);
+
+			if (full) {
+				pageBlock = lyr3[0];
+				pageBlockEls = $(opts.focusableElements,pageBlock);
+				if (opts.focusInput)
+					setTimeout(focus, 20);
+			}
+			else
+				center(lyr3[0], opts.centerX, opts.centerY);
+
+			if (opts.timeout) {
+				// auto-unblock
+				var to = setTimeout(function() {
+					if (full)
+						$.unblockUI(opts);
+					else
+						$(el).unblock(opts);
+				}, opts.timeout);
+				$(el).data('blockUI.timeout', to);
+			}
+		}
+
+		// remove the block
+		function remove(el, opts) {
+			var count;
+			var full = (el == window);
+			var $el = $(el);
+			var data = $el.data('blockUI.history');
+			var to = $el.data('blockUI.timeout');
+			if (to) {
+				clearTimeout(to);
+				$el.removeData('blockUI.timeout');
+			}
+			opts = $.extend({}, $.blockUI.defaults, opts || {});
+			bind(0, el, opts); // unbind events
+
+			if (opts.onUnblock === null) {
+				opts.onUnblock = $el.data('blockUI.onUnblock');
+				$el.removeData('blockUI.onUnblock');
+			}
+
+			var els;
+			if (full) // crazy selector to handle odd field errors in ie6/7
+				els = $('body').children().filter('.blockUI').add('body > .blockUI');
+			else
+				els = $el.find('>.blockUI');
+
+			// fix cursor issue
+			if ( opts.cursorReset ) {
+				if ( els.length > 1 )
+					els[1].style.cursor = opts.cursorReset;
+				if ( els.length > 2 )
+					els[2].style.cursor = opts.cursorReset;
+			}
+
+			if (full)
+				pageBlock = pageBlockEls = null;
+
+			if (opts.fadeOut) {
+				count = els.length;
+				els.stop().fadeOut(opts.fadeOut, function() {
+					if ( --count === 0)
+						reset(els,data,opts,el);
+				});
+			}
+			else
+				reset(els, data, opts, el);
+		}
+
+		// move blocking element back into the DOM where it started
+		function reset(els,data,opts,el) {
+			var $el = $(el);
+			if ( $el.data('blockUI.isBlocked') )
+				return;
+
+			els.each(function(i,o) {
+				// remove via DOM calls so we don't lose event handlers
+				if (this.parentNode)
+					this.parentNode.removeChild(this);
+			});
+
+			if (data && data.el) {
+				data.el.style.display = data.display;
+				data.el.style.position = data.position;
+				data.el.style.cursor = 'default'; // #59
+				if (data.parent)
+					data.parent.appendChild(data.el);
+				$el.removeData('blockUI.history');
+			}
+
+			if ($el.data('blockUI.static')) {
+				$el.css('position', 'static'); // #22
+			}
+
+			if (typeof opts.onUnblock == 'function')
+				opts.onUnblock(el,opts);
+
+			// fix issue in Safari 6 where block artifacts remain until reflow
+			var body = $(document.body), w = body.width(), cssW = body[0].style.width;
+			body.width(w-1).width(w);
+			body[0].style.width = cssW;
+		}
+
+		// bind/unbind the handler
+		function bind(b, el, opts) {
+			var full = el == window, $el = $(el);
+
+			// don't bother unbinding if there is nothing to unbind
+			if (!b && (full && !pageBlock || !full && !$el.data('blockUI.isBlocked')))
+				return;
+
+			$el.data('blockUI.isBlocked', b);
+
+			// don't bind events when overlay is not in use or if bindEvents is false
+			if (!full || !opts.bindEvents || (b && !opts.showOverlay))
+				return;
+
+			// bind anchors and inputs for mouse and key events
+			var events = 'mousedown mouseup keydown keypress keyup touchstart touchend touchmove';
+			if (b)
+				$(document).bind(events, opts, handler);
+			else
+				$(document).unbind(events, handler);
+
+		// former impl...
+		//		var $e = $('a,:input');
+		//		b ? $e.bind(events, opts, handler) : $e.unbind(events, handler);
+		}
+
+		// event handler to suppress keyboard/mouse events when blocking
+		function handler(e) {
+			// allow tab navigation (conditionally)
+			if (e.type === 'keydown' && e.keyCode && e.keyCode == 9) {
+				if (pageBlock && e.data.constrainTabKey) {
+					var els = pageBlockEls;
+					var fwd = !e.shiftKey && e.target === els[els.length-1];
+					var back = e.shiftKey && e.target === els[0];
+					if (fwd || back) {
+						setTimeout(function(){focus(back);},10);
+						return false;
+					}
+				}
+			}
+			var opts = e.data;
+			var target = $(e.target);
+			if (target.hasClass('blockOverlay') && opts.onOverlayClick)
+				opts.onOverlayClick(e);
+
+			// allow events within the message content
+			if (target.parents('div.' + opts.blockMsgClass).length > 0)
+				return true;
+
+			// allow events for content that is not being blocked
+			return target.parents().children().filter('div.blockUI').length === 0;
+		}
+
+		function focus(back) {
+			if (!pageBlockEls)
+				return;
+			var e = pageBlockEls[back===true ? pageBlockEls.length-1 : 0];
+			if (e)
+				e.focus();
+		}
+
+		function center(el, x, y) {
+			var p = el.parentNode, s = el.style;
+			var l = ((p.offsetWidth - el.offsetWidth)/2) - sz(p,'borderLeftWidth');
+			var t = ((p.offsetHeight - el.offsetHeight)/2) - sz(p,'borderTopWidth');
+			if (x) s.left = l > 0 ? (l+'px') : '0';
+			if (y) s.top  = t > 0 ? (t+'px') : '0';
+		}
+
+		function sz(el, p) {
+			return parseInt($.css(el,p),10)||0;
+		}
+
+	}
+
+
+	/*global define:true */
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module.
+		define(['jquery'], setup);
+	} else if (typeof exports === 'object') {
+		// Node/CommonJS
+		setup(require('jquery'));
+	} else {
+		// Browser globals
+		setup(jQuery);
+	}
+
+})();
+
+},{"jquery":130}],116:[function(require,module,exports){
 /*! =======================================================
                       VERSION  9.8.1              
 ========================================================= */
@@ -46814,7 +49851,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 	return Slider;
 });
 
-},{"jquery":116}],103:[function(require,module,exports){
+},{"jquery":130}],117:[function(require,module,exports){
 // This file is autogenerated via the `commonjs` Grunt task. You can require() this file in a CommonJS environment.
 require('../../js/transition.js')
 require('../../js/alert.js')
@@ -46828,7 +49865,7 @@ require('../../js/popover.js')
 require('../../js/scrollspy.js')
 require('../../js/tab.js')
 require('../../js/affix.js')
-},{"../../js/affix.js":104,"../../js/alert.js":105,"../../js/button.js":106,"../../js/carousel.js":107,"../../js/collapse.js":108,"../../js/dropdown.js":109,"../../js/modal.js":110,"../../js/popover.js":111,"../../js/scrollspy.js":112,"../../js/tab.js":113,"../../js/tooltip.js":114,"../../js/transition.js":115}],104:[function(require,module,exports){
+},{"../../js/affix.js":118,"../../js/alert.js":119,"../../js/button.js":120,"../../js/carousel.js":121,"../../js/collapse.js":122,"../../js/dropdown.js":123,"../../js/modal.js":124,"../../js/popover.js":125,"../../js/scrollspy.js":126,"../../js/tab.js":127,"../../js/tooltip.js":128,"../../js/transition.js":129}],118:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: affix.js v3.3.7
  * http://getbootstrap.com/javascript/#affix
@@ -46992,7 +50029,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],105:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: alert.js v3.3.7
  * http://getbootstrap.com/javascript/#alerts
@@ -47088,7 +50125,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],106:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.7
  * http://getbootstrap.com/javascript/#buttons
@@ -47215,7 +50252,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],107:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: carousel.js v3.3.7
  * http://getbootstrap.com/javascript/#carousel
@@ -47454,7 +50491,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],108:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: collapse.js v3.3.7
  * http://getbootstrap.com/javascript/#collapse
@@ -47668,7 +50705,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],109:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: dropdown.js v3.3.7
  * http://getbootstrap.com/javascript/#dropdowns
@@ -47835,7 +50872,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],110:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: modal.js v3.3.7
  * http://getbootstrap.com/javascript/#modals
@@ -48176,7 +51213,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],111:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: popover.js v3.3.7
  * http://getbootstrap.com/javascript/#popovers
@@ -48286,7 +51323,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],112:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: scrollspy.js v3.3.7
  * http://getbootstrap.com/javascript/#scrollspy
@@ -48460,7 +51497,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],113:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tab.js v3.3.7
  * http://getbootstrap.com/javascript/#tabs
@@ -48617,7 +51654,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],114:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: tooltip.js v3.3.7
  * http://getbootstrap.com/javascript/#tooltip
@@ -49139,7 +52176,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],115:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: transition.js v3.3.7
  * http://getbootstrap.com/javascript/#transitions
@@ -49200,7 +52237,7 @@ require('../../js/affix.js')
 
 }(jQuery);
 
-},{}],116:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -59455,4 +62492,4 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}]},{},[1]);
+},{}]},{},[3]);

@@ -3,3 +3,6 @@
 **/node_modules
 **/target
 appraisalconfidence-app/dependency-reduced-pom.xml
+appraisalconfidence-app/src/test/resources/test.yml
+config/local.yml
+deploy/deploy-local.bat

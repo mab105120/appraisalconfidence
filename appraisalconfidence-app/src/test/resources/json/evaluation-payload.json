@@ -1,0 +1,31 @@
+{
+  "recommendation":
+    {
+      "evaluationCode": "1",
+      "recommendationPick": "2",
+      "relConfidence": 50,
+      "absConfidence": 50,
+      "comment": "Teacher 2 is better than Teacher 1"
+    },
+  "activities":
+    [
+        {
+          "evaluationCode": "1",
+          "selectedReview": "function1-teacher1-sp1",
+          "openTime": "2017-09-29T02:42:07.570Z",
+          "closeTime": "2017-09-29T02:42:07.570Z"
+        },
+        {
+          "evaluationCode": "1",
+          "selectedReview": "function2-teacher1-sp2",
+          "openTime": "2017-09-29T02:43:07.570Z",
+          "closeTime": "2017-09-29T02:44:07.570Z"
+        },
+        {
+          "evaluationCode": "1",
+          "selectedReview": "function3-teacher2-sp3",
+          "openTime": "2017-09-29T02:45:07.570Z",
+          "closeTime": "2017-09-29T02:45:37.570Z"
+        }
+      ]
+}

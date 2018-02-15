@@ -5,12 +5,24 @@
     authService.$inject = [
         '$state',
         'angularAuth0',
-        '$timeout'
+        '$http',
+        'appcon'
     ]
 
-    function authService($state, angularAuth0, $timeout) {
+    function authService($state, angularAuth0, $http, appcon) {
 
         function login() {
+            // remember current state to reroute to after authentication
+            if ($state.current.name === 'welcome')
+                localStorage.setItem('redirect_state', 'home');
+            else {
+                var state = $state.current.name;
+                if(state === 'evaluation') {
+                    localStorage.setItem('redirect_state_param', $state.params.id);
+                }
+                localStorage.setItem('redirect_state', state);
+            }
+
             angularAuth0.authorize();
         }
 
@@ -18,9 +30,28 @@
             angularAuth0.parseHash(function(err, authResult) {
                if(authResult && authResult.accessToken && authResult.idToken) {
                     setSession(authResult);
-                    $state.go('home');
+                    if (localStorage.getItem('redirect_state') === null)
+                        $state.go('home');
+                    else {
+                        var redirect_state = localStorage.getItem('redirect_state');
+                        if(redirect_state === 'evaluation') {
+                            var redirect_state_id = localStorage.getItem('redirect_state_param');
+                            $state.go('evaluation', {id: redirect_state_id});
+                        } else
+                            $state.go(localStorage.getItem('redirect_state'));
+                        localStorage.removeItem('redirect_state');
+                    }
+
+                    appcon.postLogin()
+                    .then(function success(response){
+                        localStorage.setItem('userId', response.data);
+                        console.log('User login recorded successfully');
+                    }, function failure(response) {
+                        console.log('Unable to record user login!');
+                    });
+
                } else if (err) {
-                    alert('An error occured while trying to parse the URL has. Please see console for more details!');
+                    alert('An error occurred while trying to parse the URL has. Please see console for more details!');
                     console.log('error details: ' + err);
                }
             });
@@ -39,9 +70,15 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('id_token');
             localStorage.removeItem('expires_at');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('redirect_state_param');
             $state.go('welcome');
         }
 
+
+        function getUserId() {
+            return localStorage.getItem('userId');
+        }
 
         function isAuthenticated() {
             let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
@@ -52,7 +89,8 @@
             login: login,
             handleAuthentication: handleAuthentication,
             logout: logout,
-            isAuthenticated: isAuthenticated
+            isAuthenticated: isAuthenticated,
+            getUserId: getUserId
         }
     };
 

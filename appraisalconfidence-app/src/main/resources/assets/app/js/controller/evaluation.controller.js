@@ -1,55 +1,190 @@
 (function() {
 
-    evaluation_controller.$inject = ['$scope', '$stateParams', '$http'];
+    evaluation_controller.$inject = [
+            '$scope',
+            '$state',
+            '$stateParams',
+            '$http',
+            '$window',
+            'appcon',
+            'authService',
+            'toaster',
+            '$sce'
+        ];
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $stateParams, $http) {
-        $('#slider1').slider();
-        $('#slider1').on('slide', function(slideEvt) {
-            var val = slideEvt.value;
-            $scope.absConfidence = val;
-            $('#slider1Val').text(val);
-        });
+    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster, $sce) {
 
-        $('#slider2').slider();
-        $('#slider2').on('slide', function(slideEvt) {
-            var val = slideEvt.value;
-            $scope.relConfidence = val;
-            $('#slider2Val').text(val);
-        });
+        function init() {
+            $scope.$parent.startSpinner();
 
-        $scope.selectedEvaluation = '';
-
-        $http.get('http://localhost:5000/api/appraisal/evaluations/' + $stateParams.id)
-        .then(
-            function(response) {
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                $scope.evaluations = response.data;
-            },
-            function(response) {
-//                alert('Unable to contact the server for reviews');
-                console.log('GET /api/appraisal/evaluations/ ' + response.status);
-                console.log(response);
+            if(!authService.isAuthenticated()) {
+                alert('You are not logged in. You need to log in to view this page.');
+                authService.login();
             }
-        );
 
-        // Comment control
-        var comment_max_length = 200;
-        $scope.comment = '';
-        $scope.remainingChars = 200;
-        $scope.calculateRemainingChars = function() {
-            $scope.remainingChars = comment_max_length - $scope.comment.length;
+            $scope.currentEvaluation = $stateParams.id;
+            $scope.totalEvaluations = $scope.$parent.totalEvaluations;
+
+            // these vars are set by the eval directive when users click on supervisor reviews.
+            $scope.modalCode = '';
+            $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
+
+            $scope.$watch('modalBody', function(val) {
+                $scope.modalBodyTrusted = $sce.trustAsHtml(val);
+            });
+
+            $scope.modalTitle = '';
+
+            $('#absConfidenceSlider').slider();
+            $('#absConfidenceSlider').on('slide', function(slideEvt) {
+                $scope.absConfidence = slideEvt.value;
+            });
+            $scope.$watch('absConfidence', function(value) {
+                $('#absConfidenceSliderVal').text(value);
+            });
+
+            $('#relConfidenceSlider').slider();
+            $('#relConfidenceSlider').on('slide', function(slideEvt) {
+                $scope.relConfidence = slideEvt.value;
+            });
+            $scope.$watch('relConfidence', function(value) {
+                $('#relConfidenceSliderVal').text(value);
+            });
+
+            // comment control
+            $scope.comment = '';
+            $scope.$watch('comment', function() {
+                $scope.calculateRemainingChars();
+            });
+            $scope.remainingChars = 200;
+            $scope.calculateRemainingChars = function() {
+                $scope.remainingChars = 200 - $scope.comment.length;
+            }
+
+            // evaluation activity
+            $scope.activities = [];
+            $scope.time_modal_open;
+            $('#reviewModal').on('hidden.bs.modal', function() {
+                var closeTime = new Date().toISOString();
+                $scope.activities.push({
+                    evaluationCode: $stateParams.id,
+                    selectedReview: $scope.modalCode,
+                    openTime: $scope.time_modal_open,
+                    closeTime: closeTime
+                });
+            });
+
+            appcon.stepIsCompleted('EVALUATION_' + $stateParams.id)
+            .then(function success(response) {
+                if(response.data === true) {
+                    appcon.getUserEvaluation($stateParams.id)
+                    .then(function success(response) {
+
+                        // pre-populate fields
+                        $scope.oldRes = response.data;
+
+                        $scope.selectedTeacher = response.data.recommendationPick;
+                        $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
+                        $scope.comment = response.data.comment;
+                        $scope.absConfidence = response.data.absConfidence;
+                        $('#absConfidenceSlider').slider().slider('setValue', response.data.absConfidence);
+                        $scope.relConfidence = response.data.relConfidence;
+                        $('#relConfidenceSlider').slider().slider('setValue', response.data.relConfidence);
+                        $('#continueBtn').prop('disabled', false);
+
+                        $scope.getTeacherPerformanceReviews();
+                    }, function failure(response) {
+                        var error = response.data === null ? 'Server unreachable' : response.data.message;
+                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                        $scope.$parent.stopSpinner();
+                    });
+                }
+                else {
+                    $scope.getTeacherPerformanceReviews();
+                }
+            }, function failure(response) {
+                var error = response.data === null ? 'Server unreachable' : response.data.message;
+                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                $scope.$parent.stopSpinner();
+            });
         }
 
-        // Continue button
-        $scope.continueBtnDisabled = function() {
-            if($scope.comment.length === 0) return true;
-            else
-            return true;
-        };
-    };
+        init();
 
+        $scope.getTeacherPerformanceReviews = function() {
+            appcon.getReviews($stateParams.id).then(
+                function(response) {
+                    console.log('GET /api/performance-review/ ' + response.status);
+                    $scope.evaluations = response.data;
+                    $scope.$parent.stopSpinner();
+                },
+                function(response) {
+                    var errorMessage = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Unable to get teacher reviews: ' + errorMessage);
+                    console.log('GET /api/performance-review/ ' + response.status);
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                }
+            );
+        }
+
+        $scope.saveAndContinue = function() {
+            if(!authService.isAuthenticated()) {
+                toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                return;
+            }
+            var userEval = {
+                evaluationCode: $stateParams.id,
+                recommendationPick: $scope.selectedTeacher,
+                relConfidence: $scope.relConfidence,
+                absConfidence: $scope.absConfidence,
+                comment: $scope.comment
+            };
+            var payload = {
+                recommendation: userEval,
+                activities: $scope.activities
+            }
+            if(responseChanged($scope.oldRes, userEval)) {
+                $scope.$parent.startSpinner();
+                appcon.postUserEvaluation(payload)
+                .then(function success(response) {
+                    toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                    $window.scrollTo(0, 0); // scroll to top
+
+                    if(nextEvaluationCode > 15)
+                        $state.go('progress');
+                    else
+                        $state.go('evaluation', {id: nextEvaluationCode});
+
+                    $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+                    console.log('Error Object');
+                    console.log(response);
+                    $scope.$parent.stopSpinner();
+                });
+            } else {
+                if(nextEvaluationCode > 15)
+                    $state.go('progress');
+                else
+                    $state.go('evaluation', {id: nextEvaluationCode});
+            }
+        }
+
+        function responseChanged(oldRes, newRes) {
+            if(oldRes === undefined)
+                return true;
+            else return oldRes.selectedTeacher != newRes.recommendationPick ||
+                        oldRes.absConfidence != newRes.absConfidence ||
+                        oldRes.relConfidence != newRes.relConfidence ||
+                        oldRes.comment !== newRes.comment;
+        }
+
+    };
 
     module.exports = evaluation_controller;
 

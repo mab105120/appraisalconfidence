@@ -1,0 +1,26 @@
+[
+  {
+    "itemCode": "jsd1",
+    "response": -2
+  },
+  {
+    "itemCode": "jsd2",
+    "response": 1
+  },
+  {
+    "itemCode": "jsd3",
+    "response": 3
+  },
+  {
+    "itemCode": "jsd4",
+    "response": 2
+  },
+  {
+    "itemCode": "eacd1",
+    "response": -3
+  },
+  {
+    "itemCode": "eacd2",
+    "response": 1
+  }
+]

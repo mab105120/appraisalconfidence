@@ -1,11 +1,15 @@
 package edu.grenoble.em.bourji.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by Moe on 8/29/17.
  */
 public class TeacherDossiers {
 
+    @JsonProperty("T1")
     private TeacherDossier teacher1;
+    @JsonProperty("T2")
     private TeacherDossier teacher2;
 
     public TeacherDossiers() {
