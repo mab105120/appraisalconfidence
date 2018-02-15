@@ -262,6 +262,7 @@
             }
 
             $scope.currentEvaluation = $stateParams.id;
+            $scope.totalEvaluations = $scope.$parent.totalEvaluations;
 
             // these vars are set by the eval directive when users click on supervisor reviews.
             $scope.modalCode = '';
@@ -450,20 +451,31 @@
             }
 
             $scope.showAlert = false;
-            appcon.getProgress()
+            $scope.$parent.startSpinner();
+            appcon.getExperimentSettings()
             .then(function success(response) {
-                if(response.data.completed.length !== 0)
-                    $scope.showAlert = true;
-
-                $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                console.log(response);
+                var data = response.data;
+                console.log(data);
+                $scope.$parent.totalEvaluations = data.totalEvaluations;
+                $scope.$parent.duration = data.duration;
+                $scope.duration = data.duration;
+                appcon.getProgress()
+                .then(function success(response) {
+                    if(response.data.completed.length !== 0)
+                        $scope.showAlert = true;
+                        $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    console.log(response);
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                    $scope.$parent.stopSpinner();
+                });
+            }, function failure(response){
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
                 toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
                 $scope.$parent.stopSpinner();
             });
         }
-
         $scope.start = function() {
             $state.go('procedure');
         };
@@ -553,11 +565,12 @@
             ];
 
             function addEvaluationsToRows() {
-                for(i = 1; i <= 15; i++) {
+                var totalEvaluations = $scope.$parent.totalEvaluations;
+                for(i = 1; i <= totalEvaluations; i++) {
                     $scope.rows.push(
                         {
                             id: 'EVALUATION_' + i,
-                            display: 'Teacher Evaluation ' + i + ' / 15'
+                            display: 'Teacher Evaluation ' + i + ' / ' + totalEvaluations
                         }
                     );
                 }
@@ -1327,11 +1340,26 @@
         function appcon_service($http) {
 
             function getReviews(evaluationCode) {
+                var id_token = localStorage.getItem("id_token");
                 var config = {
                     method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
                     url:  url + '/api/performance-review/' + evaluationCode
                 };
                 return $http(config);
+            }
+
+            function getExperimentSettings() {
+                var id_token = localStorage.getItem("id_token");
+                return $http({
+                    method: 'GET',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    url: url + '/api/performance-review/settings'
+                });
             }
 
             function postUserDemographic(user) {
@@ -1485,6 +1513,7 @@
 
             return {
                 getReviews: getReviews,
+                getExperimentSettings: getExperimentSettings,
                 postUserDemographic: postUserDemographic,
                 getUserDemographics: getUserDemographics,
                 postUserExperience: postUserExperience,

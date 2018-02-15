@@ -22,20 +22,31 @@
             }
 
             $scope.showAlert = false;
-            appcon.getProgress()
+            $scope.$parent.startSpinner();
+            appcon.getExperimentSettings()
             .then(function success(response) {
-                if(response.data.completed.length !== 0)
-                    $scope.showAlert = true;
-
-                $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                console.log(response);
+                var data = response.data;
+                console.log(data);
+                $scope.$parent.totalEvaluations = data.totalEvaluations;
+                $scope.$parent.duration = data.duration;
+                $scope.duration = data.duration;
+                appcon.getProgress()
+                .then(function success(response) {
+                    if(response.data.completed.length !== 0)
+                        $scope.showAlert = true;
+                        $scope.$parent.stopSpinner();
+                }, function failure(response) {
+                    console.log(response);
+                    var error = response.data === null ? 'Server unreachable' : response.data.message;
+                    toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+                    $scope.$parent.stopSpinner();
+                });
+            }, function failure(response){
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
                 toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
                 $scope.$parent.stopSpinner();
             });
         }
-
         $scope.start = function() {
             $state.go('procedure');
         };

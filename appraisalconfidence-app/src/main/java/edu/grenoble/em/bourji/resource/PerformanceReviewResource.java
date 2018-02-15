@@ -1,6 +1,7 @@
 package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.PerformanceReviewCache;
+import edu.grenoble.em.bourji.api.ExperimentSettings;
 import edu.grenoble.em.bourji.api.TeacherDossiers;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
@@ -18,9 +19,11 @@ import javax.ws.rs.core.Response;
 public class PerformanceReviewResource {
 
     private final PerformanceReviewCache cache;
+    private final ExperimentSettings settings;
 
-    public PerformanceReviewResource(PerformanceReviewCache cache) {
+    public PerformanceReviewResource(PerformanceReviewCache cache, ExperimentSettings settings) {
         this.cache = cache;
+        this.settings = settings;
     }
 
     @GET
@@ -35,4 +38,11 @@ public class PerformanceReviewResource {
         }
         return Response.ok(dossiers).build();
     }
+
+    @GET
+    @Path("/settings")
+    public Response getExperimentSettings() {
+        return Response.ok(settings).build();
+    }
+
 }

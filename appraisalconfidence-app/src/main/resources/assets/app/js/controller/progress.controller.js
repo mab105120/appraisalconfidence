@@ -35,11 +35,12 @@
             ];
 
             function addEvaluationsToRows() {
-                for(i = 1; i <= 15; i++) {
+                var totalEvaluations = $scope.$parent.totalEvaluations;
+                for(i = 1; i <= totalEvaluations; i++) {
                     $scope.rows.push(
                         {
                             id: 'EVALUATION_' + i,
-                            display: 'Teacher Evaluation ' + i + ' / 15'
+                            display: 'Teacher Evaluation ' + i + ' / ' + totalEvaluations
                         }
                     );
                 }

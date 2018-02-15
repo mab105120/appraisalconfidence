@@ -20,11 +20,11 @@ public class PerformanceReviewCache {
     private final Map<String, Pair<String, String>> codeToProfilesMap;
     private Map<String, TeacherDossier> teacherDossiers = new HashMap<>();
 
-    public PerformanceReviewCache(PerformanceReviewDAO dao) {
+    public PerformanceReviewCache(PerformanceReviewDAO dao, ExperimentMode mode) {
         this.dao = dao;
         codeToProfilesMap = new HashMap<>();
 
-        for(EvaluationCode code: EvaluationCode.values())
+        for(EvaluationCode code: ExperimentMode.getEvaluationCodes(mode))
             codeToProfilesMap.put(code.getEvaluationCode(), new ImmutablePair<>(code.getTeacher1(), code.getTeacher2()));
     }
 
