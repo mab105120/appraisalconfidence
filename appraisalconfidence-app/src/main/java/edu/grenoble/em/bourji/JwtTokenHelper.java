@@ -14,21 +14,20 @@ import java.security.interfaces.RSAPublicKey;
 /**
  * Created by Moe on 9/9/2017.
  */
-public class JwtTokenHelper {
+class JwtTokenHelper {
 
     private final String authDomain;
-    private final String kid;
+    private final RSAPublicKey pk;
 
-    JwtTokenHelper(String authDomain, String kid) {
+    JwtTokenHelper(String authDomain, String kid) throws JwkException {
         this.authDomain = authDomain;
-        this.kid = kid;
+        JwkProvider provider = new UrlJwkProvider(String.format("https://%s/", authDomain));
+        Jwk jwk = provider.get(kid);
+        this.pk = (RSAPublicKey) jwk.getPublicKey();
     }
 
     String getUserIdFromToken(String access_id) throws JwkException {
         try {
-            JwkProvider provider = new UrlJwkProvider(String.format("https://%s/", authDomain));
-            Jwk jwk = provider.get(kid);
-            RSAPublicKey pk = (RSAPublicKey) jwk.getPublicKey();
             Algorithm algorithm = Algorithm.RSA256(pk, null);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer(String.format("https://%s/", authDomain))
