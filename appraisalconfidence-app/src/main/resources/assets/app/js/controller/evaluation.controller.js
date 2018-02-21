@@ -4,7 +4,6 @@
             '$scope',
             '$state',
             '$stateParams',
-            '$http',
             '$window',
             'appcon',
             'authService',
@@ -14,7 +13,7 @@
 
     require('bootstrap-slider');
 
-    function evaluation_controller($scope, $state, $stateParams, $http, $window, appcon, authService, toaster, $sce) {
+    function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce) {
 
         function init() {
             $scope.$parent.startSpinner();
