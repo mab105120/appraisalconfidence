@@ -38,15 +38,4 @@ public class StatusResourceTest {
         assertEquals(HttpStatus.OK_200, response.getStatus());
     }
 
-    @Test
-    public void getStatusTest() {
-        Client client = ClientBuilder.newClient();
-        Response response = client.target(String.format("http://localhost:%d", RULE.getLocalPort()))
-                .path("/api/status")
-                .request()
-                .header("Authorization", "Bearer " + access_token)
-                .get();
-        assertEquals(HttpStatus.OK_200, response.getStatus());
-        System.out.println(response.readEntity(String.class));
-    }
 }

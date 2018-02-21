@@ -30,38 +30,6 @@ public class StatusResource {
     }
 
     @GET
-    @UnitOfWork
-    @Path("/user-started")
-    public Response hasUserStarted(@Context ContainerRequestContext requestContext) {
-        try {
-            String user = requestContext.getProperty("user").toString();
-            LOGGER.info(String.format("Getting status for user (%s)", user));
-            ProgressStatus status = statusDAO.getCurrentStatus(user);
-            return Response.ok(status).build();
-        } catch (Throwable e) {
-            String errorMessage = String.format("Unable to get user status: %s", e.getMessage());
-            LOGGER.error(errorMessage);
-            return Respond.respondWithError(errorMessage);
-        }
-    }
-
-    @GET
-    @UnitOfWork
-    // TODO: Be careful! This does not return highest completed step. It returned the last completed step
-    public Response getStatus(@Context ContainerRequestContext requestContext) {
-        try {
-            String user = requestContext.getProperty("user").toString();
-            LOGGER.info(String.format("Getting status for user (%s)", user));
-            ProgressStatus status = statusDAO.getCurrentStatus(user);
-            return Response.ok(status).build();
-        } catch (Throwable e) {
-            String errorMessage = String.format("Unable to get user status: %s", e.getMessage());
-            LOGGER.error(errorMessage);
-            return Respond.respondWithError(errorMessage);
-        }
-    }
-
-    @GET
     @Path("/progress")
     @UnitOfWork
     public Response getProgressStatus(@Context ContainerRequestContext requestContext) {
