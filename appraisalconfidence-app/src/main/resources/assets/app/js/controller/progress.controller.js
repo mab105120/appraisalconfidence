@@ -35,7 +35,7 @@
             ];
 
             function addEvaluationsToRows() {
-                var totalEvaluations = $scope.$parent.totalEvaluations;
+                var totalEvaluations = localStorage.getItem('totalEvaluations');
                 for(i = 1; i <= totalEvaluations; i++) {
                     $scope.rows.push(
                         {

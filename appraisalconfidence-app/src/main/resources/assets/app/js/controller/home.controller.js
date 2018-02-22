@@ -26,9 +26,7 @@
             appcon.getExperimentSettings()
             .then(function success(response) {
                 var data = response.data;
-                console.log(data);
-                $scope.$parent.totalEvaluations = data.totalEvaluations;
-                $scope.$parent.duration = data.duration;
+                localStorage.setItem('totalEvaluations', data.totalEvaluations);
                 $scope.duration = data.duration;
                 appcon.getProgress()
                 .then(function success(response) {

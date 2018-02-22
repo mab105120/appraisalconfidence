@@ -72,6 +72,7 @@
             localStorage.removeItem('expires_at');
             localStorage.removeItem('userId');
             localStorage.removeItem('redirect_state_param');
+            localStorage.removeItem('totalEvaluations');
             $state.go('welcome');
         }
 
