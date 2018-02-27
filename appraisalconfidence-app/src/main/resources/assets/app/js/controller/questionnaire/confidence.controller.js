@@ -116,6 +116,10 @@
             {
                 item: "I have a great deal of confidence in my opinions",
                 code: 'jsd8'
+            },
+            {
+                item: "I often trust myself to make the right decision",
+                code: 'jsd9'
             }
         ];
         $scope.pfiItems = [
