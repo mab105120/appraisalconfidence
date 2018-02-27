@@ -33,6 +33,7 @@
                         $scope.gender = userDemographics.gender;
                         $scope.education = userDemographics.education;
                         $scope.division = userDemographics.division;
+                        $scope.educationExperience = userDemographics.educationExperience;
 
                         $scope.$parent.stopSpinner();
                     }, function failure(response) {
@@ -70,6 +71,14 @@
             'Doctorate degree'
         ];
 
+        $scope.educationExperienceGroup = [
+            'Very good',
+            'Good',
+            'Neutral',
+            'Bad',
+            'Very bad'
+        ]
+
         $scope.divisionGroup = [
             'Technology',
             'Finance',
@@ -89,7 +98,8 @@
                 age: $scope.age,
                 gender: $scope.gender,
                 education: $scope.education,
-                division: $scope.division
+                division: $scope.division,
+                educationExperience: $scope.educationExperience
             };
 
             if(responseChanged($scope.oldResponse, payload)) {
@@ -116,7 +126,8 @@
             else return oldRes.age != newRes.age ||
                         oldRes.gender !== newRes.gender ||
                         oldRes.education !== newRes.education ||
-                        oldRes.division !== newRes.division;
+                        oldRes.division !== newRes.division ||
+                        oldRes.educationExperience !== newRes.eductionExperience;
         }
 
     }

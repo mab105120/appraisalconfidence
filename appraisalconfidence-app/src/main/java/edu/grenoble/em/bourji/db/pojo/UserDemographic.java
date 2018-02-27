@@ -26,6 +26,8 @@ public class UserDemographic {
     private String gender;
     @Column(name = "EDUCATION", nullable = false, length = 64)
     private String education;
+    @Column(name = "EDUCATION_EXPERIENCE", length = 64)
+    private String educationExperience;
     @Column(name = "DIVISION", nullable = false, length = 64)
     private String division;
 
@@ -71,5 +73,9 @@ public class UserDemographic {
 
     public void setSubmissionId(Integer submissionId) {
         this.submissionId = submissionId;
+    }
+
+    public String getEducationExperience() {
+        return educationExperience;
     }
 }
