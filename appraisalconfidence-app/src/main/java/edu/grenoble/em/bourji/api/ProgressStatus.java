@@ -35,4 +35,8 @@ public enum ProgressStatus {
     public static ProgressStatus getNextStatus(ProgressStatus current) {
         return ProgressStatus.values()[current.priority + 1];
     }
+
+    public int getPriority() {
+        return priority;
+    }
 }

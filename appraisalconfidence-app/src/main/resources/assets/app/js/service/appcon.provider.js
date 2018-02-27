@@ -183,6 +183,13 @@
                 });
             }
 
+            function getCompletionCode() {
+                return $http({
+                    method: 'GET',
+                    url: url + '/status/completion-code'
+                });
+            }
+
             return {
                 getReviews: getReviews,
                 getExperimentSettings: getExperimentSettings,

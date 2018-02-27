@@ -73,7 +73,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache, config.getSettings()));
         environment.jersey().register(new AppraisalConfidenceResource(confidenceDAO, evaluationActivityDAO, statusDAO, performanceReviewCache));
         environment.jersey().register(new QuestionnaireResource(questionnaireDAO, statusDAO));
-        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory())));
+        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory()), config.getSettings()));
         environment.jersey().register(new ActivityResource(activityDAO));
         environment.jersey().register(new CommunicationResource(config.getEmailConfiguration().getUsername(), config.getEmailConfiguration().getPassword()));
     }

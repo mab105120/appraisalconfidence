@@ -8,15 +8,10 @@ public class ExperimentSettings {
     private String mode;
     private int totalEvaluations;
     private String duration;
+    private String completionCode;
 
     public ExperimentSettings() {
         // default no-arg constructor
-    }
-
-    public ExperimentSettings(String mode, String duration, int totalEvaluations) {
-        this.mode = mode;
-        this.duration = duration;
-        this.totalEvaluations = totalEvaluations;
     }
 
     public String getMode() {
@@ -41,5 +36,13 @@ public class ExperimentSettings {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public String getCompletionCode() {
+        return completionCode;
+    }
+
+    public void setCompletionCode(String completionCode) {
+        this.completionCode = completionCode;
     }
 }

@@ -153,7 +153,7 @@
                     var nextEvaluationCode = parseInt($stateParams.id) + 1;
                     $window.scrollTo(0, 0); // scroll to top
 
-                    if(nextEvaluationCode > 15)
+                    if(nextEvaluationCode > $scope.totalEvaluations)
                         $state.go('progress');
                     else
                         $state.go('evaluation', {id: nextEvaluationCode});
@@ -167,7 +167,7 @@
                     $scope.$parent.stopSpinner();
                 });
             } else {
-                if(nextEvaluationCode > 15)
+                if(nextEvaluationCode > $scope.totalEvaluations)
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});

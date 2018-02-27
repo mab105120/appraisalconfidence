@@ -51,3 +51,4 @@ settings:
   mode: tall
   duration: 30
   totalEvaluations: 9
+  completionCode: <xxx>
