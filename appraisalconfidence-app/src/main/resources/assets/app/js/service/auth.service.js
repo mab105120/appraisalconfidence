@@ -52,7 +52,8 @@
 
                } else if (err) {
                     alert('An error occurred while trying to parse the URL has. Please see console for more details!');
-                    console.log('error details: ' + err);
+                    console.log('error details: ');
+                    console.log(err);
                }
             });
         }
