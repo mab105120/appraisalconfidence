@@ -54,14 +54,19 @@ public class AppraisalConfidenceResource {
 
         try {
             String userId = requestContext.getProperty("user").toString();
-            LOGGER.info("Saving user teacher recommendation for user id: " + userId);
+            int nextSubmissionId = dao.getNextSubmissionId(userId, payload.getRecommendation().getEvaluationCode());
+            LOGGER.info("Saving user teacher recommendation for user id: " + userId + " and submission id: " + nextSubmissionId);
             teacherRecommendation.setUser(userId);
+            teacherRecommendation.setSubmissionId(nextSubmissionId);
             dao.add(teacherRecommendation);
-            activities.forEach(e -> e.setUser(userId));
+            activities.forEach(e -> {
+                e.setUser(userId);
+                e.setSubmissionId(nextSubmissionId);
+            });
             activities.forEach(evaluationActivityDAO::add);
             ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
             LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
-            statusDAO.add(new Status(userId, status.name(), 0)); // TODO change this
+            statusDAO.add(new Status(userId, status.name(), nextSubmissionId)); // TODO change this
         } catch (Throwable e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());

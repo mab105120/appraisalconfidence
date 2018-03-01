@@ -26,6 +26,8 @@ public class EvaluationActivity {
     private String openTime;
     @Column(name = "CLOSE_TIME", length = 30, nullable = false)
     private String closeTime;
+    @Column(name = "SUBMISSION_ID", nullable = false)
+    private int submissionId;
 
     public EvaluationActivity() {
         // default no-arg constructor for jackson
@@ -53,6 +55,14 @@ public class EvaluationActivity {
 
     public String getCloseTime() {
         return closeTime;
+    }
+
+    public int getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
     }
 
     @Override

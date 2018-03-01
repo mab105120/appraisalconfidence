@@ -145,19 +145,13 @@
                 recommendation: userEval,
                 activities: $scope.activities
             }
+            var nextEvaluationCode = parseInt($stateParams.id) + 1;
             if(responseChanged($scope.oldRes, userEval)) {
                 $scope.$parent.startSpinner();
                 appcon.postUserEvaluation(payload)
                 .then(function success(response) {
                     toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
-                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
-                    $window.scrollTo(0, 0); // scroll to top
-
-                    if(nextEvaluationCode > $scope.totalEvaluations)
-                        $state.go('progress');
-                    else
-                        $state.go('evaluation', {id: nextEvaluationCode});
-
+                    routeToNextPage();
                     $scope.$parent.stopSpinner();
                 }, function failure(response) {
                     var error = response.data === null ? 'Server unreachable' : response.data.message;
@@ -167,7 +161,12 @@
                     $scope.$parent.stopSpinner();
                 });
             } else {
-                if(nextEvaluationCode > $scope.totalEvaluations)
+                routeToNextPage();
+            }
+            function routeToNextPage() {
+                $window.scrollTo(0, 0); // scroll to top
+                var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});
@@ -177,7 +176,7 @@
         function responseChanged(oldRes, newRes) {
             if(oldRes === undefined)
                 return true;
-            else return oldRes.selectedTeacher != newRes.recommendationPick ||
+            else return oldRes.recommendationPick != newRes.recommendationPick ||
                         oldRes.absConfidence != newRes.absConfidence ||
                         oldRes.relConfidence != newRes.relConfidence ||
                         oldRes.comment !== newRes.comment;

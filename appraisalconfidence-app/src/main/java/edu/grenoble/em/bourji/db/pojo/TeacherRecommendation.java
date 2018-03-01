@@ -20,6 +20,9 @@ public class TeacherRecommendation {
     @Id
     @Column(name = "EVAL_CODE", nullable = false, length = 5)
     private String evaluationCode;
+    @Id
+    @Column(name = "SUBMISSION_ID", nullable = false)
+    private int submissionId;
     @Column(name = "RECOMMENDATION_PICK", nullable = false, length = 5)
     private String recommendationPick;
     @Column(name = "ABS_CONFIDENCE", nullable = false)
@@ -61,10 +64,19 @@ public class TeacherRecommendation {
         return comment;
     }
 
+    public int getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
+    }
+
     public static class UniqueIdentifier implements Serializable {
 
         private String user;
         private String evaluationCode;
+        private int submissionId;
 
         public UniqueIdentifier() {
             // no-arg constructor for hibernate
@@ -78,20 +90,26 @@ public class TeacherRecommendation {
             return evaluationCode;
         }
 
+        public int getSubmissionId() {
+            return submissionId;
+        }
+
         @Override
         public boolean equals(Object o) {
             if(o == null) return false;
             if(!(o instanceof UniqueIdentifier))
                 return false;
             UniqueIdentifier that = (UniqueIdentifier) o;
-            return this.user.equals(that.user) && this.evaluationCode.equals(that.evaluationCode);
+            return this.user.equals(that.user)
+                    && this.evaluationCode.equals(that.evaluationCode)
+                    && this.submissionId == that.submissionId;
         }
 
         @Override
         public int hashCode() {
             int hashCode = 5;
             return 37 * hashCode + (
-                    this.user.hashCode() + this.evaluationCode.hashCode()
+                    this.user.hashCode() + this.evaluationCode.hashCode() + this.submissionId
             );
         }
     }

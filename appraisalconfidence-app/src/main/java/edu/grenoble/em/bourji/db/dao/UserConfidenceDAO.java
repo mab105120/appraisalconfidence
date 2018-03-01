@@ -28,16 +28,21 @@ public class UserConfidenceDAO extends AbstractDAO<UserConfidence> {
 
     public List<UserConfidence> getUserConfidence(String user) {
         Criteria cr = currentSession().createCriteria(UserConfidence.class)
-                .add(Restrictions.eq("user", user));
+                .add(Restrictions.eq("user", user))
+                .add(Restrictions.eq("submissionId", getLastSubmission(user)));
         return cr.list();
     }
 
-    public int getNextSubmissionId(String user) {
+    private int getLastSubmission(String user) {
         Criteria cr = currentSession().createCriteria(UserConfidence.class);
         cr.add(Restrictions.eq("user", user));
         cr.setProjection(Projections.distinct(Projections.property("submissionId")));
         List<Integer> submissionIds = cr.list();
         submissionIds.sort(Comparator.naturalOrder());
-        return submissionIds.isEmpty() ? 0 : submissionIds.get(submissionIds.size() - 1) + 1;
+        return submissionIds.isEmpty() ? 0 : submissionIds.get(submissionIds.size() - 1);
+    }
+
+    public int getNextSubmissionId(String user) {
+        return getLastSubmission(user) + 1;
     }
 }
