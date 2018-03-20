@@ -47,6 +47,8 @@ public class AppraisalConfidenceResource {
                                           @Context ContainerRequestContext requestContext) {
 
         TeacherRecommendation teacherRecommendation = payload.getRecommendation();
+        teacherRecommendation.setOpenTime(payload.getDatetimeIn());
+        teacherRecommendation.setCloseTime(payload.getDatetimeOut());
         List<EvaluationActivity> activities = payload.getActivities();
 
         if (!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
@@ -66,7 +68,7 @@ public class AppraisalConfidenceResource {
             activities.forEach(evaluationActivityDAO::add);
             ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
             LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
-            statusDAO.add(new Status(userId, status.name(), nextSubmissionId)); // TODO change this
+            statusDAO.add(new Status(userId, status.name(), nextSubmissionId));
         } catch (Throwable e) {
             LOGGER.error("Error: " + e.getMessage());
             return Respond.respondWithError("Unable to save response. Error: " + e.getMessage());

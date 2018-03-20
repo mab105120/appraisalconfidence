@@ -12,6 +12,8 @@ public class EvaluationPayload {
 
     private TeacherRecommendation recommendation;
     private List<EvaluationActivity> activities;
+    private String datetimeIn;
+    private String datetimeOut;
 
     public EvaluationPayload() {
         // no-arg default constructor for jackson
@@ -23,5 +25,13 @@ public class EvaluationPayload {
 
     public List<EvaluationActivity> getActivities() {
         return activities;
+    }
+
+    public String getDatetimeIn() {
+        return datetimeIn;
+    }
+
+    public String getDatetimeOut() {
+        return datetimeOut;
     }
 }

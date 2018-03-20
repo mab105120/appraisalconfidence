@@ -16,6 +16,7 @@
     function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce) {
 
         function init() {
+            $scope.time_in = new Date().toISOString();
             $scope.$parent.startSpinner();
 
             if(!authService.isAuthenticated()) {
@@ -134,6 +135,7 @@
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
+            $scope.time_out = new Date().toISOString();
             var userEval = {
                 evaluationCode: $stateParams.id,
                 recommendationPick: $scope.selectedTeacher,
@@ -143,7 +145,9 @@
             };
             var payload = {
                 recommendation: userEval,
-                activities: $scope.activities
+                activities: $scope.activities,
+                datetimeIn: $scope.time_in,
+                datetimeOut: $scope.time_out
             }
             var nextEvaluationCode = parseInt($stateParams.id) + 1;
             if(responseChanged($scope.oldRes, userEval)) {

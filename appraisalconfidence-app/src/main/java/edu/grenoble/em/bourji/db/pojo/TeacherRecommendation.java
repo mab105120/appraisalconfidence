@@ -31,6 +31,10 @@ public class TeacherRecommendation {
     private int relConfidence;
     @Column(name = "COMMENT", nullable = false, length = 250)
     private String comment;
+    @Column(name ="OPEN_TIME", nullable = false, length = 30)
+    private String openTime;
+    @Column(name = "CLOSE_TIME", nullable = false, length = 30)
+    private String closeTime;
 
     public TeacherRecommendation() {
         // no-arg default constructor for hibernate
@@ -70,6 +74,22 @@ public class TeacherRecommendation {
 
     public void setSubmissionId(int submissionId) {
         this.submissionId = submissionId;
+    }
+
+    public String getOpenTime() {
+        return openTime;
+    }
+
+    public String getCloseTime() {
+        return closeTime;
+    }
+
+    public void setOpenTime(String openTime) {
+        this.openTime = openTime;
+    }
+
+    public void setCloseTime(String closeTime) {
+        this.closeTime = closeTime;
     }
 
     public static class UniqueIdentifier implements Serializable {
