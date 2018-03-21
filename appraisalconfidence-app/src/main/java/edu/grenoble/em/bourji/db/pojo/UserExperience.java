@@ -35,6 +35,14 @@ public class UserExperience {
     @Id
     @Column(name = "SUBMISSION_ID", nullable = false, unique = true)
     private int submissionId;
+    @Column(name="EDUCATION_EMPLOYMENT", length = 10)
+    private String isEmployedInEducation;
+    @Column(name = "TRAINING_FREQUENCY", length = 64)
+    private String trainingFrequency;
+    @Column(name = "TRAINING_TYPE", length = 64)
+    private String trainingType;
+    @Column(name="TRAINING_TYPE_COMMENT", length = 300)
+    private String trainingTypeComment;
 
     public UserExperience() {
         // no-arg constructor for hibernate
@@ -98,5 +106,21 @@ public class UserExperience {
 
     public String getTotalCandidates() {
         return totalCandidates;
+    }
+
+    public String getIsEmployedInEducation() {
+        return isEmployedInEducation;
+    }
+
+    public String getTrainingFrequency() {
+        return trainingFrequency;
+    }
+
+    public String getTrainingType() {
+        return trainingType;
+    }
+
+    public String getTrainingTypeComment() {
+        return trainingTypeComment;
     }
 }

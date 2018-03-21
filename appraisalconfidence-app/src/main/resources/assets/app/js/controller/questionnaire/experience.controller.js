@@ -31,13 +31,16 @@
                         $scope.title = userExperience.title;
                         $scope.subordinates = parseInt(userExperience.subordinates);
                         $scope.professionalExperience = parseInt(userExperience.professionalExperience);
+                        $scope.isEmployedInEducation = userExperience.isEmployedInEducation;
                         $scope.paExperience = parseInt(userExperience.appraisalExperience);
                         $scope.reviewsUpToDate = parseInt(userExperience.totalReviews);
                         $scope.revieweesUpToDate = parseInt(userExperience.totalReviewees);
                         $scope.personnelSelection = userExperience.personnelSelection;
                         if(userExperience.personnelSelection === 'Yes')
                             $scope.interviewees = parseInt(userExperience.totalCandidates);
-
+                        $scope.trainingFrequency = userExperience.trainingFrequency;
+                        $scope.trainingType = userExperience.trainingType;
+                        $scope.trainingTypeComment = userExperience.trainingTypeComment;
                         $scope.$parent.stopSpinner();
                     }, function failure(response) {
                         var error = response.data === null ? 'Server unreachable' : response.data.message;
@@ -96,10 +99,37 @@
             '250+'
         ];
 
+        $scope.trainingFrequencyGroup = [
+            'More than once a year',
+            'Once a year',
+            'Infrequently',
+            'Once needed',
+            'Never'
+        ];
+
+        $scope.trainingTypeGroup = [
+            'In person training',
+            'Online training',
+            'Written instructions (e.g. via email or a web page)',
+            'Other'
+        ];
+
         $scope.$watch('personnelSelection', function() {
             if($scope.personnelSelection === 'Yes') $scope.personnelSelectionBool = true;
             else $scope.personnelSelectionBool = false;
         })
+
+        $scope.$watch('trainingType', function() {
+            if($scope.trainingType === 'Other')
+                $scope.showTrainingTypeCommentBox = true;
+            else $scope.showTrainingTypeCommentBox = false;
+        })
+
+        $scope.showTrainingType = true;
+        $scope.$watch('trainingFrequency', function() {
+            if($scope.trainingFrequency !== 'Never') $scope.showTrainingType = true;
+            else $scope.showTrainingType = false;
+        });
 
         $scope.submit = function() {
             if(!authService.isAuthenticated()) {
@@ -110,10 +140,14 @@
                 title: $scope.title,
                 subordinates: $scope.subordinates,
                 professionalExperience: $scope.professionalExperience,
+                isEmployedInEducation: $scope.isEmployedInEducation,
                 appraisalExperience: $scope.paExperience,
                 totalReviews: $scope.reviewsUpToDate,
                 totalReviewees: $scope.revieweesUpToDate,
-                personnelSelection: $scope.personnelSelection
+                personnelSelection: $scope.personnelSelection,
+                trainingFrequency: $scope.trainingFrequency,
+                trainingType: $scope.trainingType,
+                trainingTypeComment: $scope.trainingTypeComment
             };
             if($scope.interviewees !== undefined) {
                 user.totalCandidates = $scope.interviewees;
@@ -146,7 +180,11 @@
                         oldRes.reviewsUpToDate != newRes.reviewsUpToDate ||
                         oldRes.revieweesUpToDate != newRes.revieweesUpToDate ||
                         oldRes.personnelSelection !== newRes.personnelSelection ||
-                        oldRes.interviewees != newRes.interviewees;
+                        oldRes.interviewees != newRes.interviewees ||
+                        oldRes.isEmployedInEducation != newRes.isEmployedInEducation ||
+                        oldRes.trainingFrequency != newRes.trainingFrequency ||
+                        oldRes.trainingType != newRes.trainingType ||
+                        oldRes.trainingTypeComment != newRes.trainingTypeComment;
         }
 
     }
