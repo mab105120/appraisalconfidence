@@ -127,7 +127,7 @@
                         oldRes.gender !== newRes.gender ||
                         oldRes.education !== newRes.education ||
                         oldRes.division !== newRes.division ||
-                        oldRes.educationExperience !== newRes.eductionExperience;
+                        oldRes.educationExperience !== newRes.educationExperience;
         }
 
     }
