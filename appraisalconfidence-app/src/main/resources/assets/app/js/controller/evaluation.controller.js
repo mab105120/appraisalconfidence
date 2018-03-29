@@ -38,19 +38,13 @@
             $scope.modalTitle = '';
 
             $('#absConfidenceSlider').slider();
-            $('#absConfidenceSlider').on('slide', function(slideEvt) {
-                $scope.absConfidence = slideEvt.value;
-            });
-            $scope.$watch('absConfidence', function(value) {
-                $('#absConfidenceSliderVal').text(value);
+            $('#absConfidenceSlider').on('change', function(slideEvt) {
+                $scope.absConfidence = slideEvt.value.newValue;
             });
 
             $('#relConfidenceSlider').slider();
-            $('#relConfidenceSlider').on('slide', function(slideEvt) {
-                $scope.relConfidence = slideEvt.value;
-            });
-            $scope.$watch('relConfidence', function(value) {
-                $('#relConfidenceSliderVal').text(value);
+            $('#relConfidenceSlider').on('change', function(slideEvt) {
+                $scope.relConfidence = slideEvt.value.newValue;
             });
 
             // comment control
@@ -133,6 +127,10 @@
         $scope.saveAndContinue = function() {
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                return;
+            }
+            if($scope.selectedTeacher === undefined || $scope.relConfidence === undefined || $scope.absConfidence === undefined) {
+                alert('All fields in the form below are required. Please make sure to fill all fields out');
                 return;
             }
             $scope.time_out = new Date().toISOString();

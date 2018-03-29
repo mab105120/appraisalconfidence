@@ -2,32 +2,31 @@
     p {
         margin-bottom: 20px;
     }
+
 </style>
 <div class="row">
-    <div class="row">
-        <div class="col-sm-8 col-sm-offset-2">
-            <div ng-show="showAlert" class="alert alert-info" role="alert">
-                Looks like you have already started. To review your progress and continue where you left off please
-                click <a ui-sref="progress">here.</a>
-            </div>
-            <h3>Hello!</h3>
-            <p>
-                Thank you for putting time aside to take part of this evaluation exercise. Your participation
-                will require approximately {{duration}} minutes. All your responses will remain confidential
-                and will not be shared or used, outside the purpose of this exercise, without your explicit consent.
-                If, for whatever reason, you choose not to proceed with the exercise you are free to quit at anytime; in
-                such case your responses will be discarded. You will be able to save your work and come back to complete
-                it at any time. To review your progress, at any time during the exercise, click on <strong>My
-                Progress</strong> tab in the navigation bar above.
-                </br>
-            </p>
-            <p>Please click the start button below when ready.</p>
+    <div class="col-sm-8 col-sm-offset-2">
+        <div ng-show="showAlert" class="alert alert-info" role="alert">
+            Looks like you have already started. To review your progress and continue where you left off please
+            click <a ui-sref="progress">here.</a>
         </div>
+        <h3>Hello!</h3>
+        <p>
+            Thank you for putting time aside to take part of this evaluation exercise. Your participation
+            will require approximately {{duration}} minutes. All your responses will remain confidential
+            and will not be shared or used, outside the purpose of this exercise, without your explicit consent.
+            If, for whatever reason, you choose not to proceed with the exercise you are free to quit at anytime; in
+            such case your responses will be discarded. You will be able to save your work and come back to complete
+            it at any time. To review your progress, at any time during the exercise, click on <strong>My
+            Progress</strong> tab in the navigation bar above.
+            </br>
+        </p>
+        <p>Please click the start button below when ready.</p>
     </div>
-    <div class="row" style="margin-top:20px;">
-        <div class="col-sm-6 text-center col-sm-offset-3">
-            <button style="height:50px;width:90px;" class="btn btn-success" type="button" ng-click="start()">Start
-            </button>
-        </div>
+</div>
+<div class="row" style="margin-top:20px;">
+    <div class="col-sm-6 text-center col-sm-offset-3">
+        <button style="height:50px;width:90px;" class="btn btn-success" type="button" ng-click="start()">Start
+        </button>
     </div>
 </div>

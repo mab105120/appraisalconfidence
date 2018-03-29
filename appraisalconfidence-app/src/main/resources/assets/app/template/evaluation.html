@@ -49,8 +49,8 @@
     <div class="row" style="margin-top:50px;">
         <div class="col-sm-12">
             <p>After reviewing each teacher's dossier, I recommend that the board give tenure promotion to: <span style="color: red">*</span>
-                <label style="margin-left:180px;" class="radio-inline"><input required type="radio" id="teacher1RadioBtn" name="optradio" ng-model="selectedTeacher" value="1">Teacher 1</label>
-                <label style="margin-left:40px;" class="radio-inline"><input required type="radio" id="teacher2RadioBtn" name="optradio" ng-model="selectedTeacher" value="2">Teacher 2</label>
+                <label style="margin-left:180px;" class="radio-inline"><input type="radio" id="teacher1RadioBtn" name="optradio" ng-model="selectedTeacher" value="1">Teacher 1</label>
+                <label style="margin-left:40px;" class="radio-inline"><input type="radio" id="teacher2RadioBtn" name="optradio" ng-model="selectedTeacher" value="2">Teacher 2</label>
             </p>
         </div>
     </div>
@@ -61,7 +61,7 @@
         <span style="color: red">*</span></span>
         </div>
         <div class="col-sm-4">
-            <input ng-model="absConfidence" id="absConfidenceSlider" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0" required>
+            <input id="absConfidenceSlider" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0">
         </div>
     </div>
     <!--Confidence Slider 2-->
@@ -71,24 +71,13 @@
         <span style="color: red">*</span></span>
         </div>
         <div class="col-sm-4">
-            <input ng-model="relConfidence" id="relConfidenceSlider" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0" required>
-        </div>
-    </div>
-    <!--comment-->
-    <div class="row" style="margin-top:50px;">
-        <div class="col-sm-12">
-            <div class="form-group">
-                <label for="comment">Please explain your choice <span style="color: red">*</span></label></br>
-                <small>Please provide details on relevant factors that influenced your final recommendation</small>
-                <span class="pull-right" style="padding-right:10px;">Remaining chars: {{ remainingChars }}</span>
-                <textarea class="form-control" rows="3" id="comment" ng-model="comment" ng-change="calculateRemainingChars()" maxlength="200" required></textarea>
-            </div>
+            <input id="relConfidenceSlider" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5" data-slider-value="0">
         </div>
     </div>
     <!--Submit-->
     <div class="row" style="margin-top:50px;padding-right:30px;">
         <div class="col-sm-2 col-sm-offset-10">
-            <button class="btn btn-primary pull-right" id="continueBtn" type="button" ng-disabled="evaluationForm.$invalid" ng-click="saveAndContinue()">Continue</button>
+            <button class="btn btn-primary pull-right" id="continueBtn" type="button" ng-click="saveAndContinue()">Continue</button>
         </div>
     </div>
 </form>
