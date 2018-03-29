@@ -39,18 +39,12 @@
 
             $('#absConfidenceSlider').slider();
             $('#absConfidenceSlider').on('change', function(slideEvt) {
-                $scope.absConfidence = slideEvt.value;
-            });
-            $scope.$watch('absConfidence', function(value) {
-                $('#absConfidenceSliderVal').text(value);
+                $scope.absConfidence = slideEvt.value.newValue;
             });
 
             $('#relConfidenceSlider').slider();
             $('#relConfidenceSlider').on('change', function(slideEvt) {
-                $scope.relConfidence = slideEvt.value;git
-            });
-            $scope.$watch('relConfidence', function(value) {
-                $('#relConfidenceSliderVal').text(value);
+                $scope.relConfidence = slideEvt.value.newValue;
             });
 
             // comment control
