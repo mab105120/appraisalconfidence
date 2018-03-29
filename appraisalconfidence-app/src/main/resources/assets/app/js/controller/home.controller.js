@@ -27,6 +27,7 @@
             .then(function success(response) {
                 var data = response.data;
                 localStorage.setItem('totalEvaluations', data.totalEvaluations);
+                localStorage.setItem('supervisors', data.supervisors);
                 $scope.duration = data.duration;
                 appcon.getProgress()
                 .then(function success(response) {

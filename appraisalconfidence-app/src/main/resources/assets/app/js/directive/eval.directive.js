@@ -11,6 +11,7 @@
             },
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
+                scope.showThirdSupervisor = localStorage.getItem('supervisors') === '3';
                 scope.displayEvaluation = function(teacher, supervisor) {
 
                     var teachers = {

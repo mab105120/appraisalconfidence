@@ -9,6 +9,7 @@ public class ExperimentSettings {
     private int totalEvaluations;
     private String duration;
     private String completionCode;
+    private int supervisors;
 
     public ExperimentSettings() {
         // default no-arg constructor
@@ -44,5 +45,13 @@ public class ExperimentSettings {
 
     public void setCompletionCode(String completionCode) {
         this.completionCode = completionCode;
+    }
+
+    public void setSupervisors(int supervisors) {
+        this.supervisors = supervisors;
+    }
+
+    public int getSupervisors() {
+        return supervisors;
     }
 }

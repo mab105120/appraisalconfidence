@@ -51,4 +51,5 @@ settings:
   mode: tall
   duration: 30
   totalEvaluations: 9
+  supervisors: 3
   completionCode: <xxx>
