@@ -15,7 +15,6 @@
             <li ng-show="vm.auth.isAuthenticated()"><a ui-sref="contactus">Contact us</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-            <li ng-show="!vm.auth.isAuthenticated()"><a ng-click="login()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
             <li ng-show="vm.auth.isAuthenticated()"><p style="padding-top:15px;color:gray"> <strong>Hello {{ vm.auth.getUserId() }}</strong><p></p></li>
             <li ng-show="vm.auth.isAuthenticated()"><a ng-click="logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>

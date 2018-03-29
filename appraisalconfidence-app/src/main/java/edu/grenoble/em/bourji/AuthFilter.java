@@ -1,6 +1,7 @@
 package edu.grenoble.em.bourji;
 
 import com.auth0.jwk.JwkException;
+import edu.grenoble.em.bourji.api.BadResponse;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -23,10 +24,11 @@ class AuthFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         String accessId = containerRequestContext.getHeaderString("Authorization");
         try {
+
             if (accessId == null || accessId.isEmpty()) {
                 containerRequestContext.abortWith(Response
                         .status(HttpStatus.FORBIDDEN_403)
-                        .entity("Missing authorization header")
+                        .entity(new BadResponse().withMessage("Missing authorization header"))
                         .build());
                 return;
             }
@@ -34,7 +36,7 @@ class AuthFilter implements ContainerRequestFilter {
             if(!accessId.startsWith("Bearer")) {
                 containerRequestContext.abortWith(Response
                         .status(HttpStatus.FORBIDDEN_403)
-                        .entity("Authorization header missing Bearer")
+                        .entity(new BadResponse().withMessage("Authorization header missing Bearer"))
                         .build());
                 return;
             }
@@ -44,7 +46,7 @@ class AuthFilter implements ContainerRequestFilter {
         } catch (JwkException e) {
             containerRequestContext.abortWith(Response
                     .status(HttpStatus.FORBIDDEN_403)
-                    .entity("Authorization error: " + e.getMessage())
+                    .entity(new BadResponse().withMessage("Authorization error: " + e.getMessage()))
                     .build());
         }
     }
