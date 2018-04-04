@@ -80,12 +80,28 @@
         ]
 
         $scope.divisionGroup = [
-            'Technology',
-            'Finance',
-            'Operations',
-            'Real Estate',
-            'Investment Banking',
-            'Securities',
+            'Healthcare Practitioners and Technical Occupations',
+            'Management Occupations',
+            'Legal Occupations',
+            'Business and Financial Operations Occupations',
+            'Healthcare Support Occupations',
+            'Architecture and Engineering Occupations',
+            'Arts, Design, Entertainment, Sports, and Media Occupations',
+            'Building and Grounds Cleaning and Maintenance Occupations',
+            'Community and Social Service Occupations',
+            'Construction and Extraction Occupations',
+            'Protective Service Occupations',
+            'Production Occupations',
+            'Education, Training, and Library Occupations',
+            'Farming, Fishing, and Forestry Occupations',
+            'Personal Care and Service Occupations',
+            'Office and Administrative Support Occupations',
+            'Installation, Maintenance, and Repair Occupations',
+            'Computer and Mathematical Occupations',
+            'Life, Physical, and Social Science Occupations',
+            'Food Preparation and Serving Related Occupations',
+            'Sales and Related Occupations',
+            'Transportation and Materials Moving Occupations',
             'Other'
         ];
 
