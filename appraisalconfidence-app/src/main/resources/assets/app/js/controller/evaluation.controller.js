@@ -26,6 +26,10 @@
 
             $scope.currentEvaluation = $stateParams.id;
             $scope.totalEvaluations = localStorage.getItem('totalEvaluations');
+            var progressPercentage = ( $scope.currentEvaluation / $scope.totalEvaluations ) * 100;
+            $scope.progressBarStyle = {
+                'width': progressPercentage + '%'
+            }
 
             // these vars are set by the eval directive when users click on supervisor reviews.
             $scope.modalCode = '';

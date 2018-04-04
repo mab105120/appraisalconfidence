@@ -12,8 +12,15 @@
     <!--row separator-->
 </div>
 <div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <h4 id="evaluationProgressLabel">Teacher evaluation [ {{ currentEvaluation }} of {{ totalEvaluations }} ]</h4>
+    </div>
+    <div class="col-xs-12 col-sm-9 pull-left">
+        <div class="progress" style="margin-top:10px">
+            <div class="progress-bar" role="progressbar" ng-style="progressBarStyle" aria-valuenow="25" aria-valuemin="0" aria-valuemax="9">{{ currentEvaluation }} of {{ totalEvaluations }}</div>
+        </div>
+    </div>
     <div class="col-sm-12" style="margin-bottom:30px;">
-        <h4>Teacher evaluation [ {{ currentEvaluation }} of {{ totalEvaluations }} ]</h4>
         <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion. To review
         each teacher on a specific job function (Student learning, Instruction practice, or Professionalism) click on the button labeled supervisor
         next to each job function to view the supervisor's review of that teacher on the job function (<span style="color:#800000">Teacher names are masked to protect their identity</span>). You are free to read as many
