@@ -74,6 +74,7 @@
             localStorage.removeItem('userId');
             localStorage.removeItem('redirect_state_param');
             localStorage.removeItem('totalEvaluations');
+            localStorage.removeItem('qual_redirect_url');
             $state.go('welcome');
         }
 

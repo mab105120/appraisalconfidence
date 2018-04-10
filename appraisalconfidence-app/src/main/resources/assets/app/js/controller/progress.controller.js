@@ -17,6 +17,8 @@
                 authService.login();
             }
 
+            $scope.qual_redirect_url = localStorage.getItem('qual_redirect_url');
+
             $scope.showSubmit = false;
 
             $scope.rows = [

@@ -8,11 +8,15 @@
     <hr>
     <div class="col-md-8">
         <div ng-show="showSubmit" class="alert alert-success" role="alert">
-            <strong>You are done!</strong> You can review your response to each step below by clicking on the edit button.
-            Once you are ready please return to Qualtrics survey page and insert the following completion code to complete the survey: B1HXJ.
+            <strong>You are done!</strong> You can review your response to each step below by clicking on the edit
+            button.
+            Your completion code is: <strong>B1HXJ</strong>. You will need this code to record survey completion so make sure to note it.
+            Once ready click
+            <a href="{{qual_redirect_url}}" target="_blank"> here</a> to go back to Qualtrics to finish the survey.
         </div>
         <div ng-hide="showSubmit" class="alert alert-warning" role="alert">
-            Looks like you still have some steps to complete. Please use the table below to review which tasks require completion.
+            Looks like you still have some steps to complete. Please use the table below to review which tasks require
+            completion.
         </div>
         <table class="table">
             <thead>
@@ -27,11 +31,13 @@
                 <th scope="row">{{ row.display }}</th>
                 <td>{{ row.status }}
                     <span ng-show="row.status=='Complete'" class="glyphicon glyphicon-ok" style="color:green"> </span>
-                    <span ng-show="row.status=='Not Started'" class="glyphicon glyphicon-remove-circle" style="color:orange"> </span>
+                    <span ng-show="row.status=='Not Started'" class="glyphicon glyphicon-remove-circle"
+                          style="color:orange"> </span>
                 </td>
                 <td>
                     <a ng-show="row.status=='Complete'" ng-click="edit(row.id)"><span class="glyphicon glyphicon-edit"> Edit</span></a>
-                    <a ng-show="row.status=='Next' || row.status=='Not Started'" ng-click="edit(row.id)"><span class="glyphicon glyphicon-arrow-right"> Go</span></a>
+                    <a ng-show="row.status=='Next' || row.status=='Not Started'" ng-click="edit(row.id)"><span
+                            class="glyphicon glyphicon-arrow-right"> Go</span></a>
                 </td>
             </tr>
             </tbody>
