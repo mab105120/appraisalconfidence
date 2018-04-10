@@ -18,7 +18,7 @@
         }
 
         if(localStorage.getItem('qual_redirect_url') === null) {
-            var qual_redirect_url = 'https://quninq9ktegh7vsv.co1.qualtrics.com/jfe/preview/SV_abhZZ1YMY2YotCZ?Q_CHL=preview';
+            var qual_redirect_url = 'http://grenoble.co1.qualtrics.com/jfe/form/SV_abhZZ1YMY2YotCZ?';
             var params = $location.search();
             for(var param in params) {
                 if(params.hasOwnProperty(param))
