@@ -12,6 +12,7 @@
         ];
 
     require('bootstrap-slider');
+    var _ = require('lodash');
 
     function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce) {
 
@@ -151,6 +152,11 @@
                 datetimeIn: $scope.time_in,
                 datetimeOut: $scope.time_out
             }
+            if(!participantReadRequiredReviews(payload.activities)) {
+                alert('Please read AT LEAST 2 reviews PER TEACHER before submitting recommendation!\n\n' +
+                    'WARNING: This application detects patterns of random responses. Participants WILL NOT be compensated for random responses.');
+                return;
+            }
             var nextEvaluationCode = parseInt($stateParams.id) + 1;
             if(responseChanged($scope.oldRes, userEval)) {
                 $scope.$parent.startSpinner();
@@ -176,6 +182,24 @@
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});
+            }
+            function participantReadRequiredReviews(activities) {
+                selectedReviews = [];
+                angular.forEach(activities, function(activity) {
+                    selectedReviews.push(activity.selectedReview);
+                });
+                var uniqueCodes = _.uniq(selectedReviews);
+                console.log(uniqueCodes);
+                var t1 = 0, t2 = 0;
+                angular.forEach(uniqueCodes, function(code) {
+                    var t = code.substr(code.indexOf('-') + 1, 2); // return the teacher from the code
+                    if (t === 'T1')
+                        t1++;
+                    else if (t === 'T2')
+                        t2++;
+                });
+                if(t1 < 2 || t2 < 2) return false;
+                else return true;
             }
         }
 

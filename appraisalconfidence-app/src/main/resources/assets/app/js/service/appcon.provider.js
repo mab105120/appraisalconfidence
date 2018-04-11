@@ -137,6 +137,17 @@
                 });
             }
 
+            function validateUserResponses() {
+                var id_token = localStorage.getItem('id_token');
+                return $http({
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/validate'
+                });
+            }
+
             function postLogin() {
                 var id_token = localStorage.getItem('id_token');
                 return $http({
@@ -201,6 +212,7 @@
                 getUserExperience: getUserExperience,
                 postUserEvaluation: postUserEvaluation,
                 getUserEvaluation: getUserEvaluation,
+                validateUserResponses: validateUserResponses,
                 stepIsCompleted: stepIsCompleted,
                 postLogin: postLogin,
                 postLogout: postLogout,

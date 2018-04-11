@@ -31,6 +31,12 @@ public class AppraisalConfidenceDAO extends AbstractDAO<TeacherRecommendation> {
         return (TeacherRecommendation) cr.list().get(0);
     }
 
+    public List<TeacherRecommendation> getAllRecommendations(String userId) {
+        Criteria cr = currentSession().createCriteria(TeacherRecommendation.class);
+        cr.add(Restrictions.eq("user", userId));
+        return cr.list();
+    }
+
     private int getLastSubmissionId(String user, String evaluationCode) {
         Criteria cr = currentSession().createCriteria(TeacherRecommendation.class);
         cr.add(Restrictions.eq("user", user));

@@ -7,6 +7,7 @@
             margin-left: 100px;
         }
     }
+
 </style>
 <div class="row" style="margin-top:30px">
     <!--row separator-->
@@ -17,15 +18,19 @@
     </div>
     <div class="col-xs-12 col-sm-9 pull-left">
         <div class="progress" style="margin-top:10px">
-            <div class="progress-bar" role="progressbar" ng-style="progressBarStyle" aria-valuenow="25" aria-valuemin="0" aria-valuemax="9">{{ currentEvaluation }} of {{ totalEvaluations }}</div>
+            <div class="progress-bar" role="progressbar" ng-style="progressBarStyle" aria-valuenow="25"
+                 aria-valuemin="0" aria-valuemax="9">{{ currentEvaluation }} of {{ totalEvaluations }}
+            </div>
         </div>
     </div>
     <div class="col-sm-12" style="margin-bottom:30px;">
-        <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion. To review
-        each teacher on a specific job function (Student learning, Instruction practice, or Professionalism) click on the button labeled supervisor
-        next to each job function to view the supervisor's review of that teacher on the job function (<span style="color:#800000">Teacher names are masked to protect their identity</span>). You are free to read as many
-        reviews as you think is necessary before reaching a fair evaluation. When done please choose which teacher you recommend for promotion and
-        fill out the form below.</p>
+        <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion.
+            To review
+            each teacher on a specific job function (Student learning, Instruction practice, or Professionalism) click
+            on the button labeled supervisor
+            next to each job function to view the supervisor's review of that teacher on the job function (<span
+                    style="color:#800000">Teacher names are masked to protect their identity</span>).
+            When done please choose which teacher you recommend for promotion and fill out the form below.</p>
     </div>
 </div>
 <div class="row" style="margin-bottom:40px;">
@@ -41,7 +46,8 @@
 <eval job-function="Instructional Practice" job-function-code="IP"></eval>
 <eval job-function="Professionalism" job-function-code="PF"></eval>
 <!-- Modal -->
-<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -65,9 +71,14 @@
     <!--Teacher recommendation-->
     <div class="row" style="margin-top:50px;">
         <div class="col-sm-12">
-            <p>After reviewing each teacher's dossier, I recommend that the board give tenure promotion to: <span style="color: red">*</span>
-                <label id="teacher1RadioBtnLabel" class="radio-inline"><input type="radio" id="teacher1RadioBtn" name="optradio" ng-model="selectedTeacher" value="1">Teacher 1</label>
-                <label style="margin-left:40px;" class="radio-inline"><input type="radio" id="teacher2RadioBtn" name="optradio" ng-model="selectedTeacher" value="2">Teacher 2</label>
+            <p>After reviewing each teacher's dossier, I recommend that the board give tenure promotion to: <span
+                    style="color: red">*</span>
+                <label id="teacher1RadioBtnLabel" class="radio-inline"><input type="radio" id="teacher1RadioBtn"
+                                                                              name="optradio" ng-model="selectedTeacher"
+                                                                              value="1">Teacher 1</label>
+                <label style="margin-left:40px;" class="radio-inline"><input type="radio" id="teacher2RadioBtn"
+                                                                             name="optradio" ng-model="selectedTeacher"
+                                                                             value="2">Teacher 2</label>
             </p>
         </div>
     </div>
