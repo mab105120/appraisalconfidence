@@ -122,7 +122,7 @@
                             'Authorization': 'Bearer ' + id_token
                         },
                         data: userEvaluation,
-                        url: url + '/api/appraisal'
+                        url: url + '/api/evaluation/relative'
                 });
             }
 
@@ -133,7 +133,7 @@
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
-                        url: url + '/api/appraisal/' + evalCode
+                        url: url + '/api/evaluation/relative/' + evalCode
                 });
             }
 

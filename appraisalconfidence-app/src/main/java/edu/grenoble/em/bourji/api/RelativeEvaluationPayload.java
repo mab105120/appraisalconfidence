@@ -1,25 +1,25 @@
 package edu.grenoble.em.bourji.api;
 
 import edu.grenoble.em.bourji.db.pojo.EvaluationActivity;
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import edu.grenoble.em.bourji.db.pojo.RelativeEvaluation;
 
 import java.util.List;
 
 /**
  * Created by Moe on 9/28/17.
  */
-public class EvaluationPayload {
+public class RelativeEvaluationPayload {
 
-    private TeacherRecommendation recommendation;
+    private RelativeEvaluation recommendation;
     private List<EvaluationActivity> activities;
     private String datetimeIn;
     private String datetimeOut;
 
-    public EvaluationPayload() {
+    public RelativeEvaluationPayload() {
         // no-arg default constructor for jackson
     }
 
-    public TeacherRecommendation getRecommendation() {
+    public RelativeEvaluation getRecommendation() {
         return recommendation;
     }
 

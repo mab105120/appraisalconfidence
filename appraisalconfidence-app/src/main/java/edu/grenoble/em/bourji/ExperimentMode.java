@@ -10,6 +10,7 @@ import java.util.List;
  */
 public enum ExperimentMode {
 
+    // Triads: (1, 4, 7), (2, 5, 8), (3, 6, 9)
     TALL(new ArrayList<EvaluationCode>() {{
         add(new EvaluationCode("1", "A", "B"));
         add(new EvaluationCode("2", "D", "E"));

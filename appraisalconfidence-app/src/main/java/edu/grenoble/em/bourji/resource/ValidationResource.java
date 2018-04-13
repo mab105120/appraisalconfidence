@@ -2,7 +2,7 @@ package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import edu.grenoble.em.bourji.db.pojo.RelativeEvaluation;
 import edu.grenoble.em.bourji.db.pojo.UserConfidence;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.joda.time.DateTime;
@@ -37,7 +37,7 @@ public class ValidationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAverageDurationPerEvaluation(@Context ContainerRequestContext requestContext) {
         String userId = requestContext.getProperty("user").toString();
-        List<TeacherRecommendation> recommendations = appraisalConfidenceDAO.getAllRecommendations(userId);
+        List<RelativeEvaluation> recommendations = appraisalConfidenceDAO.getAllRecommendations(userId);
         boolean passedDurationTest = averageDurationAboveThreshold(recommendations);
         boolean passedAttentionTest = passedAttentionTest(userId);
         if (!passedDurationTest)
@@ -58,9 +58,9 @@ public class ValidationResource {
         return jd2 == jd9 * -1;
     }
 
-    private boolean averageDurationAboveThreshold(List<TeacherRecommendation> recommendations) {
+    private boolean averageDurationAboveThreshold(List<RelativeEvaluation> recommendations) {
         Map<String, Double> durationPerEvaluation = new HashMap<>();
-        for (TeacherRecommendation recommendation : recommendations) {
+        for (RelativeEvaluation recommendation : recommendations) {
             String evalCode = recommendation.getEvaluationCode();
             double duration = (DateTime.parse(recommendation.getCloseTime()).getMillis() - DateTime.parse(recommendation.getOpenTime()).getMillis()) / 1000.00;
             if (durationPerEvaluation.get(evalCode) == null)
