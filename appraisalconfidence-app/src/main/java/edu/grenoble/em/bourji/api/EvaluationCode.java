@@ -14,7 +14,6 @@ public class EvaluationCode {
         this.teacher1 = teacher1;
         this.teacher2 = teacher2;
     }
-
     public String getEvaluationCode() {
         return evaluationCode;
     }

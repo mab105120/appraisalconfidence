@@ -52,6 +52,15 @@ public enum ExperimentMode {
         add(new EvaluationCode("13", "I", "H"));
         add(new EvaluationCode("14", "A", "G"));
         add(new EvaluationCode("15", "D", "F"));
+    }}),
+    ABSOLUTE(new ArrayList<EvaluationCode>() {{
+        add(new EvaluationCode("1", "A", null));
+        add(new EvaluationCode("2", "B", null));
+        add(new EvaluationCode("3", "C", null));
+        add(new EvaluationCode("4", "D", null));
+        add(new EvaluationCode("5", "E", null));
+        add(new EvaluationCode("6", "F", null));
+        add(new EvaluationCode("7", "G", null));
     }});
 
     private List<EvaluationCode> evaluationCodes;

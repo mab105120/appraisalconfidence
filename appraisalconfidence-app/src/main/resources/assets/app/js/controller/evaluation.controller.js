@@ -17,6 +17,16 @@
     function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce) {
 
         function init() {
+
+            $scope.isRelative = false;
+            $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
+
+            $scope.setClass = function() {
+                if($scope.isRelative)
+                    return ['col-xs-5', 'col-xs-offset-2', 'text-center'];
+                else return ['col-xs-10', 'col-xs-offset-2', 'text-center'];
+            }
+
             $scope.time_in = new Date().toISOString();
             $scope.$parent.startSpinner();
 
@@ -42,15 +52,7 @@
 
             $scope.modalTitle = '';
 
-            $('#absConfidenceSlider').slider();
-            $('#absConfidenceSlider').on('change', function(slideEvt) {
-                $scope.absConfidence = slideEvt.value.newValue;
-            });
-
-            $('#relConfidenceSlider').slider();
-            $('#relConfidenceSlider').on('change', function(slideEvt) {
-                $scope.relConfidence = slideEvt.value.newValue;
-            });
+            setupSliders();
 
             // comment control
             $scope.comment = '';
@@ -84,9 +86,25 @@
                         // pre-populate fields
                         $scope.oldRes = response.data;
 
-                        $scope.selectedTeacher = response.data.recommendationPick;
-                        $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
-                        $scope.comment = response.data.comment;
+                        if($scope.isRelative) {
+                            $scope.selectedTeacher = response.data.recommendationPick;
+                            $('#teacher'+response.data.recommendationPick+'RadioBtn').prop('checked', true);
+                            $scope.comment = response.data.comment;
+                        } else {
+                            $scope.studentLearningRating = response.data.studentLearning;
+                            $('#studentLearningSlider').slider().slider('setValue', response.data.studentLearning);
+                            $scope.instructionalPracticeRating = response.data.instructionalPractice;
+                            $('#instructionalPracticeSlider').slider().slider('setValue', response.data.instructionalPractice);
+                            $scope.professionalismRating = response.data.professionalism;
+                            $('#professionalismSlider').slider().slider('setValue', response.data.professionalism);
+                            $scope.overallRating = response.data.overall;
+                            $('#overallSlider').slider().slider('setValue', response.data.overall);
+                            if(response.data.promote === true)
+                                $('#promote-yes').prop('checked', true);
+                            else $('#promote-no').prop('checked', true);
+                            $scope.promotionDecision = response.data.promote;
+                        }
+
                         $scope.absConfidence = response.data.absConfidence;
                         $('#absConfidenceSlider').slider().slider('setValue', response.data.absConfidence);
                         $scope.relConfidence = response.data.relConfidence;
@@ -108,6 +126,38 @@
                 toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
                 $scope.$parent.stopSpinner();
             });
+
+            function setupSliders() {
+                $('#absConfidenceSlider').slider();
+                $('#absConfidenceSlider').on('change', function(slideEvt) {
+                    $scope.absConfidence = slideEvt.value.newValue;
+                });
+
+                $('#relConfidenceSlider').slider();
+                $('#relConfidenceSlider').on('change', function(slideEvt) {
+                    $scope.relConfidence = slideEvt.value.newValue;
+                });
+
+                $('#studentLearningSlider').slider();
+                $('#studentLearningSlider').on('change', function(slideEvt) {
+                    $scope.studentLearningRating = slideEvt.value.newValue;
+                });
+
+                $('#instructionalPracticeSlider').slider();
+                $('#instructionalPracticeSlider').on('change', function(slideEvt) {
+                    $scope.instructionalPracticeRating = slideEvt.value.newValue;
+                });
+
+                $('#professionalismSlider').slider();
+                $('#professionalismSlider').on('change', function(slideEvt) {
+                    $scope.professionalismRating = slideEvt.value.newValue;
+                });
+
+                $('#overallSlider').slider();
+                $('#overallSlider').on('change', function(slideEvt) {
+                    $scope.overallRating = slideEvt.value.newValue;
+                });
+            }
         }
 
         init();
@@ -134,16 +184,20 @@
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
-            if($scope.selectedTeacher === undefined || $scope.relConfidence === undefined || $scope.absConfidence === undefined) {
-                alert('All fields in the form below are required. Please make sure to fill all fields out');
-                return;
-            }
+            // ensure all form required fields are filled (sliders don't work well with angular form validation)
+            if(!formIsValid()) return;
+
             $scope.time_out = new Date().toISOString();
             var userEval = {
                 evaluationCode: $stateParams.id,
                 recommendationPick: $scope.selectedTeacher,
                 relConfidence: $scope.relConfidence,
                 absConfidence: $scope.absConfidence,
+                studentLearning: $scope.studentLearningRating,
+                instructionalPractice: $scope.instructionalPracticeRating,
+                professionalism: $scope.professionalismRating,
+                overall: $scope.overallRating,
+                promote: $scope.promotionDecision,
                 comment: $scope.comment
             };
             var payload = {
@@ -152,15 +206,14 @@
                 datetimeIn: $scope.time_in,
                 datetimeOut: $scope.time_out
             }
-            if(!participantReadRequiredReviews(payload.activities)) {
-                alert('Please read AT LEAST 2 reviews PER TEACHER before submitting recommendation!\n\n' +
-                    'WARNING: This application detects patterns of random responses. Participants WILL NOT be compensated for random responses.');
-                return;
-            }
+
+            // make sure participants are not just providing random answers
+            if(!passQualityCheck()) return;
+
             var nextEvaluationCode = parseInt($stateParams.id) + 1;
             if(responseChanged($scope.oldRes, userEval)) {
                 $scope.$parent.startSpinner();
-                appcon.postUserEvaluation(payload)
+                appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
                 .then(function success(response) {
                     toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
                     routeToNextPage();
@@ -175,6 +228,7 @@
             } else {
                 routeToNextPage();
             }
+
             function routeToNextPage() {
                 $window.scrollTo(0, 0); // scroll to top
                 var nextEvaluationCode = parseInt($stateParams.id) + 1;
@@ -182,7 +236,8 @@
                     $state.go('progress');
                 else
                     $state.go('evaluation', {id: nextEvaluationCode});
-            }
+            };
+
             function participantReadRequiredReviews(activities) {
                 selectedReviews = [];
                 angular.forEach(activities, function(activity) {
@@ -198,7 +253,42 @@
                     else if (t === 'T2')
                         t2++;
                 });
-                if(t1 < 2 || t2 < 2) return false;
+                if($scope.isRelative) {
+                    if(t1 < 2 || t2 < 2) return false;
+                } else {
+                    if(t1 < 2) return false;
+                }
+                return true;
+            };
+
+            function formIsValid() {
+                if($scope.relConfidence === undefined || $scope.absConfidence === undefined) {
+                    alert('All fields in the form below are required. Please make sure to fill all fields out');
+                    return false;
+                }
+                if($scope.isRelative) {
+                    if($scope.selectedTeacher === undefined) {
+                        alert('All fields in the form below are required. Please make sure to fill all fields out');
+                        return false;
+                    }
+                } else {
+                    if($scope.promotionDecision === undefined || $scope.studentLearningRating === undefined ||
+                        $scope.instructionalPracticeRating === undefined || $scope.professionalismRating === undefined
+                         || $scope.overallRating === undefined) {
+
+                        alert('All fields in the form below are required. Please make sure to fill all fields out');
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            function passQualityCheck() {
+                if(!participantReadRequiredReviews(payload.activities)) {
+                    alert('Please read AT LEAST 2 reviews PER TEACHER before submitting recommendation!\n\n' +
+                        'WARNING: This application detects patterns of random responses. Participants WILL NOT be compensated for random responses.');
+                    return false;
+                }
                 else return true;
             }
         }
@@ -206,9 +296,14 @@
         function responseChanged(oldRes, newRes) {
             if(oldRes === undefined)
                 return true;
-            else return oldRes.recommendationPick != newRes.recommendationPick ||
+            else return $scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : true ||
                         oldRes.absConfidence != newRes.absConfidence ||
                         oldRes.relConfidence != newRes.relConfidence ||
+                        $scope.isRelative ? true : oldRes.promotionDecision != newRes.promotionDecision ||
+                        $scope.isRelative ? true :oldRes.studentLearningRating != newRes.studentLearningRating ||
+                        $scope.isRelative ? true :oldRes.instructionalPracticeRating != newRes.instructionalPracticeRating ||
+                        $scope.isRelative ? true :oldRes.professionalismRating != newRes.professionalismRating ||
+                        $scope.isRelative ? true :oldRes.overallRating != oldRes.overallRating ||
                         oldRes.comment !== newRes.comment;
         }
 

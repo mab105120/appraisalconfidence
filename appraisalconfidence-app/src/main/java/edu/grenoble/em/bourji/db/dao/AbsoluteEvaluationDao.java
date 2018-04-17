@@ -36,4 +36,13 @@ public class AbsoluteEvaluationDao extends AbstractDAO<AbsoluteEvaluation> {
     public int getNextSubmissionId(String user, String evaluationCode) {
         return getLastSubmissionId(user, evaluationCode) + 1;
     }
+
+    public AbsoluteEvaluation getEvaluation(String userId, String evalCode) {
+        Criteria cr = currentSession().createCriteria(AbsoluteEvaluation.class);
+        cr.add(Restrictions.eq("user", userId))
+                .add(Restrictions.eq("evaluationCode", evalCode))
+                .add(Restrictions.eq("submissionId", getLastSubmissionId(userId, evalCode)));
+        return (AbsoluteEvaluation) cr.list().get(0);
+    }
+
 }

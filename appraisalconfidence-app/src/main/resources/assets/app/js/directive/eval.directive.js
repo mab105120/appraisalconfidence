@@ -12,6 +12,20 @@
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
                 scope.showThirdSupervisor = localStorage.getItem('supervisors') === '3';
+                scope.isRelative = scope.$parent.isRelative;
+
+                scope.setClass = function() {
+                    if(scope.isRelative)
+                        return ['col-xs-5 text-center'];
+                    else return ['col-xs-10 text-center'];
+                };
+
+                scope.setStyle = function() {
+                    if(scope.isRelative)
+                        return {'border-right': '1px dashed gray'};
+                    else return {};
+                }
+
                 scope.displayEvaluation = function(teacher, supervisor) {
 
                     var teachers = {

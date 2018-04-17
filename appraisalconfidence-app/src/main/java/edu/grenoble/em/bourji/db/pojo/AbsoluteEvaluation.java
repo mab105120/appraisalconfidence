@@ -27,7 +27,7 @@ public class AbsoluteEvaluation {
     @Column(name = "STD_LEARNING", nullable = false)
     private int studentLearning;
     @Column(name = "INST_PRACTICE", nullable = false)
-    private int instuctionalPractice;
+    private int instructionalPractice;
     @Column(name = "PROFESSIONALISM", nullable = false)
     private int professionalism;
     @Column(name = "OVERALL", nullable = false)
@@ -35,9 +35,9 @@ public class AbsoluteEvaluation {
     @Column(name = "PROMOTE", nullable = false)
     private int promote;
     @Column(name = "REL_CONFIDENCE", nullable = false)
-    private int relativeConfidence;
+    private int relConfidence;
     @Column(name = "ABS_CONFIDENCE", nullable = false)
-    private int absoluteConfidence;
+    private int absConfidence;
     @Column(name = "COMMENT")
     private String comment;
     @Column(name = "OPEN_TIME", nullable = false)
@@ -73,8 +73,8 @@ public class AbsoluteEvaluation {
         return studentLearning;
     }
 
-    public int getInstuctionalPractice() {
-        return instuctionalPractice;
+    public int getInstructionalPractice() {
+        return instructionalPractice;
     }
 
     public int getProfessionalism() {
@@ -89,12 +89,12 @@ public class AbsoluteEvaluation {
         return promote;
     }
 
-    public int getRelativeConfidence() {
-        return relativeConfidence;
+    public int getRelConfidence() {
+        return relConfidence;
     }
 
-    public int getAbsoluteConfidence() {
-        return absoluteConfidence;
+    public int getAbsConfidence() {
+        return absConfidence;
     }
 
     public String getTimeIn() {

@@ -2,17 +2,15 @@ package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.api.AbsoluteEvaluationPayload;
 import edu.grenoble.em.bourji.api.ProgressStatus;
+import edu.grenoble.em.bourji.db.dao.AbsoluteEvaluationDao;
 import edu.grenoble.em.bourji.db.dao.EvaluationActivityDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
-import edu.grenoble.em.bourji.db.dao.AbsoluteEvaluationDao;
 import edu.grenoble.em.bourji.db.pojo.AbsoluteEvaluation;
 import edu.grenoble.em.bourji.db.pojo.Status;
 import io.dropwizard.hibernate.UnitOfWork;
+import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -26,6 +24,7 @@ import javax.ws.rs.core.Response;
 @Consumes(MediaType.APPLICATION_JSON)
 public class AbsoluteEvaluationResource {
 
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AbsoluteEvaluationResource.class);
     private AbsoluteEvaluationDao dao;
     private EvaluationActivityDAO activityDao;
     private StatusDAO statusDao;
@@ -48,13 +47,13 @@ public class AbsoluteEvaluationResource {
     public Response addEvaluation(AbsoluteEvaluationPayload payload,
                                   @Context ContainerRequestContext requestContext) {
         // Add teacher evaluation
-        AbsoluteEvaluation evaluation = payload.getTeacherEvaluation();
+        AbsoluteEvaluation evaluation = payload.getRecommendation();
         evaluation.setTimeIn(payload.getDatetimeIn());
         evaluation.setTimeOut(payload.getDatetimeOut());
 
         try {
             String user = requestContext.getProperty("user").toString();
-            int nextSubmissionId = dao.getNextSubmissionId(user, payload.getTeacherEvaluation().getEvaluationCode());
+            int nextSubmissionId = dao.getNextSubmissionId(user, payload.getRecommendation().getEvaluationCode());
             evaluation.setUser(user);
             evaluation.setSubmissionId(nextSubmissionId);
             dao.add(evaluation);
@@ -72,4 +71,21 @@ public class AbsoluteEvaluationResource {
         }
         return Response.ok().build();
     }
+
+    @GET
+    @Path("/{evalCode}")
+    @UnitOfWork
+    public Response getTeacherEvaluation(@PathParam("evalCode") String evalCode, @Context ContainerRequestContext requestContext) {
+        try {
+            String userId = requestContext.getProperty("user").toString();
+            LOGGER.info("Getting absolute performance appraisal recommendation for " + userId);
+            AbsoluteEvaluation recommendation = dao.getEvaluation(userId, evalCode);
+            return Response.ok(recommendation).build();
+        } catch (Throwable e) {
+            String message = "Unable to retrieve user performance appraisal report. Details: " + e.getMessage();
+            LOGGER.error(message);
+            return Respond.respondWithError(message);
+        }
+    }
+
 }

@@ -114,26 +114,28 @@
                 });
             }
 
-            function postUserEvaluation(userEvaluation) {
+            function postUserEvaluation(userEvaluation, mode) {
                 var id_token = localStorage.getItem('id_token');
+                var path = mode === 'relative' ? '/api/evaluation/relative' : '/api/evaluation/absolute';
                 return $http({
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
                         data: userEvaluation,
-                        url: url + '/api/evaluation/relative'
+                        url: url + path
                 });
             }
 
-            function getUserEvaluation(evalCode) {
+            function getUserEvaluation(evalCode, mode) {
                 var id_token = localStorage.getItem('id_token');
+                var mode = mode === 'relative' ? 'relative' : 'absolute';
                 return $http({
                         method: 'GET',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
-                        url: url + '/api/evaluation/relative/' + evalCode
+                        url: url + '/api/evaluation/' + mode + '/' + evalCode
                 });
             }
 

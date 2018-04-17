@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class AbsoluteEvaluationPayload {
 
-    private AbsoluteEvaluation teacherEvaluation;
+    private AbsoluteEvaluation recommendation;
     private List<EvaluationActivity> activities;
     private String datetimeIn;
     private String datetimeOut;
@@ -19,8 +19,8 @@ public class AbsoluteEvaluationPayload {
         // no-arg default constructor for jackson
     }
 
-    public AbsoluteEvaluation getTeacherEvaluation() {
-        return teacherEvaluation;
+    public AbsoluteEvaluation getRecommendation() {
+        return recommendation;
     }
 
     public List<EvaluationActivity> getActivities() {
