@@ -54,13 +54,13 @@ public enum ExperimentMode {
         add(new EvaluationCode("15", "D", "F"));
     }}),
     ABSOLUTE(new ArrayList<EvaluationCode>() {{
-        add(new EvaluationCode("1", "A", null));
-        add(new EvaluationCode("2", "B", null));
-        add(new EvaluationCode("3", "C", null));
-        add(new EvaluationCode("4", "D", null));
-        add(new EvaluationCode("5", "E", null));
-        add(new EvaluationCode("6", "F", null));
-        add(new EvaluationCode("7", "G", null));
+        add(new EvaluationCode("p1", "A", null));
+        add(new EvaluationCode("p2", "B", null));
+        add(new EvaluationCode("p3", "C", null));
+        add(new EvaluationCode("1", "D", null));
+        add(new EvaluationCode("2", "E", null));
+        add(new EvaluationCode("3", "F", null));
+        add(new EvaluationCode("4", "G", null));
     }});
 
     private List<EvaluationCode> evaluationCodes;

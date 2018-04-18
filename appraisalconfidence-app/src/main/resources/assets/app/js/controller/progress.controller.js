@@ -4,10 +4,11 @@
         '$scope',
         '$state',
         'appcon',
-        'authService'
+        'authService',
+        'profileService'
     ];
 
-    function progress_controller($scope, $state, appcon, authService) {
+    function progress_controller($scope, $state, appcon, authService, profileService) {
 
         function init() {
             $scope.$parent.startSpinner();
@@ -36,8 +37,20 @@
                 }
             ];
 
+            function addPracticeEvaluationsToRows() {
+                var profile = profileService.getProfile();
+                var totalPracticeEvaluations = profile.practice;
+                if(totalPracticeEvaluations == 0) return;
+                for(var i = 1; i <= totalPracticeEvaluations; i++) {
+                    $scope.rows.push({
+                        id: 'EVALUATION_P' + i,
+                        display: 'Teacher Evaluation (Practice) ' + i + ' / ' + totalPracticeEvaluations
+                    })
+                }
+            }
+
             function addEvaluationsToRows() {
-                var totalEvaluations = localStorage.getItem('totalEvaluations');
+                var totalEvaluations = profileService.getProfile().totalEvaluations;
                 for(i = 1; i <= totalEvaluations; i++) {
                     $scope.rows.push(
                         {
@@ -48,6 +61,7 @@
                 }
             }
 
+            addPracticeEvaluationsToRows();
             addEvaluationsToRows();
 
             appcon.getProgress()
@@ -90,6 +104,7 @@
                         $scope.$parent.stopSpinner();
                     });
                 }
+                $scope.$parent.stopSpinner();
             }, function failure(response) {
                 console.log(response);
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
@@ -107,6 +122,8 @@
                 $state.go('experience');
             } else if (id === 'QUEST_CON') {
                 $state.go('confidence');
+            } else if(id.startsWith('EVALUATION_P')) {
+                $state.go('evaluation', {id: id.substr(id.indexOf('_') + 1)});
             } else if(id.startsWith('EVALUATION')) {
                 $state.go('evaluation', {id: parseInt(id.substr(id.indexOf('_') + 1))});
             }

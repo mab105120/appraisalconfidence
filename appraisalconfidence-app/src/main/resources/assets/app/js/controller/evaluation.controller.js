@@ -8,17 +8,21 @@
             'appcon',
             'authService',
             'toaster',
-            '$sce'
+            '$sce',
+            'profileService'
         ];
 
     require('bootstrap-slider');
     var _ = require('lodash');
 
-    function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce) {
+    function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce, profileService) {
 
         function init() {
+            $scope.$parent.startSpinner();
 
-            $scope.isRelative = false;
+            initializeCurrentAndTotalEvaluationVars();
+
+            $scope.isRelative = profileService.getProfile().isRelative;
             $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
 
             $scope.setClass = function() {
@@ -28,19 +32,14 @@
             }
 
             $scope.time_in = new Date().toISOString();
-            $scope.$parent.startSpinner();
 
             if(!authService.isAuthenticated()) {
                 alert('You are not logged in. You need to log in to view this page.');
                 authService.login();
             }
 
-            $scope.currentEvaluation = $stateParams.id;
-            $scope.totalEvaluations = localStorage.getItem('totalEvaluations');
-            var progressPercentage = ( $scope.currentEvaluation / $scope.totalEvaluations ) * 100;
-            $scope.progressBarStyle = {
-                'width': progressPercentage + '%'
-            }
+            setUpProgressBar();
+            setUpSliders();
 
             // these vars are set by the eval directive when users click on supervisor reviews.
             $scope.modalCode = '';
@@ -51,19 +50,6 @@
             });
 
             $scope.modalTitle = '';
-
-            setupSliders();
-
-            // comment control
-            $scope.comment = '';
-            $scope.$watch('comment', function() {
-                $scope.calculateRemainingChars();
-            });
-            $scope.remainingChars = 200;
-            $scope.calculateRemainingChars = function() {
-                $scope.remainingChars = 200 - $scope.comment.length;
-            }
-
             // evaluation activity
             $scope.activities = [];
             $scope.time_modal_open;
@@ -80,7 +66,7 @@
             appcon.stepIsCompleted('EVALUATION_' + $stateParams.id)
             .then(function success(response) {
                 if(response.data === true) {
-                    appcon.getUserEvaluation($stateParams.id)
+                    appcon.getUserEvaluation($stateParams.id, $scope.isRelative ? 'relative' : 'absolute')
                     .then(function success(response) {
 
                         // pre-populate fields
@@ -113,21 +99,23 @@
 
                         $scope.getTeacherPerformanceReviews();
                     }, function failure(response) {
-                        var error = response.data === null ? 'Server unreachable' : response.data.message;
-                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                        $scope.$parent.stopSpinner();
+                        handleFailure(response);
                     });
                 }
                 else {
                     $scope.getTeacherPerformanceReviews();
                 }
             }, function failure(response) {
+                handleFailure(response);
+            });
+
+            function handleFailure(response) {
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
                 toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
                 $scope.$parent.stopSpinner();
-            });
+            }
 
-            function setupSliders() {
+            function setUpSliders() {
                 $('#absConfidenceSlider').slider();
                 $('#absConfidenceSlider').on('change', function(slideEvt) {
                     $scope.absConfidence = slideEvt.value.newValue;
@@ -157,6 +145,26 @@
                 $('#overallSlider').on('change', function(slideEvt) {
                     $scope.overallRating = slideEvt.value.newValue;
                 });
+            }
+
+            function setUpProgressBar() {
+                var progressPercentage = ( $scope.currentEvaluation / $scope.totalEvaluations ) * 100;
+                $scope.progressBarStyle = {
+                    'width': progressPercentage + '%'
+                }
+            }
+
+            function initializeCurrentAndTotalEvaluationVars() {
+                if($stateParams.id.toLowerCase().startsWith('p')) {
+                    $scope.currentEvaluation = $stateParams.id.substr(1);
+                    $scope.totalEvaluations = profileService.getProfile().practice;
+                    $scope.teacherEvaluationLabel = '(PRACTICE) Teacher Evaluation';
+                    $('#evaluationProgressLabel').css('color', 'green');
+                } else {
+                    $scope.currentEvaluation = $stateParams.id;
+                    $scope.totalEvaluations = profileService.getProfile().totalEvaluations;
+                    $scope.teacherEvaluationLabel = 'Teacher Evaluation';
+                }
             }
         }
 
@@ -210,7 +218,6 @@
             // make sure participants are not just providing random answers
             if(!passQualityCheck()) return;
 
-            var nextEvaluationCode = parseInt($stateParams.id) + 1;
             if(responseChanged($scope.oldRes, userEval)) {
                 $scope.$parent.startSpinner();
                 appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
@@ -231,6 +238,13 @@
 
             function routeToNextPage() {
                 $window.scrollTo(0, 0); // scroll to top
+                //'p' + (parseInt($scope.currentEvaluation) + 1)}
+                if($stateParams.id.toLowerCase().startsWith('p')) {
+                    if($scope.currentEvaluation < profileService.getProfile().practice)
+                        $state.go('evaluation', {id: 'p' + (parseInt($scope.currentEvaluation) + 1)});
+                    else
+                        $state.go('evaluation', {id: 1});
+                }
                 var nextEvaluationCode = parseInt($stateParams.id) + 1;
                 if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
                     $state.go('progress');

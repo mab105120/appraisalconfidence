@@ -32,7 +32,7 @@ public class PerformanceReviewResource {
     public Response getPerformanceReviews(@PathParam("evaluationCode") String evaluationCode) {
         TeacherDossiers dossiers;
         try {
-            dossiers = cache.getTeacherDossiers(evaluationCode);
+            dossiers = cache.getTeacherDossiers(evaluationCode.toLowerCase());
         } catch (HibernateException | NullPointerException e) {
             return Respond.respondWithError("Unable to retrieve evaluation reviews from database. Error details: " + e.getMessage());
         }
