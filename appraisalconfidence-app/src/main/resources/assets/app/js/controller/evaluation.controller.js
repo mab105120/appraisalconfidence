@@ -99,10 +99,10 @@
                             $('#professionalismSlider').slider().slider('setValue', response.data.professionalism);
                             $scope.overallRating = response.data.overall;
                             $('#overallSlider').slider().slider('setValue', response.data.overall);
-                            if(response.data.promote === true)
-                                $('#promote-yes').prop('checked', true);
-                            else $('#promote-no').prop('checked', true);
                             $scope.promotionDecision = response.data.promote;
+                            if(response.data.promote.toUpperCase() === 'Y')
+                                $('#promoteYes').prop('checked', true);
+                            else $('#promoteNo').prop('checked', true);
                         }
 
                         $scope.absConfidence = response.data.absConfidence;

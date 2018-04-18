@@ -33,7 +33,7 @@ public class AbsoluteEvaluation {
     @Column(name = "OVERALL", nullable = false)
     private int overall;
     @Column(name = "PROMOTE", nullable = false)
-    private int promote;
+    private String promote;
     @Column(name = "REL_CONFIDENCE", nullable = false)
     private int relConfidence;
     @Column(name = "ABS_CONFIDENCE", nullable = false)
@@ -85,7 +85,7 @@ public class AbsoluteEvaluation {
         return overall;
     }
 
-    public int isPromote() {
+    public String getPromote() {
         return promote;
     }
 

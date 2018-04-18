@@ -9,7 +9,7 @@
     "@uirouter/angularjs": "1.0.3",
     "angular": "1.6.5",
     "angular-auth0": "2.0.0",
-    "auth0-js": "^8.9.2",
+    "auth0-js": "8.9.2",
     "bootstrap": "3.3.7",
     "jquery": "3.2.1",
     "bootstrap-slider": "9.8.1",
