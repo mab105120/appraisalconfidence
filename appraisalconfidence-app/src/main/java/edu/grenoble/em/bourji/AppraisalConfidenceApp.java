@@ -27,7 +27,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
             PerformanceReview.class, UserDemographic.class, UserExperience.class,
             UserConfidence.class, RelativeEvaluation.class, Status.class, Activity.class,
-            EvaluationActivity.class, AbsoluteEvaluation.class) {
+            EvaluationActivity.class, AbsoluteEvaluation.class, ParticipantProfile.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -74,11 +74,12 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache, config.getSettings()));
         environment.jersey().register(new RelativeEvaluationResource(confidenceDAO, evaluationActivityDAO, statusDAO, performanceReviewCache));
         environment.jersey().register(new QuestionnaireResource(questionnaireDAO, statusDAO));
-        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory()), config.getSettings()));
+        environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory())));
         environment.jersey().register(new ActivityResource(activityDAO));
         environment.jersey().register(new CommunicationResource(config.getEmailConfiguration().getUsername(), config.getEmailConfiguration().getPassword()));
         environment.jersey().register(new ValidationResource(confidenceDAO, questionnaireDAO));
         environment.jersey().register(new AbsoluteEvaluationResource(absEvalDao, evaluationActivityDAO, statusDAO));
+        environment.jersey().register(new ParticipantProfileResource(new ParticipantProfileDAO(hibernate.getSessionFactory()), config.getSettings()));
     }
 
     @Override

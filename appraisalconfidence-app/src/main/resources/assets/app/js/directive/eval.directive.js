@@ -7,12 +7,12 @@
             restrict: 'E',
             scope: {
                 jobFunction: '@',
-                jobFunctionCode: '@'
+                jobFunctionCode: '@',
+                isRelative: '='
             },
             templateUrl: 'app/template/eval.html',
             link: function(scope) {
                 scope.showThirdSupervisor = localStorage.getItem('supervisors') === '3';
-                scope.isRelative = scope.$parent.isRelative;
 
                 scope.setClass = function() {
                     if(scope.isRelative)

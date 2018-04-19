@@ -2,16 +2,21 @@
 
     'use-strict';
 
-    function profile_service() {
+    profile_service.$inject = [
+        'appcon'
+    ]
+
+    function profile_service(appcon, $scope) {
+
+        var promise; // save result of first call so that it is made only once
+
         function getProfile() {
-            return {
-                name: 'profile1',
-                isRelative: false,
-                practice: 3,
-                feedback: 'lo',
-                totalEvaluations: 4,
-                duration: 30
-            };
+            if( !promise ) {
+                promise = appcon.getParticipantProfile().then(function(response) {
+                   return response.data;
+                });
+            }
+            return promise;
         }
 
         return {

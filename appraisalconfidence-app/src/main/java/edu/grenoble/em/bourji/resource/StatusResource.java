@@ -1,6 +1,5 @@
 package edu.grenoble.em.bourji.resource;
 
-import edu.grenoble.em.bourji.api.ExperimentSettings;
 import edu.grenoble.em.bourji.api.Progress;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
@@ -25,11 +24,9 @@ public class StatusResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StatusResource.class);
     private StatusDAO statusDAO;
-    private ExperimentSettings settings;
 
-    public StatusResource(StatusDAO statusDAO, ExperimentSettings settings) {
+    public StatusResource(StatusDAO statusDAO) {
         this.statusDAO = statusDAO;
-        this.settings = settings;
     }
 
     @GET
@@ -64,18 +61,6 @@ public class StatusResource {
             LOGGER.error(message);
             return Respond.respondWithError(message);
         }
-    }
-
-    @GET
-    @Path("/completion-code")
-    @Produces(MediaType.TEXT_PLAIN)
-    @UnitOfWork
-    public Response getCompletionCode(@Context ContainerRequestContext requestContext) {
-        String user = requestContext.getProperty("user").toString();
-        Progress progress = new Progress(statusDAO.getProgress(user));
-        if (settings.getTotalEvaluations() == progress.getNext().getPriority() - 4)
-            return Response.ok(settings.getCompletionCode()).build();
-        else return Response.serverError().entity("Experiment not completed.").build();
     }
 
 }

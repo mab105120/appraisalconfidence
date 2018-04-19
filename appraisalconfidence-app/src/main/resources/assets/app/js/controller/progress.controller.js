@@ -9,9 +9,13 @@
     ];
 
     function progress_controller($scope, $state, appcon, authService, profileService) {
+        $scope.$parent.startSpinner();
+        profileService.getProfile().then(function(response) {
+            $scope.profile = response;
+            init();
+        })
 
         function init() {
-            $scope.$parent.startSpinner();
 
             if(!authService.isAuthenticated()) {
                 alert('You are not logged in. You need to log in to view this page.');
@@ -38,8 +42,7 @@
             ];
 
             function addPracticeEvaluationsToRows() {
-                var profile = profileService.getProfile();
-                var totalPracticeEvaluations = profile.practice;
+                var totalPracticeEvaluations = $scope.profile.practice;
                 if(totalPracticeEvaluations == 0) return;
                 for(var i = 1; i <= totalPracticeEvaluations; i++) {
                     $scope.rows.push({
@@ -50,7 +53,7 @@
             }
 
             function addEvaluationsToRows() {
-                var totalEvaluations = profileService.getProfile().totalEvaluations;
+                var totalEvaluations = $scope.profile.evaluations;
                 for(i = 1; i <= totalEvaluations; i++) {
                     $scope.rows.push(
                         {
@@ -112,8 +115,6 @@
                 $scope.$parent.stopSpinner();
             });
         }
-
-        init();
 
         $scope.edit = function(id) {
             if(id === 'QUEST_DEMO') {

@@ -196,16 +196,21 @@
                 });
             }
 
-            function getCompletionCode() {
+            function getParticipantProfile() {
+                var id_token = localStorage.getItem('id_token');
                 return $http({
-                    method: 'GET',
-                    url: url + '/status/completion-code'
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/participant-profile/'
                 });
             }
 
             return {
                 getReviews: getReviews,
                 getExperimentSettings: getExperimentSettings,
+                getParticipantProfile: getParticipantProfile,
                 postUserDemographic: postUserDemographic,
                 getUserDemographics: getUserDemographics,
                 postUserExperience: postUserExperience,

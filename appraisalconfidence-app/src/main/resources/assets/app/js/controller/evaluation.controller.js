@@ -16,29 +16,33 @@
     var _ = require('lodash');
 
     function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce, profileService) {
+        $scope.$parent.startSpinner();
+        console.log('evaluation controller started executing');
+        profileService.getProfile().then(function(response) {
+            $scope.profile = response;
+            init();
+        });
 
         function init() {
-            $scope.$parent.startSpinner();
-
-            initializeCurrentAndTotalEvaluationVars();
-
-            $scope.isRelative = profileService.getProfile().isRelative;
-            $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
-
-            $scope.setClass = function() {
-                if($scope.isRelative)
-                    return ['col-xs-5', 'col-xs-offset-2', 'text-center'];
-                else return ['col-xs-10', 'col-xs-offset-2', 'text-center'];
-            }
-
-            $scope.time_in = new Date().toISOString();
-
             if(!authService.isAuthenticated()) {
                 alert('You are not logged in. You need to log in to view this page.');
                 authService.login();
             }
 
+            initializeCurrentAndTotalEvaluationVars();
+            console.log('setting the relative variable now');
+            $scope.isRelative = $scope.profile.relative;
+            $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
+            $scope.setClass = function() {
+               if($scope.isRelative)
+                   return ['col-xs-5', 'col-xs-offset-2', 'text-center'];
+               else return ['col-xs-10', 'col-xs-offset-2', 'text-center'];
+            }
             setUpProgressBar();
+
+
+            $scope.time_in = new Date().toISOString();
+
             setUpSliders();
 
             // these vars are set by the eval directive when users click on supervisor reviews.
@@ -157,18 +161,16 @@
             function initializeCurrentAndTotalEvaluationVars() {
                 if($stateParams.id.toLowerCase().startsWith('p')) {
                     $scope.currentEvaluation = $stateParams.id.substr(1);
-                    $scope.totalEvaluations = profileService.getProfile().practice;
+                    $scope.totalEvaluations = $scope.profile.practice;
                     $scope.teacherEvaluationLabel = '(PRACTICE) Teacher Evaluation';
                     $('#evaluationProgressLabel').css('color', 'green');
                 } else {
                     $scope.currentEvaluation = $stateParams.id;
-                    $scope.totalEvaluations = profileService.getProfile().totalEvaluations;
+                    $scope.totalEvaluations = $scope.profile.evaluations;
                     $scope.teacherEvaluationLabel = 'Teacher Evaluation';
                 }
             }
         }
-
-        init();
 
         $scope.getTeacherPerformanceReviews = function() {
             appcon.getReviews($stateParams.id).then(
@@ -240,7 +242,7 @@
                 $window.scrollTo(0, 0); // scroll to top
                 //'p' + (parseInt($scope.currentEvaluation) + 1)}
                 if($stateParams.id.toLowerCase().startsWith('p')) {
-                    if($scope.currentEvaluation < profileService.getProfile().practice)
+                    if($scope.currentEvaluation < $scope.profile.practice)
                         $state.go('evaluation', {id: 'p' + (parseInt($scope.currentEvaluation) + 1)});
                     else
                         $state.go('evaluation', {id: 1});
@@ -305,22 +307,21 @@
                 }
                 else return true;
             }
-        }
 
-        function responseChanged(oldRes, newRes) {
-            if(oldRes === undefined)
-                return true;
-            else return $scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : true ||
-                        oldRes.absConfidence != newRes.absConfidence ||
-                        oldRes.relConfidence != newRes.relConfidence ||
-                        $scope.isRelative ? true : oldRes.promotionDecision != newRes.promotionDecision ||
-                        $scope.isRelative ? true :oldRes.studentLearningRating != newRes.studentLearningRating ||
-                        $scope.isRelative ? true :oldRes.instructionalPracticeRating != newRes.instructionalPracticeRating ||
-                        $scope.isRelative ? true :oldRes.professionalismRating != newRes.professionalismRating ||
-                        $scope.isRelative ? true :oldRes.overallRating != oldRes.overallRating ||
-                        oldRes.comment !== newRes.comment;
+            function responseChanged(oldRes, newRes) {
+                        if(oldRes === undefined)
+                            return true;
+                        else return $scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : true ||
+                                    oldRes.absConfidence != newRes.absConfidence ||
+                                    oldRes.relConfidence != newRes.relConfidence ||
+                                    $scope.isRelative ? true : oldRes.promotionDecision != newRes.promotionDecision ||
+                                    $scope.isRelative ? true :oldRes.studentLearningRating != newRes.studentLearningRating ||
+                                    $scope.isRelative ? true :oldRes.instructionalPracticeRating != newRes.instructionalPracticeRating ||
+                                    $scope.isRelative ? true :oldRes.professionalismRating != newRes.professionalismRating ||
+                                    $scope.isRelative ? true :oldRes.overallRating != oldRes.overallRating ||
+                                    oldRes.comment !== newRes.comment;
+                    }
         }
-
     };
 
     module.exports = evaluation_controller;
