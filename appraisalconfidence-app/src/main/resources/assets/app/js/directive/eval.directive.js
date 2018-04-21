@@ -11,8 +11,10 @@
                 isRelative: '='
             },
             templateUrl: 'app/template/eval.html',
-            link: function(scope) {
-                scope.showThirdSupervisor = localStorage.getItem('supervisors') === '3';
+            link: function(scope, elem, att) {
+
+                // to show third supervisor add a show-third-supervisor attribute to
+                // directive and set it to true
 
                 scope.setClass = function() {
                     if(scope.isRelative)

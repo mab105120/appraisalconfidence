@@ -17,11 +17,16 @@
 
     function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce, profileService) {
         $scope.$parent.startSpinner();
-        console.log('evaluation controller started executing');
-        profileService.getProfile().then(function(response) {
-            $scope.profile = response;
-            init();
-        });
+
+        profileService.getProfile().then(
+            function(response) {
+                $scope.profile = response.data;
+                init();
+            },
+            function(response) {
+                handleFailure(response);
+            }
+        );
 
         function init() {
             if(!authService.isAuthenticated()) {
@@ -30,7 +35,11 @@
             }
 
             initializeCurrentAndTotalEvaluationVars();
-            console.log('setting the relative variable now');
+
+            $scope.isPractice = false;
+            if($stateParams.id.toLowerCase().startsWith('p'))
+                $scope.isPractice = true;
+
             $scope.isRelative = $scope.profile.relative;
             $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
             $scope.setClass = function() {
@@ -113,12 +122,6 @@
                 handleFailure(response);
             });
 
-            function handleFailure(response) {
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                $scope.$parent.stopSpinner();
-            }
-
             function setUpSliders() {
                 $('#absConfidenceSlider').slider();
                 $('#absConfidenceSlider').on('change', function(slideEvt) {
@@ -173,7 +176,7 @@
         }
 
         $scope.getTeacherPerformanceReviews = function() {
-            appcon.getReviews($stateParams.id).then(
+            appcon.getReviews($stateParams.id, $scope.profile.mode).then(
                 function(response) {
                     console.log('GET /api/performance-review/ ' + response.status);
                     $scope.evaluations = response.data;
@@ -214,7 +217,8 @@
                 recommendation: userEval,
                 activities: $scope.activities,
                 datetimeIn: $scope.time_in,
-                datetimeOut: $scope.time_out
+                datetimeOut: $scope.time_out,
+                mode: $scope.profile.mode
             }
 
             // make sure participants are not just providing random answers
@@ -240,18 +244,19 @@
 
             function routeToNextPage() {
                 $window.scrollTo(0, 0); // scroll to top
-                //'p' + (parseInt($scope.currentEvaluation) + 1)}
-                if($stateParams.id.toLowerCase().startsWith('p')) {
-                    if($scope.currentEvaluation < $scope.profile.practice)
-                        $state.go('evaluation', {id: 'p' + (parseInt($scope.currentEvaluation) + 1)});
+                var currentEval = parseInt($scope.currentEvaluation);
+                if($scope.isPractice) {
+                    if(currentEval < $scope.profile.practice)
+                        $state.go('evaluation', {id: 'P' + (currentEval + 1)});
                     else
                         $state.go('evaluation', {id: 1});
+                } else {
+                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                    if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
+                        $state.go('progress');
+                    else
+                        $state.go('evaluation', {id: nextEvaluationCode});
                 }
-                var nextEvaluationCode = parseInt($stateParams.id) + 1;
-                if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
-                    $state.go('progress');
-                else
-                    $state.go('evaluation', {id: nextEvaluationCode});
             };
 
             function participantReadRequiredReviews(activities) {
@@ -278,10 +283,11 @@
             };
 
             function formIsValid() {
-                if($scope.relConfidence === undefined || $scope.absConfidence === undefined) {
-                    alert('All fields in the form below are required. Please make sure to fill all fields out');
-                    return false;
-                }
+                if(!$scope.isPractice)
+                    if($scope.relConfidence === undefined || $scope.absConfidence === undefined) {
+                        alert('All fields in the form below are required. Please make sure to fill all fields out');
+                        return false;
+                    }
                 if($scope.isRelative) {
                     if($scope.selectedTeacher === undefined) {
                         alert('All fields in the form below are required. Please make sure to fill all fields out');
@@ -322,6 +328,13 @@
                                     oldRes.comment !== newRes.comment;
                     }
         }
+
+        function handleFailure(response) {
+            var error = response.data === null ? 'Server unreachable' : response.data.message;
+            toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+            $scope.$parent.stopSpinner();
+        }
+
     };
 
     module.exports = evaluation_controller;

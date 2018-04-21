@@ -14,6 +14,7 @@ public class AbsoluteEvaluationPayload {
     private List<EvaluationActivity> activities;
     private String datetimeIn;
     private String datetimeOut;
+    private String mode;
 
     public AbsoluteEvaluationPayload() {
         // no-arg default constructor for jackson
@@ -33,5 +34,9 @@ public class AbsoluteEvaluationPayload {
 
     public String getDatetimeOut() {
         return datetimeOut;
+    }
+
+    public String getMode() {
+        return mode;
     }
 }

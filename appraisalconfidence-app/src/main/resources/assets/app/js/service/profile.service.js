@@ -11,10 +11,8 @@
         var promise; // save result of first call so that it is made only once
 
         function getProfile() {
-            if( !promise ) {
-                promise = appcon.getParticipantProfile().then(function(response) {
-                   return response.data;
-                });
+            if( !promise || promise.$$state.status !== 1 ) {
+                promise = appcon.getParticipantProfile();
             }
             return promise;
         }

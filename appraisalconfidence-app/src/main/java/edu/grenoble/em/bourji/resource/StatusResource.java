@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.api.Progress;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Response;
  */
 @Path("/status")
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticate
 public class StatusResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StatusResource.class);

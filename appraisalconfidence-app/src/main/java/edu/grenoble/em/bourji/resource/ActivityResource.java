@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.db.dao.ActivityDAO;
 import edu.grenoble.em.bourji.db.pojo.Activity;
 import io.dropwizard.hibernate.UnitOfWork;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.Response;
  * Created by Moe on 9/24/17.
  */
 @Path("/activity")
+@Authenticate
 public class ActivityResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ActivityResource.class);

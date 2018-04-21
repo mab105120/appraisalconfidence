@@ -1,7 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.PerformanceReviewCache;
-import edu.grenoble.em.bourji.api.ExperimentSettings;
 import edu.grenoble.em.bourji.api.TeacherDossiers;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
@@ -19,30 +18,21 @@ import javax.ws.rs.core.Response;
 public class PerformanceReviewResource {
 
     private final PerformanceReviewCache cache;
-    private final ExperimentSettings settings;
 
-    public PerformanceReviewResource(PerformanceReviewCache cache, ExperimentSettings settings) {
+    public PerformanceReviewResource(PerformanceReviewCache cache) {
         this.cache = cache;
-        this.settings = settings;
     }
 
     @GET
-    @Path("/{evaluationCode}")
+    @Path("/{evaluationCode}/{mode}")
     @UnitOfWork
-    public Response getPerformanceReviews(@PathParam("evaluationCode") String evaluationCode) {
+    public Response getPerformanceReviews(@PathParam("evaluationCode") String evaluationCode, @PathParam("mode") String mode) {
         TeacherDossiers dossiers;
         try {
-            dossiers = cache.getTeacherDossiers(evaluationCode.toLowerCase());
+            dossiers = cache.getTeacherDossiers(evaluationCode.toLowerCase(), mode);
         } catch (HibernateException | NullPointerException e) {
             return Respond.respondWithError("Unable to retrieve evaluation reviews from database. Error details: " + e.getMessage());
         }
         return Response.ok(dossiers).build();
     }
-
-    @GET
-    @Path("/settings")
-    public Response getExperimentSettings() {
-        return Response.ok(settings).build();
-    }
-
 }

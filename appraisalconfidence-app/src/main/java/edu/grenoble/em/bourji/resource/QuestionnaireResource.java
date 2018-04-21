@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
@@ -23,6 +24,7 @@ import java.util.List;
 @Path("/questionnaire")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticate
 public class QuestionnaireResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuestionnaireResource.class);

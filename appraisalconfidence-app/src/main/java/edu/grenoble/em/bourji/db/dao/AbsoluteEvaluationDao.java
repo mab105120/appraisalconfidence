@@ -42,7 +42,10 @@ public class AbsoluteEvaluationDao extends AbstractDAO<AbsoluteEvaluation> {
         cr.add(Restrictions.eq("user", userId))
                 .add(Restrictions.eq("evaluationCode", evalCode))
                 .add(Restrictions.eq("submissionId", getLastSubmissionId(userId, evalCode)));
-        return (AbsoluteEvaluation) cr.list().get(0);
+        List<AbsoluteEvaluation> result = cr.list();
+        if(result.isEmpty())
+            throw new RuntimeException("Unable to find evaluation record for " + userId + ", eval code: " + evalCode);
+        return result.get(0);
     }
 
 }

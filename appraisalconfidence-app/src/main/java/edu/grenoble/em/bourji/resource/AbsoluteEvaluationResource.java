@@ -1,5 +1,7 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
+import edu.grenoble.em.bourji.PerformanceReviewCache;
 import edu.grenoble.em.bourji.api.AbsoluteEvaluationPayload;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.AbsoluteEvaluationDao;
@@ -22,6 +24,7 @@ import javax.ws.rs.core.Response;
 @Path("/evaluation/absolute")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticate
 public class AbsoluteEvaluationResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AbsoluteEvaluationResource.class);
@@ -51,13 +54,16 @@ public class AbsoluteEvaluationResource {
         evaluation.setTimeIn(payload.getDatetimeIn());
         evaluation.setTimeOut(payload.getDatetimeOut());
 
+        if (!PerformanceReviewCache.isValid(evaluation.getEvaluationCode(), payload.getMode()))
+            return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", evaluation.getEvaluationCode()));
+
         try {
             String user = requestContext.getProperty("user").toString();
             int nextSubmissionId = dao.getNextSubmissionId(user, payload.getRecommendation().getEvaluationCode());
             evaluation.setUser(user);
             evaluation.setSubmissionId(nextSubmissionId);
             dao.add(evaluation);
-            // Add elvaluation activity
+            // Add evaluation activity
             payload.getActivities().forEach(a -> {
                 a.setUser(user);
                 a.setSubmissionId(nextSubmissionId);
@@ -82,7 +88,7 @@ public class AbsoluteEvaluationResource {
             AbsoluteEvaluation recommendation = dao.getEvaluation(userId, evalCode);
             return Response.ok(recommendation).build();
         } catch (Throwable e) {
-            String message = "Unable to retrieve user performance appraisal report. Details: " + e.getMessage();
+            String message = "Unable to retrieve user performance appraisal report: " + e.getMessage();
             LOGGER.error(message);
             return Respond.respondWithError(message);
         }

@@ -11,27 +11,16 @@
 
         function appcon_service($http) {
 
-            function getReviews(evaluationCode) {
+            function getReviews(evaluationCode, mode) {
                 var id_token = localStorage.getItem("id_token");
                 var config = {
                     method: 'GET',
                     headers: {
                         "Authorization": 'Bearer ' + id_token
                     },
-                    url:  url + '/api/performance-review/' + evaluationCode
+                    url:  url + '/api/performance-review/' + evaluationCode + '/' + mode
                 };
                 return $http(config);
-            }
-
-            function getExperimentSettings() {
-                var id_token = localStorage.getItem("id_token");
-                return $http({
-                    method: 'GET',
-                    headers: {
-                        "Authorization": 'Bearer ' + id_token
-                    },
-                    url: url + '/api/performance-review/settings'
-                });
             }
 
             function postUserDemographic(user) {
@@ -209,7 +198,6 @@
 
             return {
                 getReviews: getReviews,
-                getExperimentSettings: getExperimentSettings,
                 getParticipantProfile: getParticipantProfile,
                 postUserDemographic: postUserDemographic,
                 getUserDemographics: getUserDemographics,

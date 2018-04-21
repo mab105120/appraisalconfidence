@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.PerformanceReviewCache;
 import edu.grenoble.em.bourji.api.RelativeEvaluationPayload;
 import edu.grenoble.em.bourji.api.ProgressStatus;
@@ -25,20 +26,18 @@ import java.util.List;
 @Path("/evaluation/relative")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticate
 public class RelativeEvaluationResource {
 
     private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelativeEvaluationResource.class);
-    private final PerformanceReviewCache performanceReviewCache;
     private final AppraisalConfidenceDAO dao;
     private final EvaluationActivityDAO evaluationActivityDAO;
     private final StatusDAO statusDAO;
 
-    public RelativeEvaluationResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO,
-                                      StatusDAO statusDAO, PerformanceReviewCache performanceReviewCache) {
+    public RelativeEvaluationResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO, StatusDAO statusDAO) {
         this.dao = dao;
         this.statusDAO = statusDAO;
         this.evaluationActivityDAO = evaluationActivityDAO;
-        this.performanceReviewCache = performanceReviewCache;
     }
 
     @POST
@@ -51,7 +50,7 @@ public class RelativeEvaluationResource {
         relativeEvaluation.setCloseTime(payload.getDatetimeOut());
         List<EvaluationActivity> activities = payload.getActivities();
 
-        if (!performanceReviewCache.isValid(relativeEvaluation.getEvaluationCode()))
+        if (!PerformanceReviewCache.isValid(relativeEvaluation.getEvaluationCode(), payload.getMode()))
             return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", relativeEvaluation.getEvaluationCode()));
 
         try {

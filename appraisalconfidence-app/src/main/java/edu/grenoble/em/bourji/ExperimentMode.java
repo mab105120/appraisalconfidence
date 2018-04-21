@@ -1,9 +1,10 @@
 package edu.grenoble.em.bourji;
 
-import edu.grenoble.em.bourji.api.EvaluationCode;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Moe on 2/13/2018.
@@ -11,65 +12,58 @@ import java.util.List;
 public enum ExperimentMode {
 
     // Triads: (1, 4, 7), (2, 5, 8), (3, 6, 9)
-    TALL(new ArrayList<EvaluationCode>() {{
-        add(new EvaluationCode("1", "A", "B"));
-        add(new EvaluationCode("2", "D", "E"));
-        add(new EvaluationCode("3", "G", "H"));
-        add(new EvaluationCode("4", "B", "C"));
-        add(new EvaluationCode("5", "E", "F"));
-        add(new EvaluationCode("6", "H", "I"));
-        add(new EvaluationCode("7", "C", "A"));
-        add(new EvaluationCode("8", "F", "D"));
-        add(new EvaluationCode("9", "I", "G"));
+    RELATIVE(new HashMap<String, Pair<String, String>>() {{
+        put("1", new ImmutablePair<>("A", "B"));
+        put("2", new ImmutablePair<>("D", "E"));
+        put("3", new ImmutablePair<>("G", "H"));
+        put("4", new ImmutablePair<>("B", "C"));
+        put("5", new ImmutablePair<>("E", "F"));
+        put("6", new ImmutablePair<>("H", "I"));
+        put("7", new ImmutablePair<>("C", "A"));
+        put("8", new ImmutablePair<>("F", "D"));
+        put("9", new ImmutablePair<>("I", "G"));
     }}),
-    GRANDE(new ArrayList<EvaluationCode>() {{
-        add(new EvaluationCode("1", "A", "B"));
-        add(new EvaluationCode("2", "D", "E"));
-        add(new EvaluationCode("3", "G", "H"));
-        add(new EvaluationCode("4", "A", "D"));
-        add(new EvaluationCode("5", "B", "C"));
-        add(new EvaluationCode("6", "E", "F"));
-        add(new EvaluationCode("7", "A", "G"));
-        add(new EvaluationCode("8", "H", "I"));
-        add(new EvaluationCode("9", "D", "G"));
-        add(new EvaluationCode("10", "C", "A"));
-        add(new EvaluationCode("11", "F", "D"));
-        add(new EvaluationCode("12", "I", "G"));
+    EXPERT(new HashMap<String, Pair<String, String>>() {{
+        put("1", new ImmutablePair<>("A", null));
+        put("2", new ImmutablePair<>("B", null));
+        put("3", new ImmutablePair<>("C", null));
+        put("4", new ImmutablePair<>("D", null));
+        put("5", new ImmutablePair<>("E", null));
+        put("6", new ImmutablePair<>("F", null));
+        put("7", new ImmutablePair<>("G", null));
     }}),
-    VENTI(new ArrayList<EvaluationCode>() {{
-        add(new EvaluationCode("1", "A", "B"));
-        add(new EvaluationCode("2", "C", "I"));
-        add(new EvaluationCode("3", "G", "H"));
-        add(new EvaluationCode("4", "A", "D"));
-        add(new EvaluationCode("5", "C", "F"));
-        add(new EvaluationCode("6", "G", "I"));
-        add(new EvaluationCode("7", "F", "E"));
-        add(new EvaluationCode("8", "B", "C"));
-        add(new EvaluationCode("9", "D", "G"));
-        add(new EvaluationCode("10", "F", "I"));
-        add(new EvaluationCode("11", "A", "C"));
-        add(new EvaluationCode("12", "D", "E"));
-        add(new EvaluationCode("13", "I", "H"));
-        add(new EvaluationCode("14", "A", "G"));
-        add(new EvaluationCode("15", "D", "F"));
+    ABSOLUTE_HIGH(new HashMap<String, Pair<String, String>>() {{
+        put("p1", new ImmutablePair<>("A", null));
+        put("p2", new ImmutablePair<>("B", null));
+        put("p3", new ImmutablePair<>("C", null));
+        put("1", new ImmutablePair<>("D", null));
+        put("2", new ImmutablePair<>("E", null));
+        put("3", new ImmutablePair<>("F", null));
+        put("4", new ImmutablePair<>("G", null));
     }}),
-    ABSOLUTE(new ArrayList<EvaluationCode>() {{
-        add(new EvaluationCode("p1", "A", null));
-        add(new EvaluationCode("p2", "B", null));
-        add(new EvaluationCode("p3", "C", null));
-        add(new EvaluationCode("1", "D", null));
-        add(new EvaluationCode("2", "E", null));
-        add(new EvaluationCode("3", "F", null));
-        add(new EvaluationCode("4", "G", null));
+    ABSOLUTE_LOW(new HashMap<String, Pair<String, String>>() {{
+        put("p1", new ImmutablePair<>("A", null));
+        put("1", new ImmutablePair<>("D", null));
+        put("2", new ImmutablePair<>("E", null));
+        put("3", new ImmutablePair<>("F", null));
+        put("4", new ImmutablePair<>("G", null));
+
     }});
 
-    private List<EvaluationCode> evaluationCodes;
+    private Map<String, Pair<String, String>> evaluationCodes;
 
-    ExperimentMode(List<EvaluationCode> codes) {
+    ExperimentMode(Map<String, Pair<String, String>> codes) {
         evaluationCodes = codes;
     }
 
-    public static List<EvaluationCode> getEvaluationCodes(ExperimentMode mode) {
-        return ExperimentMode.valueOf(mode.toString().toUpperCase()).evaluationCodes;
+    Map<String, Pair<String, String>> getEvaluationCodes() {
+        return this.evaluationCodes;
+    }
+
+    public static Map<String, Pair<String, String>> getEvaluationCodes(String mode) {
+        for(ExperimentMode m: ExperimentMode.values())
+            if(m.name().equalsIgnoreCase(mode))
+                return m.getEvaluationCodes();
+        throw new IllegalArgumentException("Unknown experiment mode: " + mode);
     }
 }

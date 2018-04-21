@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
 import edu.grenoble.em.bourji.db.dao.QuestionnaireDAO;
 import edu.grenoble.em.bourji.db.pojo.RelativeEvaluation;
@@ -22,6 +23,7 @@ import java.util.Map;
  * Created by Moe on 4/10/2018.
  */
 @Path("/validate")
+@Authenticate
 public class ValidationResource {
 
     private final AppraisalConfidenceDAO appraisalConfidenceDAO;

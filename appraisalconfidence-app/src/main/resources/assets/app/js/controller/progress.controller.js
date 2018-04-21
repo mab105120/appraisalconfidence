@@ -5,15 +5,16 @@
         '$state',
         'appcon',
         'authService',
-        'profileService'
+        'profileService',
+        'toaster'
     ];
 
-    function progress_controller($scope, $state, appcon, authService, profileService) {
+    function progress_controller($scope, $state, appcon, authService, profileService, toaster) {
         $scope.$parent.startSpinner();
         profileService.getProfile().then(function(response) {
-            $scope.profile = response;
+            $scope.profile = response.data;
             init();
-        })
+        }, handleFailure);
 
         function init() {
 
@@ -114,6 +115,12 @@
                 toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
                 $scope.$parent.stopSpinner();
             });
+        }
+
+        function handleFailure(response) {
+            var error = response.data === null ? 'Server unreachable' : response.data.message;
+            toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
+            $scope.$parent.stopSpinner();
         }
 
         $scope.edit = function(id) {

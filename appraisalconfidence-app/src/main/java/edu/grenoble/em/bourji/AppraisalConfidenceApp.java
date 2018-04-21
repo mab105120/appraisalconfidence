@@ -53,9 +53,8 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         environment.getObjectMapper().configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         PerformanceReviewDAO dao = new PerformanceReviewDAO(hibernate.getSessionFactory());
-        PerformanceReviewCache performanceReviewCache = new UnitOfWorkAwareProxyFactory(hibernate).create(PerformanceReviewCache.class,
-                new Class[]{PerformanceReviewDAO.class, ExperimentMode.class}, new Object[]{dao,
-                        ExperimentMode.valueOf(config.getSettings().getMode().toUpperCase())});
+        PerformanceReviewCache performanceReviewCache = new UnitOfWorkAwareProxyFactory(hibernate).create(PerformanceReviewCache.class, PerformanceReviewDAO.class, dao);
+
         performanceReviewCache.instantiateCache();
 
         QuestionnaireDAO questionnaireDAO = new QuestionnaireDAO()
@@ -71,15 +70,15 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         EvaluationActivityDAO evaluationActivityDAO = new EvaluationActivityDAO(hibernate.getSessionFactory());
         AbsoluteEvaluationDao absEvalDao = new AbsoluteEvaluationDao(hibernate.getSessionFactory());
         // register resources
-        environment.jersey().register(new PerformanceReviewResource(performanceReviewCache, config.getSettings()));
-        environment.jersey().register(new RelativeEvaluationResource(confidenceDAO, evaluationActivityDAO, statusDAO, performanceReviewCache));
+        environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
+        environment.jersey().register(new RelativeEvaluationResource(confidenceDAO, evaluationActivityDAO, statusDAO));
         environment.jersey().register(new QuestionnaireResource(questionnaireDAO, statusDAO));
         environment.jersey().register(new StatusResource(new StatusDAO(hibernate.getSessionFactory())));
         environment.jersey().register(new ActivityResource(activityDAO));
         environment.jersey().register(new CommunicationResource(config.getEmailConfiguration().getUsername(), config.getEmailConfiguration().getPassword()));
         environment.jersey().register(new ValidationResource(confidenceDAO, questionnaireDAO));
         environment.jersey().register(new AbsoluteEvaluationResource(absEvalDao, evaluationActivityDAO, statusDAO));
-        environment.jersey().register(new ParticipantProfileResource(new ParticipantProfileDAO(hibernate.getSessionFactory()), config.getSettings()));
+        environment.jersey().register(new ParticipantProfileResource(new ParticipantProfileDAO(hibernate.getSessionFactory()), config.getAssignment()));
     }
 
     @Override

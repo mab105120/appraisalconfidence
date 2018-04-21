@@ -1,7 +1,8 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.ParticipantProfiles;
-import edu.grenoble.em.bourji.api.ExperimentSettings;
+import edu.grenoble.em.bourji.ProfileAssignment;
 import edu.grenoble.em.bourji.db.dao.ParticipantProfileDAO;
 import edu.grenoble.em.bourji.db.pojo.ParticipantProfile;
 import io.dropwizard.hibernate.UnitOfWork;
@@ -20,14 +21,15 @@ import java.util.Random;
  */
 @Path("/participant-profile")
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticate
 public class ParticipantProfileResource {
 
     private ParticipantProfileDAO dao;
-    private ExperimentSettings settings;
+    private ProfileAssignment assignment;
 
-    public ParticipantProfileResource(ParticipantProfileDAO dao, ExperimentSettings settings) {
+    public ParticipantProfileResource(ParticipantProfileDAO dao, String assignment) {
         this.dao = dao;
-        this.settings = settings;
+        this.assignment = ProfileAssignment.getAssignmentMethod(assignment);
     }
 
     /**
@@ -39,17 +41,21 @@ public class ParticipantProfileResource {
     @GET
     @UnitOfWork
     public Response getParticipantProfile(@Context ContainerRequestContext requestContext) {
-        if(settings.getAssignment().equalsIgnoreCase("relative"))
-            return Response.ok(ParticipantProfiles.RELATIVE.getProfile()).build();
-        String user = requestContext.getProperty("user").toString();
-        ParticipantProfile profile = dao.getParticipantProfile(user);
-        if (profile == null) {
-            ParticipantProfiles newProfile =
-                    assignProfile(ProfileAssignment.getAssignmentMethod(settings.getAssignment()));
-            dao.add(user, newProfile);
-            return Response.ok(newProfile).build();
-        } else
-            return Response.ok(ParticipantProfiles.valueOf(profile.getProfile()).getProfile()).build();
+        try {
+            if (assignment == ProfileAssignment.RELATIVE)
+                return Response.ok(ParticipantProfiles.RELATIVE.getProfile()).build();
+            String user = requestContext.getProperty("user").toString();
+            ParticipantProfile profile = dao.getParticipantProfile(user);
+            if (profile == null) {
+                ParticipantProfiles newProfile =
+                        assignProfile(assignment);
+                dao.add(user, newProfile);
+                return Response.ok(newProfile.getProfile()).build();
+            } else
+                return Response.ok(ParticipantProfiles.valueOf(profile.getProfile()).getProfile()).build();
+        } catch(Throwable e) {
+            return Respond.respondWithError(e.getMessage());
+        }
     }
 
     /**
@@ -76,6 +82,6 @@ public class ParticipantProfileResource {
                     return ParticipantProfiles.LoExp_LoFed;
             }
         }
-        return null;
+        throw new IllegalArgumentException(String.format("Application is set up with an unknown assignment (%s).", assignment));
     }
 }
