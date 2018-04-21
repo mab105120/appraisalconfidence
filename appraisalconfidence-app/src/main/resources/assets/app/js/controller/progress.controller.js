@@ -35,12 +35,14 @@
                 {
                     id: 'QUEST_EXP',
                     display: 'Professional experience questionnaire'
-                },
-                {
-                    id: 'QUEST_CON',
-                    display: 'Judgment confidence questionnaire'
                 }
             ];
+
+            if ($scope.profile.includeConfidenceScale)
+                $scope.rows.push({
+                     id: 'QUEST_CON',
+                     display: 'Judgment confidence questionnaire'
+             });
 
             function addPracticeEvaluationsToRows() {
                 var totalPracticeEvaluations = $scope.profile.practice;

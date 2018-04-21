@@ -8,6 +8,7 @@ import edu.grenoble.em.bourji.ExperimentMode;
 public class ParticipantProfile {
 
     private boolean isRelative;
+    private boolean includeConfidenceScale;
     private int practice;
     private int evaluations;
     private String feedback;
@@ -18,9 +19,10 @@ public class ParticipantProfile {
         // Default no-arg constructor for Jackson
     }
 
-    public ParticipantProfile( boolean isRelative, int practice, int evaluations,
+    public ParticipantProfile( boolean isRelative, boolean includeConfidenceScale, int practice, int evaluations,
                                String feedback, int duration, ExperimentMode mode) {
         this.isRelative = isRelative;
+        this.includeConfidenceScale = includeConfidenceScale;
         this.practice = practice;
         this.evaluations = evaluations;
         this.feedback = feedback;
@@ -30,6 +32,10 @@ public class ParticipantProfile {
 
     public boolean isRelative() {
         return isRelative;
+    }
+
+    public boolean isIncludeConfidenceScale() {
+        return includeConfidenceScale;
     }
 
     public int getPractice() {
