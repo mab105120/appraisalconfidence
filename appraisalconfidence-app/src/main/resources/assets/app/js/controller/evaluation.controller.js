@@ -9,13 +9,15 @@
             'authService',
             'toaster',
             '$sce',
-            'profileService'
+            'profileService',
+            '$interval'
         ];
 
     require('bootstrap-slider');
+    require('angular-timer');
     var _ = require('lodash');
 
-    function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce, profileService) {
+    function evaluation_controller($scope, $state, $stateParams, $window, appcon, authService, toaster, $sce, profileService, $interval) {
         $scope.$parent.startSpinner();
 
         profileService.getProfile().then(
@@ -116,6 +118,12 @@
                     });
                 }
                 else {
+                    $scope.countdown = 0;
+                    $scope.showTimer=true;
+                    $interval(function() {
+                        $scope.countdown++;
+                        if($scope.countdown >= 60) $scope.countdown += '+';
+                    }, 1000, 60);
                     $scope.getTeacherPerformanceReviews();
                 }
             }, function failure(response) {
@@ -158,7 +166,9 @@
                 var progressPercentage = ( $scope.currentEvaluation / $scope.totalEvaluations ) * 100;
                 $scope.progressBarStyle = {
                     'width': progressPercentage + '%'
-                }
+                };
+                if ($scope.isPractice)
+                    $scope.progressBarStyle['background-color'] = 'green';
             }
 
             function initializeCurrentAndTotalEvaluationVars() {
@@ -283,6 +293,10 @@
             };
 
             function formIsValid() {
+                if($scope.countdown != undefined && $scope.countdown < 60) {
+                    alert("You need to spend at least 60 seconds on this evaluation before submitting. Please use this time to read teacher reviews below.");
+                    return false;
+                }
                 if(!$scope.isPractice)
                     if($scope.relConfidence === undefined || $scope.absConfidence === undefined) {
                         alert('All fields in the form below are required. Please make sure to fill all fields out');
