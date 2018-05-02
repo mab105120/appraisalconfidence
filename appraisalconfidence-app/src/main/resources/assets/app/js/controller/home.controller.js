@@ -27,7 +27,7 @@
             profileService.getProfile().then(
                 function(response) {
                     $scope.duration = response.data.duration;
-
+                    $scope.isExpert = response.data.mode === 'EXPERT';
                     appcon.getProgress()
                     .then(function success(response) {
                         if(response.data.completed.length !== 0)

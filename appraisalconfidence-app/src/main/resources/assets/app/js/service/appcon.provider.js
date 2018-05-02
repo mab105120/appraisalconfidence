@@ -12,13 +12,17 @@
         function appcon_service($http) {
 
             function getReviews(evaluationCode, mode) {
-                var id_token = localStorage.getItem("id_token");
                 var config = {
                     method: 'GET',
-                    headers: {
-                        "Authorization": 'Bearer ' + id_token
-                    },
                     url:  url + '/api/performance-review/' + evaluationCode + '/' + mode
+                };
+                return $http(config);
+            }
+
+            function getExpertEvaluation(evaluationCode) {
+                var config = {
+                    method: 'GET',
+                    url:  url + '/api/performance-review/expert/' + evaluationCode
                 };
                 return $http(config);
             }
@@ -198,6 +202,7 @@
 
             return {
                 getReviews: getReviews,
+                getExpertEvaluation: getExpertEvaluation,
                 getParticipantProfile: getParticipantProfile,
                 postUserDemographic: postUserDemographic,
                 getUserDemographics: getUserDemographics,

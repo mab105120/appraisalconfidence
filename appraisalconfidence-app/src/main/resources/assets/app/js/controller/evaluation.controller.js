@@ -24,10 +24,7 @@
             function(response) {
                 $scope.profile = response.data;
                 init();
-            },
-            function(response) {
-                handleFailure(response);
-            }
+            }, handleFailure
         );
 
         function init() {
@@ -43,46 +40,17 @@
                 $scope.isPractice = true;
 
             $scope.isRelative = $scope.profile.relative;
-            $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
-            $scope.setClass = function() {
-               if($scope.isRelative)
-                   return ['col-xs-5', 'col-xs-offset-2', 'text-center'];
-               else return ['col-xs-10', 'col-xs-offset-2', 'text-center'];
-            }
-            setUpProgressBar();
+            $scope.isExpert = $scope.profile.mode === 'EXPERT';
 
-
-            $scope.time_in = new Date().toISOString();
-
-            setUpSliders();
-
-            // these vars are set by the eval directive when users click on supervisor reviews.
-            $scope.modalCode = '';
-            $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
-
-            $scope.$watch('modalBody', function(val) {
-                $scope.modalBodyTrusted = $sce.trustAsHtml(val);
-            });
-
-            $scope.modalTitle = '';
-            // evaluation activity
-            $scope.activities = [];
-            $scope.time_modal_open;
-            $('#reviewModal').on('hidden.bs.modal', function() {
-                var closeTime = new Date().toISOString();
-                $scope.activities.push({
-                    evaluationCode: $stateParams.id,
-                    selectedReview: $scope.modalCode,
-                    openTime: $scope.time_modal_open,
-                    closeTime: closeTime
-                });
-            });
+            paintPage();
 
             appcon.stepIsCompleted('EVALUATION_' + $stateParams.id)
             .then(function success(response) {
                 if(response.data === true) {
                     appcon.getUserEvaluation($stateParams.id, $scope.isRelative ? 'relative' : 'absolute')
                     .then(function success(response) {
+
+                        $scope.isFamiliar = true;
 
                         // pre-populate fields
                         $scope.oldRes = response.data;
@@ -101,9 +69,10 @@
                             $scope.overallRating = response.data.overall;
                             $('#overallSlider').slider().slider('setValue', response.data.overall);
                             $scope.promotionDecision = response.data.promote;
-                            if(response.data.promote.toUpperCase() === 'Y')
-                                $('#promoteYes').prop('checked', true);
-                            else $('#promoteNo').prop('checked', true);
+                            if(!$scope.isExpert && !$scope.isPractice)
+                                if(response.data.promote.toUpperCase() === 'Y')
+                                    $('#promoteYes').prop('checked', true);
+                                else $('#promoteNo').prop('checked', true);
                         }
 
                         $scope.absConfidence = response.data.absConfidence;
@@ -113,22 +82,60 @@
                         $('#continueBtn').prop('disabled', false);
 
                         $scope.getTeacherPerformanceReviews();
-                    }, function failure(response) {
-                        handleFailure(response);
-                    });
+                    }, handleFailure);
                 }
                 else {
                     $scope.countdown = 0;
                     $scope.showTimer=true;
-                    $interval(function() {
-                        $scope.countdown++;
-                        if($scope.countdown >= 60) $scope.countdown += '+';
-                    }, 1000, 60);
+                    if(!$scope.isExpert)
+                        $interval(function() {
+                            $scope.countdown++;
+                            if($scope.countdown >= 120) $scope.countdown += '+';
+                        }, 1000, 120);
                     $scope.getTeacherPerformanceReviews();
                 }
             }, function failure(response) {
                 handleFailure(response);
             });
+
+
+            function paintPage() {
+                $scope.teacherOneLabel = $scope.isRelative ? 'Teacher 1' : 'Teacher';
+                $scope.setClass = function() {
+                   if($scope.isRelative)
+                       return ['col-xs-5', 'col-xs-offset-2', 'text-center'];
+                   else return ['col-xs-10', 'col-xs-offset-2', 'text-center'];
+                }
+
+
+                setUpProgressBar();
+
+                setUpSliders();
+
+                $scope.time_in = new Date().toISOString();
+
+                // these vars are set by the eval directive when users click on supervisor reviews.
+                $scope.modalCode = '';
+                $scope.modalBodyTrusted = $sce.trustAsHtml($scope.modalBody);
+
+                $scope.$watch('modalBody', function(val) {
+                    $scope.modalBodyTrusted = $sce.trustAsHtml(val);
+                });
+
+                $scope.modalTitle = '';
+                // evaluation activity
+                $scope.activities = [];
+                $scope.time_modal_open;
+                $('#reviewModal').on('hidden.bs.modal', function() {
+                    var closeTime = new Date().toISOString();
+                    $scope.activities.push({
+                        evaluationCode: $stateParams.id,
+                        selectedReview: $scope.modalCode,
+                        openTime: $scope.time_modal_open,
+                        closeTime: closeTime
+                    });
+                });
+            }
 
             function setUpSliders() {
                 $('#absConfidenceSlider').slider();
@@ -191,18 +198,16 @@
                     console.log('GET /api/performance-review/ ' + response.status);
                     $scope.evaluations = response.data;
                     $scope.$parent.stopSpinner();
-                },
-                function(response) {
-                    var errorMessage = response.data === null ? 'Server unreachable' : response.data.message;
-                    toaster.pop('error', 'Error', 'Unable to get teacher reviews: ' + errorMessage);
-                    console.log('GET /api/performance-review/ ' + response.status);
-                    console.log(response);
-                    $scope.$parent.stopSpinner();
-                }
-            );
+                    appcon.getExpertEvaluation($stateParams.id).then(
+                        function success(response) {
+                            $scope.expert = response.data;
+                        },
+                        handleFailure);
+                }, handleFailure);
         }
 
         $scope.saveAndContinue = function() {
+            var checkQuality = false;
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
@@ -232,42 +237,26 @@
             }
 
             // make sure participants are not just providing random answers
-            if(!passQualityCheck()) return;
+            if(checkQuality && !$scope.isExpert && !$scope.isFamiliar && !passQualityCheck()) return;
 
             if(responseChanged($scope.oldRes, userEval)) {
                 $scope.$parent.startSpinner();
                 appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
                 .then(function success(response) {
                     toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
-                    routeToNextPage();
+                    showFeedback();
                     $scope.$parent.stopSpinner();
-                }, function failure(response) {
-                    var error = response.data === null ? 'Server unreachable' : response.data.message;
-                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
-                    console.log('Error Object');
-                    console.log(response);
-                    $scope.$parent.stopSpinner();
-                });
+                }, handleFailure);
             } else {
-                routeToNextPage();
+                showFeedback();
             }
 
-            function routeToNextPage() {
-                $window.scrollTo(0, 0); // scroll to top
-                var currentEval = parseInt($scope.currentEvaluation);
-                if($scope.isPractice) {
-                    if(currentEval < $scope.profile.practice)
-                        $state.go('evaluation', {id: 'P' + (currentEval + 1)});
-                    else
-                        $state.go('evaluation', {id: 1});
-                } else {
-                    var nextEvaluationCode = parseInt($stateParams.id) + 1;
-                    if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
-                        $state.go('progress');
-                    else
-                        $state.go('evaluation', {id: nextEvaluationCode});
-                }
-            };
+            function showFeedback() {
+                if($scope.isPractice)
+                    $('#feedbackModal').modal('show');
+                else
+                    $scope.routeToNextPage();
+            }
 
             function participantReadRequiredReviews(activities) {
                 selectedReviews = [];
@@ -293,11 +282,7 @@
             };
 
             function formIsValid() {
-                if($scope.countdown != undefined && $scope.countdown < 60) {
-                    alert("You need to spend at least 60 seconds on this evaluation before submitting. Please use this time to read teacher reviews below.");
-                    return false;
-                }
-                if(!$scope.isPractice)
+                if(!$scope.isPractice && !$scope.isExpert)
                     if($scope.relConfidence === undefined || $scope.absConfidence === undefined) {
                         alert('All fields in the form below are required. Please make sure to fill all fields out');
                         return false;
@@ -308,10 +293,14 @@
                         return false;
                     }
                 } else {
-                    if($scope.promotionDecision === undefined || $scope.studentLearningRating === undefined ||
+                    if($scope.studentLearningRating === undefined ||
                         $scope.instructionalPracticeRating === undefined || $scope.professionalismRating === undefined
                          || $scope.overallRating === undefined) {
 
+                        alert('All fields in the form below are required. Please make sure to fill all fields out');
+                        return false;
+                    }
+                    if((!$scope.isExpert && !$scope.isPractice) && $scope.promotionDecision === undefined) {
                         alert('All fields in the form below are required. Please make sure to fill all fields out');
                         return false;
                     }
@@ -320,6 +309,10 @@
             };
 
             function passQualityCheck() {
+                if($scope.countdown != undefined && $scope.countdown < 120) {
+                    alert("You need to spend at least two minutes on this evaluation before submitting. Please use this time to read teacher reviews below.");
+                    return false;
+                }
                 if(!participantReadRequiredReviews(payload.activities)) {
                     alert('Please read AT LEAST 2 reviews PER TEACHER before submitting recommendation!\n\n' +
                         'WARNING: This application detects patterns of random responses. Participants WILL NOT be compensated for random responses.');
@@ -331,19 +324,40 @@
             function responseChanged(oldRes, newRes) {
                         if(oldRes === undefined)
                             return true;
-                        else return $scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : true ||
+                        else return ($scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : false) ||
                                     oldRes.absConfidence != newRes.absConfidence ||
                                     oldRes.relConfidence != newRes.relConfidence ||
-                                    $scope.isRelative ? true : oldRes.promotionDecision != newRes.promotionDecision ||
-                                    $scope.isRelative ? true :oldRes.studentLearningRating != newRes.studentLearningRating ||
-                                    $scope.isRelative ? true :oldRes.instructionalPracticeRating != newRes.instructionalPracticeRating ||
-                                    $scope.isRelative ? true :oldRes.professionalismRating != newRes.professionalismRating ||
-                                    $scope.isRelative ? true :oldRes.overallRating != oldRes.overallRating ||
-                                    oldRes.comment !== newRes.comment;
+                                    ($scope.isRelative ? false : oldRes.promote != newRes.promote) ||
+                                    ($scope.isRelative ? false : oldRes.studentLearning != newRes.studentLearning) ||
+                                    ($scope.isRelative ? false : oldRes.instructionalPractice != newRes.instructionalPractice) ||
+                                    ($scope.isRelative ? false : oldRes.professionalism != newRes.professionalism) ||
+                                    ($scope.isRelative ? false : oldRes.overall != newRes.overall);
                     }
         }
 
+        $scope.routeToNextPage = function() {
+            $window.scrollTo(0, 0); // scroll to top
+            $('#feedbackModal').modal('hide');
+            $('body').removeClass('modal-open');
+            $(".modal-backdrop").remove();
+            console.log('The modal is hidden');
+            var currentEval = parseInt($scope.currentEvaluation);
+            if($scope.isPractice) {
+                if(currentEval < $scope.profile.practice)
+                    $state.go('evaluation', {id: 'P' + (currentEval + 1)});
+                else
+                    $state.go('evaluation', {id: 1});
+            } else {
+                var nextEvaluationCode = parseInt($stateParams.id) + 1;
+                if(nextEvaluationCode > $scope.totalEvaluations) // reached the end of the experiment
+                    $state.go('progress');
+                else
+                    $state.go('evaluation', {id: nextEvaluationCode});
+            }
+        };
+
         function handleFailure(response) {
+            console.log(response);
             var error = response.data === null ? 'Server unreachable' : response.data.message;
             toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
             $scope.$parent.stopSpinner();

@@ -9,17 +9,28 @@
     }
     .jobFunctionRating {
         margin-top:15px;
-        padding-left:20px;
+        padding-left:20px;l
+    }
+    #feedbackTable td {
+        text-align: center;
+    }
+    #feedbackTable th {
+        font-size: 14px;
     }
 </style>
-<div class="row" style="margin-top:30px">
-    <div class="col-xs-12">
+<div class="row" style="margin-top:30px" ng-cloak>
+    <div class="col-xs-12" ng-hide="isExpert">
         <div class="alert alert-success" role="alert" ng-show="isPractice">
-            This is a practice round. <p class="pull-right" style="font-size:20px" ng-show="showTimer"><Strong>Timer: {{countdown}}</Strong></p>
+            This is a practice round.
+            <p class="pull-right" style="font-size:16px" ng-show="showTimer">
+                You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
+            </p>
         </div>
-        <div class="alert alert-info" role="alert" ng-show="!isPractice">
-            This is an actual evaluation <strong>(not practice).</strong>
-            <p class="pull-right" style="font-size:20px" ng-show="showTimer"><Strong>Timer: {{countdown}}</Strong>
+        <div class="alert alert-info" role="alert" ng-show="!isPractice && showTimer">
+            .
+            <p class="pull-right" style="font-size:16px" ng-show="showTimer">
+                You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
+            </p>
         </div>
     </div>
 </div>
@@ -28,13 +39,13 @@
         <h4 id="evaluationProgressLabel">{{teacherEvaluationLabel}} [ {{ currentEvaluation }} of {{ totalEvaluations }} ]</h4>
     </div>
     <div class="col-xs-12 col-sm-8 pull-left">
-        <div class="progress" style="margin-top:10px">
+        <div class="progress" style="margin-top:10px" ng-class="alert.class">
             <div class="progress-bar" role="progressbar" ng-style="progressBarStyle" aria-valuenow="25"
                  aria-valuemin="0" aria-valuemax="9">{{ currentEvaluation }} of {{ totalEvaluations }}
             </div>
         </div>
     </div>
-    <div class="col-sm-12" style="margin-bottom:30px;">
+    <div class="col-sm-12" style="margin-bottom:30px;" ng-show="isRelative">
         <p>The grid below is a representation of two teacher's dossiers, both of whom are eligible for tenure promotion.
             To review
             each teacher on a specific job function (Student learning, Instruction practice, or Professionalism) click
@@ -42,6 +53,14 @@
             next to each job function to view the supervisor's review of that teacher on the job function (<span
                     style="color:#800000">Teacher names are masked to protect their identity</span>).
             When done please choose which teacher you recommend for promotion and fill out the form below.</p>
+    </div>
+    <div class="col-sm-12" style="margin-bottom:30px;" ng-show="!isRelative">
+        <p>The grid below is a representation of a teacher's dossier.
+            To review the teacher on specific job function (Student learning, Instruction practice, or Professionalism) click
+            on the button labeled supervisor
+            next to each job function to view the supervisor's review of that teacher on the job function (<span
+                    style="color:#800000">Teacher names are masked to protect their identity</span>).
+            When done please answer the questions below based on your evaluation.</p>
     </div>
 </div>
 <div class="row" style="margin-bottom:40px;">
@@ -75,6 +94,60 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="feedbackModalLabel">
+                    <strong>Please review your evaluation feedback below:</strong>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:16px;">
+                    The table below shows the score that you assigned the teacher on each job dimension compared to
+                    a teacher performance evaluation expert. Please review feedback carefully:
+                </p>
+                <table id="feedbackTable" class="table" style="margin-top:15px;">
+                    <thead>
+                    <tr>
+                        <th scope="col">Job Dimension</th>
+                        <th scope="col" style="text-align:center">Your evaluation</th>
+                        <th scope="col" style="text-align:center">Expert evaluation</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">Student Learning</th>
+                        <td>{{studentLearningRating}}</td>
+                        <td>{{expert.studentLearning}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Instructional Practice</th>
+                        <td>{{instructionalPracticeRating}}</td>
+                        <td>{{expert.instructionalPractice}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Professionalism</th>
+                        <td>{{professionalismRating}}</td>
+                        <td>{{expert.professionalism}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Overall</th>
+                        <td>{{overallRating}}</td>
+                        <td>{{expert.overall}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer" style="background-color:#F0F0F0">
+                <button type="button" class="btn btn-secondary" style="background-color:#D6D6D6" data-dismiss="modal">Return to evaluation</button>
+                <button type="button" class="btn btn-primary" ng-click="routeToNextPage()" data-dismiss="modal">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
 <hr>
 <!--Teachers Dossiers: End-->
 <form name="evaluationForm">
@@ -98,7 +171,7 @@
         <div class="row">
             <div class="col-xs-12">
                 <p>
-                    Please rate the teacher on a scale of 0 to 10 (0: worst score, 10: best score) on each of the job
+                    Please rate the teacher on a scale of 1 to 7 (1: worst score, 7: best score) on each of the job
                     dimensions
                     below:
                 </p>
@@ -110,7 +183,7 @@
         <span style="color: red">*</span></span>
             </div>
             <div class="col-sm-4">
-                <input id="studentLearningSlider" type="text" data-slider-min="1" data-slider-max="10"
+                <input id="studentLearningSlider" type="text" data-slider-min="1" data-slider-max="7"
                        data-slider-step="1"
                        data-slider-value="0">
             </div>
@@ -121,7 +194,7 @@
         <span style="color: red">*</span></span>
             </div>
             <div class="col-sm-4">
-                <input id="instructionalPracticeSlider" type="text" data-slider-min="1" data-slider-max="10"
+                <input id="instructionalPracticeSlider" type="text" data-slider-min="1" data-slider-max="7"
                        data-slider-step="1" data-slider-value="0">
             </div>
         </div>
@@ -131,7 +204,7 @@
         <span style="color: red">*</span></span>
             </div>
             <div class="col-sm-4">
-                <input id="professionalismSlider" type="text" data-slider-min="1" data-slider-max="10"
+                <input id="professionalismSlider" type="text" data-slider-min="1" data-slider-max="7"
                        data-slider-step="1"
                        data-slider-value="0">
             </div>
@@ -142,12 +215,12 @@
         <span style="color: red">*</span></span>
             </div>
             <div class="col-sm-4">
-                <input id="overallSlider" type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1"
+                <input id="overallSlider" type="text" data-slider-min="1" data-slider-max="7" data-slider-step="1"
                        data-slider-value="0">
             </div>
         </div>
 
-        <div class="row">
+        <div class="row" ng-hide="isExpert || isPractice">
             <div class="col-sm-10" style="margin-top:25px">
                 <p>I would recommend this teacher for tenure promotion: <span
                         style="color: red">*</span>
@@ -160,7 +233,7 @@
         </div>
     </div>
     <!--Confidence slider 1-->
-    <div class="row" style="margin-top:40px" ng-hide="isPractice">
+    <div class="row" style="margin-top:40px" ng-hide="isPractice || isExpert">
         <div class="col-sm-8">
         <span>On the scale of 0 to 100, how confident are you that you made the right choice:
         <span style="color: red">*</span></span>
@@ -171,7 +244,7 @@
         </div>
     </div>
     <!--Confidence Slider 2-->
-    <div class="row" style="margin-top:20px" ng-hide="isPractice">
+    <div class="row" style="margin-top:20px" ng-hide="isPractice || isExpert">
         <div class="col-sm-8">
         <span>What percentage of people do you think would agree with your choice:
         <span style="color: red">*</span></span>

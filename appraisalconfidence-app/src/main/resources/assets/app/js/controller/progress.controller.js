@@ -27,16 +27,20 @@
 
             $scope.showSubmit = false;
 
-            $scope.rows = [
-                {
-                    id: 'QUEST_DEMO',
-                    display: 'General questionnaire'
-                },
-                {
-                    id: 'QUEST_EXP',
-                    display: 'Professional experience questionnaire'
-                }
-            ];
+            $scope.rows = [];
+
+            if($scope.profile.mode !== 'EXPERT') {
+                $scope.rows.push(
+                    {
+                        id: 'QUEST_DEMO',
+                        display: 'General questionnaire'
+                    },
+                    {
+                        id: 'QUEST_EXP',
+                        display: 'Professional experience questionnaire'
+                    }
+                );
+            }
 
             if ($scope.profile.includeConfidenceScale)
                 $scope.rows.push({
@@ -111,12 +115,7 @@
                     });
                 }
                 $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                console.log(response);
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                $scope.$parent.stopSpinner();
-            });
+            }, handleFailure);
         }
 
         function handleFailure(response) {

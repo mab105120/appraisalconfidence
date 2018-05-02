@@ -168,7 +168,7 @@
         function routeToNextPage() {
             if($scope.profile.includeConfidenceScale)
                 $state.go('confidence');
-            else if ($scope.profile.isRelative || $scope.profile.mode === 'EXPERT')
+            else if ($scope.profile.relative || $scope.profile.mode === 'EXPERT')
                 $state.go('evaluation', {id: 1});
             else
                 $state.go('evaluation', {id : 'P1'});
