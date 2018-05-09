@@ -98,22 +98,7 @@
                 });
                 $scope.showSubmit = allCompleted;
 
-                if(allCompleted) {
-                    console.log('The experiment is over, getting average duration')
-                    appcon.validateUserResponses()
-                    .then(function success(response) {
-                        console.log(response.data);
-                        var validationResult = response.data;
-                        if(!validationResult.result)
-                            $scope.qual_redirect_url += '&term=' + validationResult.term;
-                        $scope.$parent.stopSpinner();
-                    }, function failure(response) {
-                        console.log(response);
-                        var error = response.data === null ? 'Server unreachable' : response.data.message;
-                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                        $scope.$parent.stopSpinner();
-                    });
-                }
+
                 $scope.$parent.stopSpinner();
             }, handleFailure);
         }

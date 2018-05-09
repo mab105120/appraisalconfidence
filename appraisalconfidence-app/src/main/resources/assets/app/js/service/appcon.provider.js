@@ -19,10 +19,15 @@
                 return $http(config);
             }
 
-            function getExpertEvaluation(evaluationCode) {
+            function getExpertEvaluation(payload) {
+                var id_token = localStorage.getItem("id_token");
                 var config = {
-                    method: 'GET',
-                    url:  url + '/api/performance-review/expert/' + evaluationCode
+                    method: 'POST',
+                    headers: {
+                        "Authorization": 'Bearer ' + id_token
+                    },
+                    data: payload,
+                    url:  url + '/api/evaluation/expert/'
                 };
                 return $http(config);
             }

@@ -27,7 +27,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
     protected final HibernateBundle<AppraisalConfidenceConfig> hibernate = new HibernateBundle<AppraisalConfidenceConfig>(
             PerformanceReview.class, UserDemographic.class, UserExperience.class,
             UserConfidence.class, RelativeEvaluation.class, Status.class, Activity.class,
-            EvaluationActivity.class, AbsoluteEvaluation.class, ParticipantProfile.class) {
+            EvaluationActivity.class, AbsoluteEvaluation.class, ParticipantProfile.class, ExpertEvaluation.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(AppraisalConfidenceConfig configuration) {
             return configuration.getDataSourceFactory();
@@ -69,6 +69,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         AppraisalConfidenceDAO confidenceDAO = new AppraisalConfidenceDAO(hibernate.getSessionFactory());
         EvaluationActivityDAO evaluationActivityDAO = new EvaluationActivityDAO(hibernate.getSessionFactory());
         AbsoluteEvaluationDao absEvalDao = new AbsoluteEvaluationDao(hibernate.getSessionFactory());
+        ExpertEvaluationDAO expertEvaluationDAO = new ExpertEvaluationDAO(hibernate.getSessionFactory());
         // register resources
         environment.jersey().register(new PerformanceReviewResource(performanceReviewCache));
         environment.jersey().register(new RelativeEvaluationResource(confidenceDAO, evaluationActivityDAO, statusDAO));
@@ -79,6 +80,7 @@ public class AppraisalConfidenceApp extends Application<AppraisalConfidenceConfi
         environment.jersey().register(new ValidationResource(confidenceDAO, questionnaireDAO));
         environment.jersey().register(new AbsoluteEvaluationResource(absEvalDao, evaluationActivityDAO, statusDAO));
         environment.jersey().register(new ParticipantProfileResource(new ParticipantProfileDAO(hibernate.getSessionFactory()), config.getAssignment()));
+        environment.jersey().register(new ExpertEvaluationResource(expertEvaluationDAO));
     }
 
     @Override

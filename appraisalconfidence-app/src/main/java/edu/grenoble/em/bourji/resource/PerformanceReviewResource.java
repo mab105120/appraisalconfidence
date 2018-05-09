@@ -1,7 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
 import edu.grenoble.em.bourji.PerformanceReviewCache;
-import edu.grenoble.em.bourji.api.ExpertEvaluation;
 import edu.grenoble.em.bourji.api.TeacherDossiers;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.hibernate.HibernateException;
@@ -35,14 +34,5 @@ public class PerformanceReviewResource {
             return Respond.respondWithError("Unable to retrieve evaluation reviews from database. Error details: " + e.getMessage());
         }
         return Response.ok(dossiers).build();
-    }
-
-    @GET
-    @Path("/expert/{evaluationCode}")
-    @UnitOfWork
-    public Response getExpertPerformanceEvaluation(@PathParam("evaluationCode") String evaluationCode) {
-        // TODO: implement this method with error handling.
-        ExpertEvaluation evaluation = new ExpertEvaluation("P1", 5.0,5.8,5.0,5.0);
-        return Response.ok(evaluation).build();
     }
 }

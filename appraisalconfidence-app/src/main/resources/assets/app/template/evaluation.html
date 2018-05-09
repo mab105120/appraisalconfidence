@@ -27,7 +27,7 @@
             </p>
         </div>
         <div class="alert alert-info" role="alert" ng-show="!isPractice && showTimer">
-            .
+            This is <strong>NOT</strong> a practice round!
             <p class="pull-right" style="font-size:16px" ng-show="showTimer">
                 You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
             </p>
@@ -105,41 +105,46 @@
                 </h4>
             </div>
             <div class="modal-body">
-                <p style="font-size:16px;">
-                    The table below shows the score that you assigned the teacher on each job dimension compared to
-                    a teacher performance evaluation expert. Please review feedback carefully:
-                </p>
-                <table id="feedbackTable" class="table" style="margin-top:15px;">
-                    <thead>
-                    <tr>
-                        <th scope="col">Job Dimension</th>
-                        <th scope="col" style="text-align:center">Your evaluation</th>
-                        <th scope="col" style="text-align:center">Expert evaluation</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <th scope="row">Student Learning</th>
-                        <td>{{studentLearningRating}}</td>
-                        <td>{{expert.studentLearning}}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Instructional Practice</th>
-                        <td>{{instructionalPracticeRating}}</td>
-                        <td>{{expert.instructionalPractice}}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Professionalism</th>
-                        <td>{{professionalismRating}}</td>
-                        <td>{{expert.professionalism}}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Overall</th>
-                        <td>{{overallRating}}</td>
-                        <td>{{expert.overall}}</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div ng-show="feedbackIsAvailable">
+                    <p style="font-size:16px;">
+                        The table below shows the score that you assigned the teacher on each job dimension compared to
+                        a teacher performance evaluation expert. Please review feedback carefully:
+                    </p>
+                    <table id="feedbackTable" class="table" style="margin-top:15px;">
+                        <thead>
+                        <tr>
+                            <th scope="col">Job Dimension</th>
+                            <th scope="col" style="text-align:center">Your evaluation</th>
+                            <th scope="col" style="text-align:center">Expert evaluation</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">Student Learning</th>
+                            <td>{{studentLearningRating}}</td>
+                            <td>{{expert.studentLearning}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Instructional Practice</th>
+                            <td>{{instructionalPracticeRating}}</td>
+                            <td>{{expert.instructionalPractice}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Professionalism</th>
+                            <td>{{professionalismRating}}</td>
+                            <td>{{expert.professionalism}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Overall</th>
+                            <td>{{overallRating}}</td>
+                            <td>{{expert.overall}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div ng-hide="feedbackIsAvailable">
+                    <h4 style="color:gray;text-align:center;">We're sorry, feedback is not available for this teacher.</h4>
+                </div>
             </div>
             <div class="modal-footer" style="background-color:#F0F0F0">
                 <button type="button" class="btn btn-secondary" style="background-color:#D6D6D6" data-dismiss="modal">Return to evaluation</button>

@@ -198,22 +198,29 @@
                     console.log('GET /api/performance-review/ ' + response.status);
                     $scope.evaluations = response.data;
                     $scope.$parent.stopSpinner();
-                    appcon.getExpertEvaluation($stateParams.id).then(
-                        function success(response) {
-                            $scope.expert = response.data;
-                        },
-                        handleFailure);
                 }, handleFailure);
         }
 
         $scope.saveAndContinue = function() {
+            $scope.$parent.startSpinner();
             var checkQuality = false;
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
+                $scope.$parent.stopSpinner();
                 return;
             }
+
             // ensure all form required fields are filled (sliders don't work well with angular form validation)
-            if(!formIsValid()) return;
+            if(!formIsValid()) {
+                $scope.$parent.stopSpinner();
+                return;
+            }
+
+            // make sure participants are not just providing random answers
+            if(checkQuality && !$scope.isExpert && !$scope.isFamiliar && !passQualityCheck()) {
+                $scope.$parent.stopSpinner();
+                return;
+            }
 
             $scope.time_out = new Date().toISOString();
             var userEval = {
@@ -236,26 +243,36 @@
                 mode: $scope.profile.mode
             }
 
-            // make sure participants are not just providing random answers
-            if(checkQuality && !$scope.isExpert && !$scope.isFamiliar && !passQualityCheck()) return;
-
-            if(responseChanged($scope.oldRes, userEval)) {
-                $scope.$parent.startSpinner();
-                appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
-                .then(function success(response) {
-                    toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+            appcon.getExpertEvaluation(userEval).then( // TODO: This shouldn't be called for non-practice rounds
+                function success(response) {
+                    $scope.expert = response.data;
+                    $scope.feedbackIsAvailable = feedbackIsAvailable();
+                    if(responseChanged($scope.oldRes, userEval)) {
+                        appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
+                        .then(function success(response) {
+                            toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                        }, handleFailure);
+                    }
                     showFeedback();
                     $scope.$parent.stopSpinner();
-                }, handleFailure);
-            } else {
-                showFeedback();
-            }
+                },
+                handleFailure);
 
             function showFeedback() {
                 if($scope.isPractice)
                     $('#feedbackModal').modal('show');
                 else
                     $scope.routeToNextPage();
+            }
+
+            function feedbackIsAvailable() {
+                if($scope.profile.feedback === 'high')
+                    return true;
+                if($scope.profile.practice === 1)
+                    return false;
+                if($stateParams.id === 'P2')
+                    return true;
+                else return false;
             }
 
             function participantReadRequiredReviews(activities) {
@@ -340,7 +357,6 @@
             $('#feedbackModal').modal('hide');
             $('body').removeClass('modal-open');
             $(".modal-backdrop").remove();
-            console.log('The modal is hidden');
             var currentEval = parseInt($scope.currentEvaluation);
             if($scope.isPractice) {
                 if(currentEval < $scope.profile.practice)

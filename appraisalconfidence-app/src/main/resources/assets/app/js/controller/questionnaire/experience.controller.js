@@ -8,10 +8,11 @@
         'appcon',
         'toaster',
         'authService',
-        'profileService'
+        'profileService',
+        '$window'
     ];
 
-    function ques_experience_controller($scope, $state, appcon, toaster, authService, profileService) {
+    function ques_experience_controller($scope, $state, appcon, toaster, authService, profileService, $window) {
 
         $scope.$parent.startSpinner();
         profileService.getProfile().then(
@@ -135,6 +136,7 @@
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
+            $window.scroll(0,0);
             var user = {
                 title: $scope.title,
                 subordinates: $scope.subordinates,
