@@ -15,6 +15,7 @@
             function success(response) {
                 $scope.isExpert = response.data.mode === 'EXPERT';
                 $scope.practiceRounds = response.data.practice;
+                $scope.isRelative = response.data.relative === true;
                 $scope.$parent.stopSpinner();
             },
             function failure() {

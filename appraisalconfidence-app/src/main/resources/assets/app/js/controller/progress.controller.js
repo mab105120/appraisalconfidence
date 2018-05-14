@@ -13,6 +13,7 @@
         $scope.$parent.startSpinner();
         profileService.getProfile().then(function(response) {
             $scope.profile = response.data;
+            $scope.isExpert = $scope.profile.mode === 'EXPERT';
             init();
         }, handleFailure);
 
@@ -77,7 +78,6 @@
             appcon.getProgress()
             .then(function success(response) {
                 var completed = new Map();
-                var next = response.data.next;
                 angular.forEach(response.data.completed, function(item) {
                     completed.set(item, item);
                 });
@@ -87,10 +87,6 @@
                 angular.forEach($scope.rows, function(item) {
                     if(completed.get(item.id) !== undefined)
                         item.status = 'Complete';
-                    else if (item.id === next) {
-                        item.status = 'Next';
-                        allCompleted = false;
-                    }
                     else {
                         item.status = 'Not Started';
                         allCompleted = false;

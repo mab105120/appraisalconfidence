@@ -30,7 +30,6 @@ public enum ExperimentMode {
         put("4", new ImmutablePair<>("D", null));
         put("5", new ImmutablePair<>("E", null));
         put("6", new ImmutablePair<>("F", null));
-        put("7", new ImmutablePair<>("G", null));
     }}),
     ABSOLUTE_HIGH(new HashMap<String, Pair<String, String>>() {{
         put("p1", new ImmutablePair<>("A", null));

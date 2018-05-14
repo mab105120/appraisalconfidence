@@ -44,19 +44,19 @@
                     scope.$parent.time_modal_open = new Date().toISOString();
                     scope.$parent.modalCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
                     scope.$parent.modalBody = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
-                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about " + teachers[teacher] + "'s "+scope.jobFunction+"  skills";
+                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about the teacher's "+scope.jobFunction+"  skills";
                 }
 
                 scope.displayJobFunctionDetails = function(jobFunction, jobFunctionCode) {
 
                     var jobFunctionDetails = {
                         SL: {
-                                header: 'Tenure applicants must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
+                                header: 'Teachers must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
                                 details: [
                                 ]
                             },
                         IP: {
-                            header: 'Tenure applicants must provide consistent evidence indicating practice at the most effective level in the categories below:',
+                            header: 'Teachers must provide consistent evidence indicating practice at the most effective level in the categories below:',
                             details: [
                                 'Planning and preparation',
                                 'Classroom environment',
@@ -64,7 +64,7 @@
                             ]
                         },
                         PF: {
-                            header: 'Tenure applicants must provide consistent evidence of high level professionalism on activities including:',
+                            header: 'Teachers must provide consistent evidence of high level professionalism on activities including:',
                             details: [
                                 'Professional growth and reflection',
                                 'Collaboration and engagement with the school community',

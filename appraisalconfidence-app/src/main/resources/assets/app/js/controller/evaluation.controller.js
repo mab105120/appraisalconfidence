@@ -243,20 +243,31 @@
                 mode: $scope.profile.mode
             }
 
-            appcon.getExpertEvaluation(userEval).then( // TODO: This shouldn't be called for non-practice rounds
-                function success(response) {
-                    $scope.expert = response.data;
-                    $scope.feedbackIsAvailable = feedbackIsAvailable();
-                    if(responseChanged($scope.oldRes, userEval)) {
-                        appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
-                        .then(function success(response) {
-                            toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
-                        }, handleFailure);
-                    }
+            if(!$scope.isPractice || $scope.isRelative) {
+                postUserEvaluationIfResponseChanged();
+            } else {
+                appcon.getExpertEvaluation(userEval).then(
+                    function success(response) {
+                        $scope.expert = response.data;
+                        $scope.feedbackIsAvailable = feedbackIsAvailable();
+                        postUserEvaluationIfResponseChanged();
+                    },
+                    handleFailure);
+            }
+
+            function postUserEvaluationIfResponseChanged() {
+                if(responseChanged($scope.oldRes, userEval)) {
+                    appcon.postUserEvaluation(payload, $scope.isRelative ? 'relative' : 'absolute')
+                    .then(function success(response) {
+                        showFeedback();
+                        $scope.$parent.stopSpinner();
+                        toaster.pop('success', 'Saved!', 'Your response has been saved successfully!');
+                    }, handleFailure);
+                } else {
                     showFeedback();
                     $scope.$parent.stopSpinner();
-                },
-                handleFailure);
+                }
+            }
 
             function showFeedback() {
                 if($scope.isPractice)
@@ -339,17 +350,17 @@
             }
 
             function responseChanged(oldRes, newRes) {
-                        if(oldRes === undefined)
-                            return true;
-                        else return ($scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : false) ||
-                                    oldRes.absConfidence != newRes.absConfidence ||
-                                    oldRes.relConfidence != newRes.relConfidence ||
-                                    ($scope.isRelative ? false : oldRes.promote != newRes.promote) ||
-                                    ($scope.isRelative ? false : oldRes.studentLearning != newRes.studentLearning) ||
-                                    ($scope.isRelative ? false : oldRes.instructionalPractice != newRes.instructionalPractice) ||
-                                    ($scope.isRelative ? false : oldRes.professionalism != newRes.professionalism) ||
-                                    ($scope.isRelative ? false : oldRes.overall != newRes.overall);
-                    }
+                if(oldRes === undefined)
+                    return true;
+                else return ($scope.isRelative ? oldRes.recommendationPick != newRes.recommendationPick : false) ||
+                    oldRes.absConfidence != newRes.absConfidence ||
+                    oldRes.relConfidence != newRes.relConfidence ||
+                    ($scope.isRelative ? false : oldRes.promote != newRes.promote) ||
+                    ($scope.isRelative ? false : oldRes.studentLearning != newRes.studentLearning) ||
+                    ($scope.isRelative ? false : oldRes.instructionalPractice != newRes.instructionalPractice) ||
+                    ($scope.isRelative ? false : oldRes.professionalism != newRes.professionalism) ||
+                    ($scope.isRelative ? false : oldRes.overall != newRes.overall);
+            }
         }
 
         $scope.routeToNextPage = function() {

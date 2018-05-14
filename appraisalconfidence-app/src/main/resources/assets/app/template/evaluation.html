@@ -27,7 +27,7 @@
             </p>
         </div>
         <div class="alert alert-info" role="alert" ng-show="!isPractice && showTimer">
-            This is <strong>NOT</strong> a practice round!
+            <span ng-hide="isRelative">This is <strong>NOT</strong> a practice round!</span>.
             <p class="pull-right" style="font-size:16px" ng-show="showTimer">
                 You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
             </p>
