@@ -182,6 +182,7 @@
             }
 
             function sendEmail(from, subject, body) {
+                var id_token = localStorage.getItem('id_token');
                 var supportMailDetails = {
                     from: from,
                     subject: subject,
@@ -190,6 +191,9 @@
                 return $http({
                         method: 'POST',
                         data: supportMailDetails,
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
                         url: url + '/api/communication/send-support-email'
                 });
             }
