@@ -33,6 +33,17 @@
                 authService.login();
             }
 
+            $scope.waitDuration = 90; // seconds before participants can proceed with evaluation
+
+            $scope.showAttentionCheck = false;
+            $scope.attentionCheckCode = 'BXFJ98xStH';
+            if($stateParams.id === 'P2') {
+                $scope.showAttentionCheck = true;
+                $('#attentionCheck').bind('paste', function(e) {
+                    e.preventDefault();
+                });
+            }
+
             initializeCurrentAndTotalEvaluationVars();
 
             $scope.isPractice = false;
@@ -90,8 +101,8 @@
                     if(!$scope.isExpert)
                         $interval(function() {
                             $scope.countdown++;
-                            if($scope.countdown >= 120) $scope.countdown += '+';
-                        }, 1000, 120);
+                            if($scope.countdown >= $scope.waitDuration) $scope.countdown += '+';
+                        }, 1000, parseInt($scope.waitDuration));
                     $scope.getTeacherPerformanceReviews();
                 }
             }, function failure(response) {
@@ -243,6 +254,12 @@
                 mode: $scope.profile.mode
             }
 
+            if($scope.showAttentionCheck) {
+                if($scope.attentionCheckInput !== $scope.attentionCheckCode)
+                    localStorage.setItem('attentionCheck', false);
+                else localStorage.setItem('attentionCheck', true);
+            }
+
             if(!$scope.isPractice || $scope.isRelative) {
                 postUserEvaluationIfResponseChanged();
             } else {
@@ -277,11 +294,14 @@
             }
 
             function feedbackIsAvailable() {
+                var id = $stateParams.id;
                 if($scope.profile.feedback === 'high')
                     return true;
-                if($scope.profile.practice === 1)
-                    return false;
-                if($stateParams.id === 'P2')
+                // low experience
+                if($scope.profile.practice === 2 && id === 'P1')
+                    return true;
+                // high experience
+                if($scope.profile.practice === 4 && (id === 'P1' || id === 'P3'))
                     return true;
                 else return false;
             }
@@ -337,11 +357,11 @@
             };
 
             function passQualityCheck() {
-                if($scope.countdown != undefined && $scope.countdown < 120) {
+                if($scope.countdown != undefined && $scope.countdown < parseInt($scope.waitDuration)) {
                     alert("You need to spend at least two minutes on this evaluation before submitting. Please use this time to read teacher reviews below.");
                     return false;
                 }
-                if(!participantReadRequiredReviews(payload.activities)) {
+                if($scope.isRelative && !participantReadRequiredReviews(payload.activities)) {
                     alert('Please read AT LEAST 2 reviews PER TEACHER before submitting recommendation!\n\n' +
                         'WARNING: This application detects patterns of random responses. Participants WILL NOT be compensated for random responses.');
                     return false;

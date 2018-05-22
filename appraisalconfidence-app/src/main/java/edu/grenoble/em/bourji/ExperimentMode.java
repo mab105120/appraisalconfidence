@@ -32,21 +32,18 @@ public enum ExperimentMode {
         put("6", new ImmutablePair<>("F", null));
     }}),
     ABSOLUTE_HIGH(new HashMap<String, Pair<String, String>>() {{
-        put("p1", new ImmutablePair<>("A", null));
-        put("p2", new ImmutablePair<>("B", null));
-        put("p3", new ImmutablePair<>("C", null));
-        put("1", new ImmutablePair<>("D", null));
-        put("2", new ImmutablePair<>("E", null));
-        put("3", new ImmutablePair<>("F", null));
-        put("4", new ImmutablePair<>("G", null));
+        put("p1", new ImmutablePair<>("C", null));
+        put("p2", new ImmutablePair<>("D", null));
+        put("p3", new ImmutablePair<>("E", null));
+        put("p4", new ImmutablePair<>("F", null));
+        put("1", new ImmutablePair<>("A", null));
+        put("2", new ImmutablePair<>("B", null));
     }}),
     ABSOLUTE_LOW(new HashMap<String, Pair<String, String>>() {{
-        put("p1", new ImmutablePair<>("A", null));
-        put("1", new ImmutablePair<>("D", null));
-        put("2", new ImmutablePair<>("E", null));
-        put("3", new ImmutablePair<>("F", null));
-        put("4", new ImmutablePair<>("G", null));
-
+        put("p1", new ImmutablePair<>("C", null));
+        put("p2", new ImmutablePair<>("D", null));
+        put("1", new ImmutablePair<>("A", null));
+        put("2", new ImmutablePair<>("B", null));
     }});
 
     private Map<String, Pair<String, String>> evaluationCodes;

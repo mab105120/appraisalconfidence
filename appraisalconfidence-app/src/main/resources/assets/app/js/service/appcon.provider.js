@@ -27,7 +27,7 @@
                         "Authorization": 'Bearer ' + id_token
                     },
                     data: payload,
-                    url:  url + '/api/evaluation/expert/'
+                    url:  url + '/api/evaluation/expert/absolute'
                 };
                 return $http(config);
             }

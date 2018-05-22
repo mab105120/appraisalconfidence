@@ -7,10 +7,7 @@ import edu.grenoble.em.bourji.db.pojo.ExpertEvaluation;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -32,8 +29,37 @@ public class ExpertEvaluationResource {
         this.dao = dao;
     }
 
+    /**
+     * Returns absolute expert opinion for given evaluation code
+     *
+     * @param payload participant's evaluation along with eval code
+     * @return Expert opinion for each job dimension
+     */
     @POST
     @UnitOfWork
+    @Path("/absolute")
+    public Response getAverageExpertOpinion(ExpertEvaluationPayload payload) {
+        String evalCode = payload.getEvaluationCode();
+        try {
+            LOGGER.info("Getting expert opinion for eval code: " + evalCode);
+            ExpertEvaluation evaluation = dao.get("expert@app.con", evalCode);
+            return Response.ok(evaluation).build();
+        } catch (Throwable e) {
+            String message = "Failed to retrieve expert opinion for " + evalCode + ". Details: " + e.getMessage();
+            LOGGER.error(message);
+            return Respond.respondWithError(message);
+        }
+    }
+
+    /**
+     * Constructs expert opinion depending on participant input
+     * @param payload participant input (evaluation of profile per job dimension)
+     * @param requestContext request context
+     * @return Constructed expert opinion for each job dimension
+     */
+    @POST
+    @UnitOfWork
+    @Path("/relative")
     public Response getExpertPerformanceEvaluation(ExpertEvaluationPayload payload,
                                                    @Context ContainerRequestContext requestContext) {
         String userId = requestContext.getProperty("user").toString();
@@ -41,7 +67,7 @@ public class ExpertEvaluationResource {
         String evaluationCode = payload.getEvaluationCode();
         try {
             ExpertEvaluation expert = dao.get(userId, evaluationCode);
-            if(expert != null)
+            if (expert != null)
                 return Response.ok(new ExpertEvaluationPayload(
                         evaluationCode, expert.getStudentLearning(), expert.getInstructionalPractice(), expert.getProfessionalism(), expert.getOverall()
                 )).build();
@@ -57,7 +83,7 @@ public class ExpertEvaluationResource {
                 ));
                 return Response.ok(responsePayload).build();
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             LOGGER.error("Unable to get expert evaluation for " + userId + ". Details: " + e.getMessage());
             return Respond.respondWithError(e.getMessage());
         }
