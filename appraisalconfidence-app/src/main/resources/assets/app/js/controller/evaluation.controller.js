@@ -214,7 +214,7 @@
 
         $scope.saveAndContinue = function() {
             $scope.$parent.startSpinner();
-            var checkQuality = false;
+            var checkQuality = true;
             if(!authService.isAuthenticated()) {
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 $scope.$parent.stopSpinner();
@@ -358,7 +358,7 @@
 
             function passQualityCheck() {
                 if($scope.countdown != undefined && $scope.countdown < parseInt($scope.waitDuration)) {
-                    alert("You need to spend at least two minutes on this evaluation before submitting. Please use this time to read teacher reviews below.");
+                    alert("You need to spend at least " + $scope.waitDuration + " seconds on this evaluation before submitting. Please use this time to read teacher reviews below.");
                     return false;
                 }
                 if($scope.isRelative && !participantReadRequiredReviews(payload.activities)) {
