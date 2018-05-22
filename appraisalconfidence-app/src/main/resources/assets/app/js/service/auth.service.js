@@ -68,12 +68,7 @@
 
         function logout() {
             console.log('user is being logged out!');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('id_token');
-            localStorage.removeItem('expires_at');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('redirect_state_param');
-            localStorage.removeItem('qual_redirect_url');
+            localStorage.clear();
             $state.go('welcome');
         }
 

@@ -94,7 +94,11 @@
                 });
                 $scope.showSubmit = allCompleted;
 
-
+                if(allCompleted) {
+                    var attention = localStorage.getItem('attentionCheck');
+                    if(attention !== undefined && attention === 'false')
+                        $scope.qual_redirect_url += '&term=attention';
+                }
                 $scope.$parent.stopSpinner();
             }, handleFailure);
         }

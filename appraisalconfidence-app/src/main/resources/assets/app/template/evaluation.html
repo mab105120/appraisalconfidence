@@ -23,13 +23,13 @@
         <div class="alert alert-success" role="alert" ng-show="isPractice">
             This is a practice round.
             <p class="pull-right" style="font-size:16px" ng-show="showTimer">
-                You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
+                You need to spend at least {{waitDuration}} seconds per evaluation | <Strong>Timer: {{countdown}}</Strong>
             </p>
         </div>
         <div class="alert alert-info" role="alert" ng-show="!isPractice && showTimer">
             <span ng-hide="isRelative">This is <strong>NOT</strong> a practice round!</span>.
             <p class="pull-right" style="font-size:16px" ng-show="showTimer">
-                You need to spend at least 2 minutes per evaluation | <Strong>Timer: {{countdown}}</Strong>
+                You need to spend at least {{waitDuration}} seconds per evaluation | <Strong>Timer: {{countdown}}</Strong>
             </p>
         </div>
     </div>
@@ -257,6 +257,12 @@
         <div class="col-sm-4">
             <input id="relConfidenceSlider" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="5"
                    data-slider-value="0">
+        </div>
+    </div>
+    <div class="row" style="margin-top:30px" ng-show="showAttentionCheck">
+        <p style="padding-top:5px;" for="attentionCheck" class="col-sm-4">Please type the following code in the box: {{attentionCheckCode}}</p>
+        <div class="col-sm-8 pull-right">
+            <input style="width:100px" class="form-control" id="attentionCheck" ng-model="attentionCheckInput">
         </div>
     </div>
     <!--Submit-->
