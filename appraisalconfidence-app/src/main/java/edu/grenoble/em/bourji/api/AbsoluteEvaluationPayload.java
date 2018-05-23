@@ -1,25 +1,26 @@
 package edu.grenoble.em.bourji.api;
 
 import edu.grenoble.em.bourji.db.pojo.EvaluationActivity;
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import edu.grenoble.em.bourji.db.pojo.AbsoluteEvaluation;
 
 import java.util.List;
 
 /**
- * Created by Moe on 9/28/17.
+ * Created by Moe on 4/11/18.
  */
-public class EvaluationPayload {
+public class AbsoluteEvaluationPayload {
 
-    private TeacherRecommendation recommendation;
+    private AbsoluteEvaluation recommendation;
     private List<EvaluationActivity> activities;
     private String datetimeIn;
     private String datetimeOut;
+    private String mode;
 
-    public EvaluationPayload() {
+    public AbsoluteEvaluationPayload() {
         // no-arg default constructor for jackson
     }
 
-    public TeacherRecommendation getRecommendation() {
+    public AbsoluteEvaluation getRecommendation() {
         return recommendation;
     }
 
@@ -33,5 +34,9 @@ public class EvaluationPayload {
 
     public String getDatetimeOut() {
         return datetimeOut;
+    }
+
+    public String getMode() {
+        return mode;
     }
 }

@@ -1,5 +1,6 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.api.SupportMailDetails;
 
 import javax.mail.*;
@@ -16,6 +17,7 @@ import java.util.Properties;
  * Created by Moe on 11/11/2017.
  */
 @Path("/communication")
+@Authenticate
 public class CommunicationResource {
 
     private final String username;

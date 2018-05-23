@@ -7,11 +7,27 @@
             restrict: 'E',
             scope: {
                 jobFunction: '@',
-                jobFunctionCode: '@'
+                jobFunctionCode: '@',
+                isRelative: '='
             },
             templateUrl: 'app/template/eval.html',
-            link: function(scope) {
-                scope.showThirdSupervisor = localStorage.getItem('supervisors') === '3';
+            link: function(scope, elem, att) {
+
+                // to show third supervisor add a show-third-supervisor attribute to
+                // directive and set it to true
+
+                scope.setClass = function() {
+                    if(scope.isRelative)
+                        return ['col-xs-5 text-center'];
+                    else return ['col-xs-10 text-center'];
+                };
+
+                scope.setStyle = function() {
+                    if(scope.isRelative)
+                        return {'border-right': '1px dashed gray'};
+                    else return {};
+                }
+
                 scope.displayEvaluation = function(teacher, supervisor) {
 
                     var teachers = {
@@ -28,19 +44,19 @@
                     scope.$parent.time_modal_open = new Date().toISOString();
                     scope.$parent.modalCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
                     scope.$parent.modalBody = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
-                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about " + teachers[teacher] + "'s "+scope.jobFunction+"  skills";
+                    scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about the teacher's "+scope.jobFunction+"  skills";
                 }
 
                 scope.displayJobFunctionDetails = function(jobFunction, jobFunctionCode) {
 
                     var jobFunctionDetails = {
                         SL: {
-                                header: 'Tenure applicants must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
+                                header: 'Teachers must provide consistent evidence showing that all students, including those with special needs, perform competitively on state standard exams for academic qualifications.',
                                 details: [
                                 ]
                             },
                         IP: {
-                            header: 'Tenure applicants must provide consistent evidence indicating practice at the most effective level in the categories below:',
+                            header: 'Teachers must provide consistent evidence indicating practice at the most effective level in the categories below:',
                             details: [
                                 'Planning and preparation',
                                 'Classroom environment',
@@ -48,7 +64,7 @@
                             ]
                         },
                         PF: {
-                            header: 'Tenure applicants must provide consistent evidence of high level professionalism on activities including:',
+                            header: 'Teachers must provide consistent evidence of high level professionalism on activities including:',
                             details: [
                                 'Professional growth and reflection',
                                 'Collaboration and engagement with the school community',

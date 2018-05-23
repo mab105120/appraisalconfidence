@@ -10,9 +10,9 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "EVALUATION")
-@IdClass(TeacherRecommendation.UniqueIdentifier.class)
+@IdClass(RelativeEvaluation.UniqueIdentifier.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TeacherRecommendation {
+public class RelativeEvaluation {
 
     @Id
     @Column(name = "ID", nullable = false, length = 64)
@@ -36,7 +36,7 @@ public class TeacherRecommendation {
     @Column(name = "CLOSE_TIME", nullable = false, length = 30)
     private String closeTime;
 
-    public TeacherRecommendation() {
+    public RelativeEvaluation() {
         // no-arg default constructor for hibernate
     }
 

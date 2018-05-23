@@ -1,7 +1,6 @@
 package edu.grenoble.em.bourji;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.grenoble.em.bourji.api.ExperimentSettings;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -32,9 +31,9 @@ public class AppraisalConfidenceConfig extends Configuration {
     @NotNull
     private EmailConfiguration emailConfiguration;
 
-    @JsonProperty("settings")
+    @JsonProperty("assignment")
     @NotNull
-    private ExperimentSettings settings;
+    private String assignment;
 
     public DataSourceFactory getDataSourceFactory() {
         return dataSourceFactory;
@@ -64,7 +63,8 @@ public class AppraisalConfidenceConfig extends Configuration {
         return emailConfiguration;
     }
 
-    public ExperimentSettings getSettings() {
-        return settings;
+    public String getAssignment() {
+        return this.assignment;
     }
+
 }

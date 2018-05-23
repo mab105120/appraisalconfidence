@@ -11,27 +11,25 @@
 
         function appcon_service($http) {
 
-            function getReviews(evaluationCode) {
-                var id_token = localStorage.getItem("id_token");
+            function getReviews(evaluationCode, mode) {
                 var config = {
                     method: 'GET',
-                    headers: {
-                        "Authorization": 'Bearer ' + id_token
-                    },
-                    url:  url + '/api/performance-review/' + evaluationCode
+                    url:  url + '/api/performance-review/' + evaluationCode + '/' + mode
                 };
                 return $http(config);
             }
 
-            function getExperimentSettings() {
+            function getExpertEvaluation(payload) {
                 var id_token = localStorage.getItem("id_token");
-                return $http({
-                    method: 'GET',
+                var config = {
+                    method: 'POST',
                     headers: {
                         "Authorization": 'Bearer ' + id_token
                     },
-                    url: url + '/api/performance-review/settings'
-                });
+                    data: payload,
+                    url:  url + '/api/evaluation/expert/absolute'
+                };
+                return $http(config);
             }
 
             function postUserDemographic(user) {
@@ -114,26 +112,28 @@
                 });
             }
 
-            function postUserEvaluation(userEvaluation) {
+            function postUserEvaluation(userEvaluation, mode) {
                 var id_token = localStorage.getItem('id_token');
+                var path = mode === 'relative' ? '/api/evaluation/relative' : '/api/evaluation/absolute';
                 return $http({
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
                         data: userEvaluation,
-                        url: url + '/api/appraisal'
+                        url: url + path
                 });
             }
 
-            function getUserEvaluation(evalCode) {
+            function getUserEvaluation(evalCode, mode) {
                 var id_token = localStorage.getItem('id_token');
+                var mode = mode === 'relative' ? 'relative' : 'absolute';
                 return $http({
                         method: 'GET',
                         headers: {
                             'Authorization': 'Bearer ' + id_token
                         },
-                        url: url + '/api/appraisal/' + evalCode
+                        url: url + '/api/evaluation/' + mode + '/' + evalCode
                 });
             }
 
@@ -182,6 +182,7 @@
             }
 
             function sendEmail(from, subject, body) {
+                var id_token = localStorage.getItem('id_token');
                 var supportMailDetails = {
                     from: from,
                     subject: subject,
@@ -190,20 +191,28 @@
                 return $http({
                         method: 'POST',
                         data: supportMailDetails,
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
                         url: url + '/api/communication/send-support-email'
                 });
             }
 
-            function getCompletionCode() {
+            function getParticipantProfile() {
+                var id_token = localStorage.getItem('id_token');
                 return $http({
-                    method: 'GET',
-                    url: url + '/status/completion-code'
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token
+                        },
+                        url: url + '/api/participant-profile/'
                 });
             }
 
             return {
                 getReviews: getReviews,
-                getExperimentSettings: getExperimentSettings,
+                getExpertEvaluation: getExpertEvaluation,
+                getParticipantProfile: getParticipantProfile,
                 postUserDemographic: postUserDemographic,
                 getUserDemographics: getUserDemographics,
                 postUserExperience: postUserExperience,

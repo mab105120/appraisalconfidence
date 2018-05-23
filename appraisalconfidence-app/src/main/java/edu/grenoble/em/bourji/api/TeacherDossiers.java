@@ -1,10 +1,12 @@
 package edu.grenoble.em.bourji.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Created by Moe on 8/29/17.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TeacherDossiers {
 
     @JsonProperty("T1")

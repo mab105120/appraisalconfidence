@@ -8,13 +8,9 @@ import java.util.List;
 public class Progress {
 
     private List<ProgressStatus> completed;
-    private ProgressStatus next;
 
     public Progress(List<ProgressStatus> completed) {
         this.completed = completed;
-        if (completed.size() != 0)
-            this.next = ProgressStatus.getNextStatus(completed.get(completed.size() - 1));
-        else next = ProgressStatus.QUEST_DEMO;
     }
 
     public Progress() {
@@ -25,7 +21,4 @@ public class Progress {
         return completed;
     }
 
-    public ProgressStatus getNext() {
-        return next;
-    }
 }

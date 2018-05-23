@@ -7,13 +7,23 @@
         '$state',
         'appcon',
         'toaster',
-        'authService'
+        'authService',
+        'profileService',
+        '$window'
     ];
 
-    function ques_experience_controller($scope, $state, appcon, toaster, authService) {
+    function ques_experience_controller($scope, $state, appcon, toaster, authService, profileService, $window) {
+
+        $scope.$parent.startSpinner();
+        profileService.getProfile().then(
+            function(response) {
+                $scope.profile = response.data;
+                init();
+            }, handleFailure
+        );
 
         function init() {
-            $scope.$parent.startSpinner();
+
 
             if(!authService.isAuthenticated()) {
                 alert('You are not logged in. You need to log in to view this page.');
@@ -42,22 +52,12 @@
                         $scope.trainingType = userExperience.trainingType;
                         $scope.trainingTypeComment = userExperience.trainingTypeComment;
                         $scope.$parent.stopSpinner();
-                    }, function failure(response) {
-                        var error = response.data === null ? 'Server unreachable' : response.data.message;
-                        toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                        $scope.$parent.stopSpinner();
-                    });
+                    }, handleFailure);
                 }
                 else
                     $scope.$parent.stopSpinner();
-            }, function failure(response) {
-                var error = response.data === null ? 'Server unreachable' : response.data.message;
-                toaster.pop('error', 'Error', 'Oops! we are having a bit of trouble! Details: ' + error);
-                $scope.$parent.stopSpinner();
-            });
+            }, handleFailure);
         }
-
-        init();
 
         $scope.titleGroup = [
             'Contingent Worker',
@@ -136,6 +136,7 @@
                 toaster.pop('error', 'Error', 'You have to be logged in to perform this operation');
                 return;
             }
+            $window.scroll(0,0);
             var user = {
                 title: $scope.title,
                 subordinates: $scope.subordinates,
@@ -159,16 +160,21 @@
                 .then(function success(response) {
                     $scope.$parent.stopSpinner();
                     toaster.pop('success', 'Saved!', 'Your response have been saved');
-                    $state.go('confidence');
-                }, function failure(response) {
-                    var error = response.data === null ? 'Server unreachable' : response.data.message;
-                    $scope.$parent.stopSpinner();
-                    toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
-                });
+                    routeToNextPage();
+                }, handleFailure);
             } else {
-                $state.go('confidence');
+                routeToNextPage();
             }
         };
+
+        function routeToNextPage() {
+            if($scope.profile.includeConfidenceScale)
+                $state.go('confidence');
+            else if ($scope.profile.relative || $scope.profile.mode === 'EXPERT')
+                $state.go('evaluation', {id: 1});
+            else
+                $state.go('evaluation', {id : 'P1'});
+        }
 
         function responseChanged(oldRes, newRes) {
             if(oldRes === undefined)
@@ -187,6 +193,11 @@
                         oldRes.trainingTypeComment != newRes.trainingTypeComment;
         }
 
+        function handleFailure(response) {
+            var error = response.data === null ? 'Server unreachable' : response.data.message;
+            $scope.$parent.stopSpinner();
+            toaster.pop('error', 'Error', 'Oops! we were not able to save your response: ' + error);
+        }
     }
 
     module.exports = ques_experience_controller;

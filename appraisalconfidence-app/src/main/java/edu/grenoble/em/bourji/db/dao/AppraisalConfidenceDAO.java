@@ -1,6 +1,6 @@
 package edu.grenoble.em.bourji.db.dao;
 
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import edu.grenoble.em.bourji.db.pojo.RelativeEvaluation;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
@@ -13,32 +13,32 @@ import java.util.List;
 /**
  * Created by Moe on 9/18/17.
  */
-public class AppraisalConfidenceDAO extends AbstractDAO<TeacherRecommendation> {
+public class AppraisalConfidenceDAO extends AbstractDAO<RelativeEvaluation> {
 
     public AppraisalConfidenceDAO(SessionFactory sessionFactory) {
         super(sessionFactory);
     }
 
-    public void add(TeacherRecommendation teacherRecommendation) {
-        persist(teacherRecommendation);
+    public void add(RelativeEvaluation relativeEvaluation) {
+        persist(relativeEvaluation);
     }
 
-    public TeacherRecommendation getEvaluation(String userId, String evalCode) {
-        Criteria cr = currentSession().createCriteria(TeacherRecommendation.class);
+    public RelativeEvaluation getEvaluation(String userId, String evalCode) {
+        Criteria cr = currentSession().createCriteria(RelativeEvaluation.class);
         cr.add(Restrictions.eq("user", userId))
                 .add(Restrictions.eq("evaluationCode", evalCode))
                 .add(Restrictions.eq("submissionId", getLastSubmissionId(userId, evalCode)));
-        return (TeacherRecommendation) cr.list().get(0);
+        return (RelativeEvaluation) cr.list().get(0);
     }
 
-    public List<TeacherRecommendation> getAllRecommendations(String userId) {
-        Criteria cr = currentSession().createCriteria(TeacherRecommendation.class);
+    public List<RelativeEvaluation> getAllRecommendations(String userId) {
+        Criteria cr = currentSession().createCriteria(RelativeEvaluation.class);
         cr.add(Restrictions.eq("user", userId));
         return cr.list();
     }
 
     private int getLastSubmissionId(String user, String evaluationCode) {
-        Criteria cr = currentSession().createCriteria(TeacherRecommendation.class);
+        Criteria cr = currentSession().createCriteria(RelativeEvaluation.class);
         cr.add(Restrictions.eq("user", user));
         cr.add(Restrictions.eq("evaluationCode", evaluationCode));
         cr.setProjection(Projections.distinct(Projections.property("submissionId")));

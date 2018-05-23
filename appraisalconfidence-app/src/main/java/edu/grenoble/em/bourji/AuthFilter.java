@@ -12,6 +12,7 @@ import java.io.IOException;
 /**
  * Created by Moe on 11/24/17.
  */
+@Authenticate
 class AuthFilter implements ContainerRequestFilter {
 
     private final JwtTokenHelper helper;

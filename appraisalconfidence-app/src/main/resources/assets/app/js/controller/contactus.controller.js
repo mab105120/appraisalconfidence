@@ -7,7 +7,7 @@
         'toaster'
     ]
 
-    function contactUs_controller($scope, authService, appcon, toast) {
+    function contactUs_controller($scope, authService, appcon, toaster) {
         init();
         function init() {
 
@@ -28,9 +28,9 @@
             .then(function success() {
                 $scope.subject = '',
                 $scope.body = '',
-                toast.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
+                toaster.pop('success', 'Sent!', 'Your email has been sent. We will reach out to you ASAP!');
                 $scope.$parent.stopSpinner();
-            }, function failure() {
+            }, function failure(response) {
                 var error = response.data === null ? 'Server unreachable' : response.data.message;
                 toaster.pop('error', 'Error', 'Oops! we were not able to send the email: ' + error);
                 console.log('Error Object');

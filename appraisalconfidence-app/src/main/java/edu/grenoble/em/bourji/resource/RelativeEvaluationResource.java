@@ -1,14 +1,15 @@
 package edu.grenoble.em.bourji.resource;
 
+import edu.grenoble.em.bourji.Authenticate;
 import edu.grenoble.em.bourji.PerformanceReviewCache;
-import edu.grenoble.em.bourji.api.EvaluationPayload;
+import edu.grenoble.em.bourji.api.RelativeEvaluationPayload;
 import edu.grenoble.em.bourji.api.ProgressStatus;
 import edu.grenoble.em.bourji.db.dao.AppraisalConfidenceDAO;
 import edu.grenoble.em.bourji.db.dao.EvaluationActivityDAO;
 import edu.grenoble.em.bourji.db.dao.StatusDAO;
 import edu.grenoble.em.bourji.db.pojo.EvaluationActivity;
 import edu.grenoble.em.bourji.db.pojo.Status;
-import edu.grenoble.em.bourji.db.pojo.TeacherRecommendation;
+import edu.grenoble.em.bourji.db.pojo.RelativeEvaluation;
 import io.dropwizard.hibernate.UnitOfWork;
 import org.slf4j.Logger;
 
@@ -22,51 +23,49 @@ import java.util.List;
 /**
  * Created by Moe on 8/16/2017.
  */
-@Path("/appraisal")
+@Path("/evaluation/relative")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class AppraisalConfidenceResource {
+@Authenticate
+public class RelativeEvaluationResource {
 
-    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppraisalConfidenceResource.class);
-    private final PerformanceReviewCache performanceReviewCache;
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelativeEvaluationResource.class);
     private final AppraisalConfidenceDAO dao;
     private final EvaluationActivityDAO evaluationActivityDAO;
     private final StatusDAO statusDAO;
 
-    public AppraisalConfidenceResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO,
-                                       StatusDAO statusDAO, PerformanceReviewCache performanceReviewCache) {
+    public RelativeEvaluationResource(AppraisalConfidenceDAO dao, EvaluationActivityDAO evaluationActivityDAO, StatusDAO statusDAO) {
         this.dao = dao;
         this.statusDAO = statusDAO;
         this.evaluationActivityDAO = evaluationActivityDAO;
-        this.performanceReviewCache = performanceReviewCache;
     }
 
     @POST
     @UnitOfWork
-    public Response postTeacherEvaluation(EvaluationPayload payload,
+    public Response postTeacherEvaluation(RelativeEvaluationPayload payload,
                                           @Context ContainerRequestContext requestContext) {
 
-        TeacherRecommendation teacherRecommendation = payload.getRecommendation();
-        teacherRecommendation.setOpenTime(payload.getDatetimeIn());
-        teacherRecommendation.setCloseTime(payload.getDatetimeOut());
+        RelativeEvaluation relativeEvaluation = payload.getRecommendation();
+        relativeEvaluation.setOpenTime(payload.getDatetimeIn());
+        relativeEvaluation.setCloseTime(payload.getDatetimeOut());
         List<EvaluationActivity> activities = payload.getActivities();
 
-        if (!performanceReviewCache.isValid(teacherRecommendation.getEvaluationCode()))
-            return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", teacherRecommendation.getEvaluationCode()));
+        if (!PerformanceReviewCache.isValid(relativeEvaluation.getEvaluationCode(), payload.getMode()))
+            return Respond.respondWithError(String.format("Evaluation code (%s) is invalid!", relativeEvaluation.getEvaluationCode()));
 
         try {
             String userId = requestContext.getProperty("user").toString();
             int nextSubmissionId = dao.getNextSubmissionId(userId, payload.getRecommendation().getEvaluationCode());
             LOGGER.info("Saving user teacher recommendation for user id: " + userId + " and submission id: " + nextSubmissionId);
-            teacherRecommendation.setUser(userId);
-            teacherRecommendation.setSubmissionId(nextSubmissionId);
-            dao.add(teacherRecommendation);
+            relativeEvaluation.setUser(userId);
+            relativeEvaluation.setSubmissionId(nextSubmissionId);
+            dao.add(relativeEvaluation);
             activities.forEach(e -> {
                 e.setUser(userId);
                 e.setSubmissionId(nextSubmissionId);
             });
             activities.forEach(evaluationActivityDAO::add);
-            ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + teacherRecommendation.getEvaluationCode());
+            ProgressStatus status = ProgressStatus.valueOf("EVALUATION_" + relativeEvaluation.getEvaluationCode());
             LOGGER.info(String.format("Setting user (%s) status to %s", userId, status));
             statusDAO.add(new Status(userId, status.name(), nextSubmissionId));
         } catch (Throwable e) {
@@ -84,7 +83,7 @@ public class AppraisalConfidenceResource {
         try {
             String userId = requestContext.getProperty("user").toString();
             LOGGER.info("Getting performance appraisal recommendation for " + userId);
-            TeacherRecommendation recommendation = dao.getEvaluation(userId, evalCode);
+            RelativeEvaluation recommendation = dao.getEvaluation(userId, evalCode);
             return Response.ok(recommendation).build();
         } catch (Throwable e) {
             String message = "Unable to retrieve user performance appraisal report. Details: " + e.getMessage();
