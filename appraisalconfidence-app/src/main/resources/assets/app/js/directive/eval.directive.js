@@ -45,6 +45,7 @@
                     scope.$parent.modalCode = scope.jobFunctionCode + '-' + teacher + '-' + supervisor;
                     scope.$parent.modalBody = scope.$parent.evaluations[teacher][scope.jobFunctionCode][supervisor];
                     scope.$parent.modalTitle = "This is what " + supervisors[supervisor] + " had to say about the teacher's "+scope.jobFunction+"  skills";
+                    scope.$parent.showReviewModal(scope.jobFunctionCode, supervisor);
                 }
 
                 scope.displayJobFunctionDetails = function(jobFunction, jobFunctionCode) {
@@ -93,6 +94,7 @@
                     scope.$parent.modalCode = 'D-' + jobFunctionCode;
                     scope.$parent.modalTitle = jobFunction;
                     scope.$parent.modalBody = getModalBody(jobFunctionCode);
+                    scope.$parent.showReviewModal();
                 }
             }
         };

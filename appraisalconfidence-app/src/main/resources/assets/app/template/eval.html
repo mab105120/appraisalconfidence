@@ -17,19 +17,19 @@
     </style>
     <div class="row" style="margin-bottom:40px;">
         <div class="col-xs-2" style="padding-top:20px;">
-            <h5 id="jobFunctionLabel">{{jobFunction}} <a ng-click="displayJobFunctionDetails(jobFunction, jobFunctionCode)" data-toggle="modal" data-target="#reviewModal">More</a></h5>
+            <h5 id="jobFunctionLabel">{{jobFunction}} <a ng-click="displayJobFunctionDetails(jobFunction, jobFunctionCode)">More</a></h5>
         </div>
         <!--Teacher 1-->
         <div ng-class="setClass()" ng-style="setStyle()">
-            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP1')" data-toggle="modal" data-target="#reviewModal">Supervisor 1</button>
-            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP2')" data-toggle="modal" data-target="#reviewModal">Supervisor 2</button>
-            <button ng-show="showThirdSupervisor" type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP3')" data-toggle="modal" data-target="#reviewModal">Supervisor 3</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP1')">Supervisor 1</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP2')"data-backdrop="static" data-keyboard="false">Supervisor 2</button>
+            <button ng-show="showThirdSupervisor" type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T1', 'SP3')">Supervisor 3</button>
         </div>
         <!--Teacher 2-->
         <div class="col-xs-5 text-center" ng-show="isRelative">
-            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP1')" data-toggle="modal" data-target="#reviewModal">Supervisor 1</button>
-            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP2')" data-toggle="modal" data-target="#reviewModal">Supervisor 2</button>
-            <button ng-show="showThirdSupervisor" type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP3')" data-toggle="modal" data-target="#reviewModal">Supervisor 3</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP1')">Supervisor 1</button>
+            <button type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP2')">Supervisor 2</button>
+            <button ng-show="showThirdSupervisor" type="button" class="btn btn-lite spBtn" ng-click="displayEvaluation('T2', 'SP3')">Supervisor 3</button>
         </div>
     </div>
 </div>
