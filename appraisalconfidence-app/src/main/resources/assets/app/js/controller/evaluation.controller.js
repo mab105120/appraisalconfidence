@@ -33,7 +33,38 @@
                 authService.login();
             }
 
-            $scope.waitDuration = 90; // seconds before participants can proceed with evaluation
+            $scope.unreadReviews = new Map();
+            $scope.unreadReviews.set('SL-SP1', "Student Learning: Supervisor 1");
+            $scope.unreadReviews.set('SL-SP2', "Student Learning: Supervisor 2");
+            $scope.unreadReviews.set('IP-SP1', "Instructional Practice: Supervisor 1");
+            $scope.unreadReviews.set('IP-SP2', "Instructional Practice: Supervisor 2");
+            $scope.unreadReviews.set('PF-SP1', "Professionalism: Supervisor 1");
+            $scope.unreadReviews.set('PF-SP2', "Professionalism: Supervisor 2");
+
+            $scope.showReviewModal = function(jobFunction, supervisor) {
+                var code = jobFunction + '-' + supervisor;
+                $scope.reviewModal = {};
+                var reviewModal = $scope.reviewModal;
+                reviewModal.closeBtnDisabled = true;
+                reviewModal.modelCloseDuration = 10;
+                reviewModal.showCountDownLabel = false;
+                $('#reviewModal').modal({backdrop: 'static', keyboard: false});
+                if(!$scope.isFamiliar && $scope.unreadReviews.get(code) !== undefined) {
+                    reviewModal.showCountDownLabel = true;
+                    $interval(function() {
+                        if(reviewModal.modelCloseDuration == 0)
+                            reviewModal.closeBtnDisabled = false;
+                        else
+                            reviewModal.modelCloseDuration--;
+                    }, 1000, 11);
+                }
+                else
+                    reviewModal.closeBtnDisabled = false;
+
+                $scope.unreadReviews.delete(code);
+            }
+
+            $scope.waitDuration = 75; // seconds before participants can proceed with evaluation
 
             $scope.showAttentionCheck = false;
             $scope.attentionCheckCode = 'BXFJ98xStH';
@@ -287,8 +318,24 @@
             }
 
             function showFeedback() {
-                if($scope.isPractice)
-                    $('#feedbackModal').modal('show');
+                if($scope.isPractice) {
+                    $scope.feedbackModal = {};
+                    var feedbackModal = $scope.feedbackModal;
+                    feedbackModal.feedbackModalBtnsDisabled = true;
+                    feedbackModal.feedbackModalDuration = 10;
+                    feedbackModal.showCountDownLabel = false;
+                    $('#feedbackModal').modal({backdrop: 'static', keyboard: false});
+                    if(!$scope.isFamiliar && $scope.feedbackIsAvailable) {
+                        feedbackModal.showCountDownLabel = true;
+                         $interval(function() {
+                            if(feedbackModal.feedbackModalDuration == 0)
+                                feedbackModal.feedbackModalBtnsDisabled = false;
+                            else
+                                feedbackModal.feedbackModalDuration--;
+                        }, 1000, parseInt(feedbackModal.feedbackModalDuration) + 1);
+                    } else
+                        feedbackModal.feedbackModalBtnsDisabled = false;
+                }
                 else
                     $scope.routeToNextPage();
             }
@@ -356,7 +403,16 @@
                 return true;
             };
 
+            // Test whether the quality of the answers provided pass the requirements.
             function passQualityCheck() {
+                if(!$scope.isRelative && $scope.unreadReviews.size !== 0) {
+                    var msg = "You must read all supervisor reviews. You have not read the following:\n"
+                    angular.forEach($scope.unreadReviews, function(item) {
+                        msg += item + "\n";
+                    });
+                    alert(msg);
+                    return false;
+                }
                 if($scope.countdown != undefined && $scope.countdown < parseInt($scope.waitDuration)) {
                     alert("You need to spend at least " + $scope.waitDuration + " seconds on this evaluation before submitting. Please use this time to read teacher reviews below.");
                     return false;

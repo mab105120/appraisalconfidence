@@ -56,7 +56,7 @@
     </div>
     <div class="col-sm-12" style="margin-bottom:30px;" ng-show="!isRelative">
         <p>The grid below is a representation of a teacher's dossier.
-            Please read supervisor reviews of the teacher on each job function by clicking on the button labeled supervisor.
+            Please read ALL supervisor reviews of the teacher on EVERY job function by clicking on the button labeled supervisor.
             To learn more about each job function click on button labeled More next to each job function below.
             (<span
                     style="color:#800000">Teacher names are masked to protect their identity</span>).
@@ -85,11 +85,12 @@
                     <span class="glyphicon glyphicon-comment" style="font-size: 25px;"> </span>
                     <strong>{{ modalTitle }}</strong>
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
             </div>
             <div class="modal-body" data-ng-bind-html="modalBodyTrusted">
+            </div>
+            <div class="modal-footer" style="background-color:#F0F0F0">
+                <span ng-show="reviewModal.showCountDownLabel">Button will be enabled in {{reviewModal.modelCloseDuration}} seconds</span>
+                <button type="button" class="btn btn-secondary" style="background-color:#D6D6D6" data-dismiss="modal" ng-disabled="reviewModal.closeBtnDisabled">close</button>
             </div>
         </div>
     </div>
@@ -108,7 +109,7 @@
                 <div ng-show="feedbackIsAvailable">
                     <p style="font-size:16px;">
                         The table below shows the score that you assigned the teacher on each job dimension compared to
-                        a teacher performance evaluation expert. Please review feedback carefully:
+                        average scores assigned by teacher evaluation experts. Please review feedback carefully:
                     </p>
                     <table id="feedbackTable" class="table" style="margin-top:15px;">
                         <thead>
@@ -147,8 +148,9 @@
                 </div>
             </div>
             <div class="modal-footer" style="background-color:#F0F0F0">
-                <button type="button" class="btn btn-secondary" style="background-color:#D6D6D6" data-dismiss="modal">Return to evaluation</button>
-                <button type="button" class="btn btn-primary" ng-click="routeToNextPage()" data-dismiss="modal">Continue</button>
+                <span ng-show="feedbackModal.showCountDownLabel">Buttons will be enabled in {{ feedbackModal.feedbackModalDuration }} second(s)</span>
+                <button type="button" class="btn btn-secondary" style="background-color:#D6D6D6" data-dismiss="modal" ng-disabled="feedbackModal.feedbackModalBtnsDisabled">Return to evaluation</button>
+                <button type="button" class="btn btn-primary" ng-click="routeToNextPage()" data-dismiss="modal" ng-disabled="feedbackModal.feedbackModalBtnsDisabled">Continue</button>
             </div>
         </div>
     </div>
