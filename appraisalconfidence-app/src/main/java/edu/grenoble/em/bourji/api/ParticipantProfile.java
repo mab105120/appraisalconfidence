@@ -9,6 +9,7 @@ public class ParticipantProfile {
 
     private boolean isRelative;
     private boolean includeConfidenceScale;
+    private boolean offerTraining;
     private int practice;
     private int evaluations;
     private String feedback;
@@ -23,6 +24,19 @@ public class ParticipantProfile {
                                String feedback, int duration, ExperimentMode mode) {
         this.isRelative = isRelative;
         this.includeConfidenceScale = includeConfidenceScale;
+        this.practice = practice;
+        this.evaluations = evaluations;
+        this.feedback = feedback;
+        this.duration = duration;
+        this.mode = mode;
+        this.offerTraining = false;
+    }
+
+    public ParticipantProfile( boolean isRelative, boolean includeConfidenceScale, boolean offerTraining, int practice, int evaluations,
+                               String feedback, int duration, ExperimentMode mode) {
+        this.isRelative = isRelative;
+        this.includeConfidenceScale = includeConfidenceScale;
+        this.offerTraining = offerTraining;
         this.practice = practice;
         this.evaluations = evaluations;
         this.feedback = feedback;
@@ -56,5 +70,9 @@ public class ParticipantProfile {
 
     public ExperimentMode getMode() {
         return mode;
+    }
+
+    public boolean isOfferTraining() {
+        return offerTraining;
     }
 }

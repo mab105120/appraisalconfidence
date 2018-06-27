@@ -47,8 +47,7 @@ public class ParticipantProfileResource {
             String user = requestContext.getProperty("user").toString();
             ParticipantProfile profile = dao.getParticipantProfile(user);
             if (profile == null) {
-                ParticipantProfiles newProfile =
-                        assignProfile(assignment);
+                ParticipantProfiles newProfile = assignProfile(assignment);
                 dao.add(user, newProfile);
                 return Response.ok(newProfile.getProfile()).build();
             } else
@@ -80,6 +79,15 @@ public class ParticipantProfileResource {
                     return ParticipantProfiles.LoExp_HiFed;
                 case 4:
                     return ParticipantProfiles.LoExp_LoFed;
+            }
+        } else if (assignment == ProfileAssignment.RANDOM_WITH_TRAINING) {
+            Random random = new Random();
+            int rn = random.nextInt(2) + 1;
+            switch(rn) {
+                case 1:
+                    return ParticipantProfiles.LoExp_LoFed_T;
+                case 2:
+                    return ParticipantProfiles.HiExp_LoFed_T;
             }
         }
         throw new IllegalArgumentException(String.format("Application is set up with an unknown assignment (%s).", assignment));

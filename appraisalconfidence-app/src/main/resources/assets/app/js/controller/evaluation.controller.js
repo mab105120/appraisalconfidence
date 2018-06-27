@@ -325,7 +325,7 @@
                     feedbackModal.feedbackModalDuration = 10;
                     feedbackModal.showCountDownLabel = false;
                     $('#feedbackModal').modal({backdrop: 'static', keyboard: false});
-                    if(!$scope.isFamiliar && $scope.feedbackIsAvailable) {
+                    if(!$scope.isFamiliar) {
                         feedbackModal.showCountDownLabel = true;
                          $interval(function() {
                             if(feedbackModal.feedbackModalDuration == 0)
