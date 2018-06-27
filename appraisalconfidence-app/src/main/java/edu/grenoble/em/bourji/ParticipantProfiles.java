@@ -12,6 +12,8 @@ public enum ParticipantProfiles {
     HiExp_LoFed(new ParticipantProfile(false, false, 4, 2, "low", 20, ExperimentMode.ABSOLUTE_HIGH)),
     LoExp_HiFed(new ParticipantProfile(false, false, 2, 2, "high", 15, ExperimentMode.ABSOLUTE_LOW)),
     LoExp_LoFed(new ParticipantProfile(false, false, 2, 2, "low", 15, ExperimentMode.ABSOLUTE_LOW)),
+    LoExp_LoFed_T(new ParticipantProfile(false, false, true, 2, 2, "low", 15, ExperimentMode.ABSOLUTE_LOW)),
+    HiExp_LoFed_T(new ParticipantProfile(false, false, true, 4, 2, "low", 20, ExperimentMode.ABSOLUTE_HIGH)),
     RELATIVE(new ParticipantProfile(true, false, 0, 9, null, 30, ExperimentMode.RELATIVE));
 
     private ParticipantProfile profile;
